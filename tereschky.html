@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Терешки</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#000000">
+<link rel="stylesheet" href="schedule-live.css">
+<style>
+/* ---------- iOS LIGHT ---------- */
+:root {
+  --bg-0: #f2f2f7;             /* фон страницы */
+  --bg-1: #ffffff;             /* шапка */
+  --bg-2: #fafafa;             /* ячейки */
+  --label: #000000;            /* основной текст */
+  --label-2: #6c6c70;          /* вторичный */
+  --label-3: #3a3a3c;
+  --separator: #c6c6c8;        /* тонкие линии */
+  --accent: #007aff;           /* синий акцент */
+  --accent-text: #ffffff;
+  --sat-red: #ff3b30;          /* выходные */
+  --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
+
+  --w-ter-r: 25%;
+  --w-ter-t: 25%;
+  --w-ter-rw: 25%;
+  --w-ter-tw: 25%;
+}
+
+/* ---------- iOS DARK + Pure Black ---------- */
+[data-theme="dark"] {
+  --bg-0: #000000;             /* OLED чёрный */
+  --bg-1: #1c1c1e;             /* шапка */
+  --bg-2: #252528;             /* ячейки */
+  --label: #ffffff;
+  --label-2: #a2a2a7;
+  --label-3: #e5e5ea;
+  --separator: #6c6c70;
+  --accent: #0a84ff;
+  --accent-text: #ffffff;
+  --sat-red: #ff5e57;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); transition: background-color .25s ease, color .25s ease; }
+body { background: var(--bg-0); color: var(--label); font-size: 16px; font-weight: 600; padding: 10px 12px; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 10px 0; background: var(--bg-1); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,.12); }
+/* шапка */
+th { background: var(--bg-1); color: var(--label); padding: 10px 8px; font-size: 17px; font-weight: 700; letter-spacing: .2px; border-bottom: 1px solid var(--separator); white-space: normal; line-height: 1.15; }
+/* ячейки */
+td { background: var(--bg-2); padding: 0px 8px; font-size: 16px; color: var(--label-2); text-align: left; white-space: nowrap; font-weight: 600; border: 3px solid transparent; transition: border-color 1s ease, color 1s ease, background-color .25s ease; }
+tr:last-child td { border-bottom-color: transparent; }
+
+.hdr { position: relative; display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: 700; padding: 10px 0; }
+.theme-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: var(--accent); color: var(--accent-text); border: none; border-radius: 20px; padding: 6px 14px; font-weight: 600; cursor: pointer; }
+.theme-toggle:hover { transform: translateY(-50%) scale(1.05); }
+
+.yellow-line { height: 1px; background: var(--separator); }
+.spacer-row td { height: 12px; background: var(--bg-2); border: none; padding: 0; }
+
+.th-weekend { color: var(--sat-red); }
+.col-ter-rw, .col-ter-tw { background: var(--bg-2); }
+[data-theme="dark"] .col-ter-rw, [data-theme="dark"] .col-ter-tw { background: var(--bg-2); }
+
+.col-ter-r { width: var(--w-ter-r); }
+.col-ter-t { width: var(--w-ter-t); }
+.col-ter-rw { width: var(--w-ter-rw); }
+.col-ter-tw { width: var(--w-ter-tw); }
+
+@media (orientation: landscape) {
+  .cell-box { margin-left: 50%; transform: translateX(-50%); padding-left: 12px; }
+}
+@media (orientation: portrait) {
+  .cell-box { margin-left: 0; transform: none; padding-left: 16px; }
+}
+@media (max-width: 380px) {
+  body { font-size: 14px; }
+  th { font-size: 14px; }
+  td { font-size: 14px; }
+}
+
+/* следующее отправление: подключается из schedule-live.css */
+
+.marker { color: var(--label-3); font-weight: 700; letter-spacing: 0.3px;}
+.time-black { color: var(--accent); font-weight: 700; }
+.weekend { color: var(--sat-red); font-weight: 700; }
+.text-black { color: var(--label-2) !important; font-weight: 700; }
+.text-blue { color: var(--accent) !important; font-weight: 700; }
+.text-red { color: var(--sat-red) !important; font-weight: 700; }
+.text-green { color: #34c759 !important; font-weight: 700; }
+.text-yellow { color: var(--accent) !important; font-weight: 700; }
+
+.note { padding: 4px 16px 16px; font-size: 15px; color: var(--label-2); line-height: 1.4; font-weight: 500; }
+
+/* ---------- живой бордер ---------- */
+</style>
+</head>
+<body>
+<div class="hdr">
+  ТЕРЕШКИ
+  <button id="theme-toggle" class="theme-toggle">🌙</button>
+</div>
+
+<table id="grid"></table>
+<div class="note"></div>
+
+<script src="theme-toggle.js"></script>
+<script>
+/* ---------- тема ---------- */
+ThemeToggle.init();
+
+/* ---------- данные ---------- */
+const raw = {
+  tereshky_weekday: "05:45К, 07:00К, 07:20, 08:00, 08:20, 09:00К, 09:25, 10:15, 10:50, 11:25, 12:10, 12:45, 13:35, 14:00, 15:00, 15:40, 16:25, 17:00К, 17:35, 18:10, 18:40, 19:15",
+  tereshky_sunday: " ,07:00К, , , 08:20, 09:00К, , 10:15, , 11:25, , 12:45, , 14:00, 15:00, 15:40,, 17:00,, 18:10,, 19:15",
+  poltava_ter_weekday: ",06:20К, 07:00, 07:30, 07:55, 08:30, 09:00, 09:45, 10:20, 11:00, 11:45, 12:15, 13:00, 13:40, 14:35, 15:15, 15:50, 16:25, 17:20, 17:50, 18:20, 18:55",
+  poltava_ter_sunday: ", , , , 08:00, 08:40, , 09:45, , 11:05, , 12:15, , 13:40, 14:35, 15:15, , 16:25, , 17:50, , 18:55",
+  note: "К — через Круг (McDonald's)"
+};
+
+/* ---------- заполнение таблицы ---------- */
+function highlightAllMarkers(txt){
+  if(!txt) return '';
+  txt=txt.trim();
+  txt=txt.replace(/(\d{1,2}:\d{2})\s*([КПБФ])/g,'$1 <span class="marker">$2</span>');
+  txt=txt.replace(/(\d{1,2}:\d{2})\s*(Пн)/g,'$1 <span class="marker">$2</span>');
+  txt=txt.replace(/(^|[^а-яА-Яіїєґ0-9])([КПБФ])(?=$|[^а-яА-Яіїєґ0-9])/g,'$1<span class="marker">$2</span>');
+  txt=txt.replace(/(^|[^а-яА-Яіїєґ0-9])(Пн)(?=$|[^а-яА-Яіїєґ0-9])/g,'$1<span class="marker">$2</span>');
+  return txt;
+}
+
+/* подсветка времени */
+function highlightTimeBlack(txt){
+  if(!txt) return '';
+  const times=['19:1'];
+  const reg=new RegExp(`\\b(${times.join('|')})\\b`,'g');
+  return txt.replace(reg,'<span class="time-black">$1</span>');
+}
+
+/* подсветка текста */
+function colorText(text){
+  const map={
+      "Граф.№2":"text-red",
+      "Нд":"weekend",
+      "Сб":"weekend",
+      "Круг":"marker"
+  };
+  Object.keys(map).forEach(p=>{
+     text=text.replace(new RegExp(p,'g'),`<span class="${map[p]}">$&</span>`);
+  });
+  return text;
+}
+
+function fillTable(){
+  const t = document.getElementById('grid');
+  t.innerHTML = `
+    <tr>
+      <th>Ринок</th>
+      <th>Терешки</th>
+      <th class="th-weekend">Ринок</th>
+      <th class="th-weekend">Терешки</th>
+    </tr>`;
+
+  /* ---------- пустая строка ---------- */
+  const spacer = document.createElement('tr');
+  spacer.className = 'spacer-row';
+  for(let k = 0; k < 4; k++){
+    spacer.appendChild(document.createElement('td'));
+  }
+  t.appendChild(spacer);
+
+  const cols = [
+    raw.poltava_ter_weekday.split(',').map(s => s.trim()),
+    raw.tereshky_weekday.split(',').map(s => s.trim()),
+    raw.poltava_ter_sunday.split(',').map(s => s.trim()),
+    raw.tereshky_sunday.split(',').map(s => s.trim())
+  ];
+  const maxRows = Math.max(...cols.map(c => c.length));
+
+  for(let i = 0; i < maxRows; i++){
+    const tr = document.createElement('tr');
+    // извлекаем чистое время HH:MM для data-атрибута
+    function extractTime(s){ const m = (s||'').match(/\d{1,2}:\d{2}/); return m ? m[0] : ''; }
+    const t0=extractTime(cols[0][i]), t1=extractTime(cols[1][i]),
+          t2=extractTime(cols[2][i]), t3=extractTime(cols[3][i]);
+    tr.innerHTML = `
+      <td class="col-ter-r"  ${t0?`data-time="${t0}" data-weekend="0" data-group="col-ter-r"`:''}><div class="cell-box">${highlightTimeBlack(colorText(highlightAllMarkers(cols[0][i]||'')))}</div></td>
+      <td class="col-ter-t"  ${t1?`data-time="${t1}" data-weekend="0" data-group="col-ter-t"`:''}><div class="cell-box">${highlightTimeBlack(colorText(highlightAllMarkers(cols[1][i]||'')))}</div></td>
+      <td class="col-ter-rw" ${t2?`data-time="${t2}" data-weekend="1" data-group="col-ter-rw"`:''}><div class="cell-box">${highlightTimeBlack(colorText(highlightAllMarkers(cols[2][i]||'')))}</div></td>
+      <td class="col-ter-tw" ${t3?`data-time="${t3}" data-weekend="1" data-group="col-ter-tw"`:''}><div class="cell-box">${highlightTimeBlack(colorText(highlightAllMarkers(cols[3][i]||'')))}</div></td>`;
+    t.appendChild(tr);
+  }
+  
+    /* ---------- нижняя пустая строка ---------- */
+  const spacerBottom = document.createElement('tr');
+  spacerBottom.className = 'spacer-row';
+  for(let k = 0; k < 4; k++){
+    spacerBottom.appendChild(document.createElement('td'));
+  }
+  
+  t.appendChild(spacerBottom);
+  document.querySelector('.note').innerHTML = highlightTimeBlack(colorText(highlightAllMarkers(raw.note)));
+}
+fillTable();
+</script>
+
+<script src="schedule-live.js"></script>
+<script>
+/* ---------- живая подсветка времени (вынесена в schedule-live.js) ---------- */
+ScheduleLive.start();
+</script>
+</body>
+</html>
