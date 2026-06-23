@@ -117,43 +117,9 @@ tr:last-child td { border-bottom-color: transparent; }
 .note { padding: 4px 16px 16px; font-size: 15px; color: var(--label-2); line-height: 1.4; font-weight: 500; }
 
 /* ---------- живой бордер ---------- */
-
-#app-splash { position: fixed; inset: 0; z-index: 99999; overflow: hidden; }
-
-.curtain {
-  position: absolute; top: 0; bottom: 0; width: 50%;
-  background: var(--bg-1);
-  transform: translateY(-100%);
-  animation: curtainDown .5s cubic-bezier(.65,0,.35,1) forwards;
-}
-.curtain-left { left: 0; }
-.curtain-right { right: 0; }
-.curtain-left.part { animation: curtainLeftOut .55s cubic-bezier(.65,0,.35,1) forwards; }
-.curtain-right.part { animation: curtainRightOut .55s cubic-bezier(.65,0,.35,1) forwards; }
-
-@keyframes curtainDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
-@keyframes curtainLeftOut { from { transform: translateY(0) translateX(0); } to { transform: translateY(0) translateX(-100%); } }
-@keyframes curtainRightOut { from { transform: translateY(0) translateX(0); } to { transform: translateY(0) translateX(100%); } }
-
-.splash-content {
-  position: absolute; inset: 0; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 16px;
-  opacity: 0; transition: opacity .3s ease;
-}
-.splash-content.show { opacity: 1; }
-.splash-content .splash-icon { width: 84px; height: 84px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,.25); }
-.splash-content .splash-title { font-size: 19px; font-weight: 700; color: var(--label); letter-spacing: .3px; }
 </style>
 </head>
 <body>
-<div id="app-splash">
-  <div class="curtain curtain-left"></div>
-  <div class="curtain curtain-right"></div>
-  <div class="splash-content">
-    <img src="/icons/icon-192x192.png" class="splash-icon" alt="">
-    <div class="splash-title">Терешки</div>
-  </div>
-</div>
 <div class="hdr">
   ТЕРЕШКИ
   <button id="theme-toggle" class="theme-toggle">🌙</button>
@@ -164,12 +130,10 @@ tr:last-child td { border-bottom-color: transparent; }
 
 <script src="theme-toggle.js"></script>
 <script src="pwa-install.js"></script>
-<script src="splash-screen.js"></script>
 <script>
 /* ---------- тема ---------- */
 ThemeToggle.init();
 PWAInstall.init({ appName: 'Розклад' });
-SplashScreen.init();
 
 /* ---------- данные ---------- */
 const raw = {
