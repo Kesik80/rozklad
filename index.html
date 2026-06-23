@@ -3,28 +3,107 @@
 <head>
 <meta charset="utf-8">
 <title>Расписюлька</title>
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+
+<!-- PWA: скрывает адресную строку при запуске с экрана -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Розклад">
+
+<!-- Окрашивает строку статуса/адресную строку — подстраивается под тему в theme-toggle.js -->
+<meta id="themeColorMeta" name="theme-color" content="#f2f2f7">
+
+<!-- Манифест и иконки (распакуй сюда содержимое icons/ из Icon Forge) -->
+<link rel="manifest" href="/icons/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="icon" href="/icons/favicon.ico" sizes="32x32">
+<meta name="msapplication-config" content="/browserconfig.xml">
+
+<!-- Open Graph / превью при шаринге ссылки -->
+<meta property="og:title" content="Розклад Терешки">
+<meta property="og:description" content="Розклад транспорту Терешки">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://tereschky.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Розклад Терешки">
+<meta name="twitter:image" content="https://tereschky.vercel.app/og-image.png">
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,Roboto,"Segoe UI",Helvetica,Arial,sans-serif}
-body{background:#fafafa;color:#212121;font-size:17px}
-.hdr{height:56px;background:#1976d2;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;box-shadow:0 2px 4px rgba(0,0,0,.25)}
-.list{padding:24px 16px 60px;display:flex;flex-direction:column;align-items:center}
-.btn{width:55%;max-width:240px;background:#fff;border:1px solid #bdbdbd;border-radius:6px;margin:5px 0;padding:14px;text-align:center;text-decoration:none;color:#212121;font-size:18px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+/* ---------- iOS LIGHT ---------- */
+:root {
+  --bg-0: #f2f2f7;             /* фон страницы */
+  --bg-1: #ffffff;             /* карточки */
+  --bg-2: #fafafa;             /* нажатое состояние */
+  --label: #000000;            /* основной текст */
+  --label-2: #6c6c70;          /* вторичный */
+  --label-3: #3a3a3c;
+  --separator: #c6c6c8;        /* тонкие линии */
+  --accent: #007aff;           /* синий акцент */
+  --accent-text: #ffffff;
+  --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* ---------- iOS DARK + Pure Black ---------- */
+[data-theme="dark"] {
+  --bg-0: #000000;             /* OLED чёрный */
+  --bg-1: #1c1c1e;             /* карточки */
+  --bg-2: #252528;             /* нажатое состояние */
+  --label: #ffffff;
+  --label-2: #a2a2a7;
+  --label-3: #e5e5ea;
+  --separator: #6c6c70;
+  --accent: #0a84ff;
+  --accent-text: #ffffff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); transition: background-color .25s ease, color .25s ease; }
+html { background: var(--bg-0); }
+body { background: var(--bg-0); color: var(--label); font-size: 16px; font-weight: 600; padding: 10px 12px; max-width: 640px; margin: 0 auto; }
+
+.hdr { position: relative; display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: 700; padding: 10px 0; }
+.theme-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: var(--accent); color: var(--accent-text); border: none; border-radius: 20px; padding: 6px 14px; font-weight: 600; cursor: pointer; }
+.theme-toggle:hover { transform: translateY(-50%) scale(1.05); }
+
+.menu { width: 60%; margin: 14px auto 24px; background: var(--bg-1); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,.12); }
+.row {
+  display: flex; align-items: center; justify-content: center;
+  padding: 15px 16px; font-size: 17px; font-weight: 600; color: var(--label);
+  text-decoration: none; border-bottom: 1px solid var(--separator);
+}
+.row:last-child { border-bottom: none; }
+.row:active { background: var(--bg-2); }
+.label { display: inline-block; text-align: left; }
 </style>
 </head>
 <body>
-<div class="hdr">Расписюлька</div>
-<div class="list">
-  <a class="btn" href="pereizd.html?v=Переїзд">Переїзд</a>
-  <a class="btn" href="tereschky.html?v=Терешки">Терешки</a>
-  <a class="btn" href="page.html?v=Микільске">Микільске</a>
-  <a class="btn" href="page.html?v=Минівка">Минівка</a>
-  <a class="btn" href="page.html?v=Кашубівка">Кашубівка</a>
-  <a class="btn" href="page.html?v=Вовківка">Вовківка</a>
-  <a class="btn" href="page.html?v=Верхоли">Верхоли</a>
-  <a class="btn" href="page.html?v=Головач">Головач</a>
-  <a class="btn" href="page.html?v=Електрички">Електрички</a>
-  <a class="btn" href="info.html">info</a>
+<div class="hdr">
+  Расписюлька
+  <button id="theme-toggle" class="theme-toggle">🌙</button>
 </div>
+
+<div class="menu">
+  <a class="row" href="pereizd.html?v=Переїзд"><span class="label">Переїзд</span></a>
+  <a class="row" href="tereschky.html?v=Терешки"><span class="label">Терешки</span></a>
+  <a class="row" href="page.html?v=Микільске"><span class="label">Микільске</span></a>
+  <a class="row" href="page.html?v=Минівка"><span class="label">Минівка</span></a>
+  <a class="row" href="page.html?v=Кашубівка"><span class="label">Кашубівка</span></a>
+  <a class="row" href="page.html?v=Вовківка"><span class="label">Вовківка</span></a>
+  <a class="row" href="page.html?v=Верхоли"><span class="label">Верхоли</span></a>
+  <a class="row" href="page.html?v=Головач"><span class="label">Головач</span></a>
+  <a class="row" href="page.html?v=Електрички"><span class="label">Електрички</span></a>
+  <a class="row" href="info.html"><span class="label">info</span></a>
+</div>
+
+<script src="theme-toggle.js"></script>
+<script src="equalize-width.js"></script>
+<script src="pwa-install.js"></script>
+<script>
+ThemeToggle.init();
+EqualizeWidth.apply('.menu .label');
+PWAInstall.init({ appName: 'Розклад' });
+</script>
 </body>
 </html>

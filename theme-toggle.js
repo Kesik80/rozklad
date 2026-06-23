@@ -15,15 +15,28 @@
    Использование:
      HTML:
        <button id="theme-toggle" class="theme-toggle">🌙</button>
+       <meta name="theme-color" id="themeColorMeta" content="#f2f2f7">
      В конце body:
        <script src="theme-toggle.js"></script>
        <script>ThemeToggle.init();</script>
+
+   Если на странице есть <meta id="themeColorMeta">, модуль сам
+   подставляет туда значение переменной --bg-0 из CSS (нужно для
+   PWA — окрашивает статус-бар/адресную строку под текущую тему).
    ============================================================ */
 (function () {
+  function syncThemeColorMeta() {
+    const meta = document.getElementById('themeColorMeta');
+    if (!meta) return;
+    const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-0').trim();
+    if (bg) meta.setAttribute('content', bg);
+  }
+
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     const btn = document.getElementById('theme-toggle');
     if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+    syncThemeColorMeta();
   }
 
   function init() {
@@ -59,3 +72,4 @@
 
   window.ThemeToggle = { init, applyTheme };
 })();
+

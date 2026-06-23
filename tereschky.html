@@ -3,9 +3,33 @@
 <head>
 <meta charset="utf-8">
 <title>Терешки</title>
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7">
-<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#000000">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+
+<!-- PWA: скрывает адресную строку при запуске с экрана -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Розклад">
+
+<!-- Окрашивает строку статуса/адресную строку — подстраивается под тему в theme-toggle.js -->
+<meta id="themeColorMeta" name="theme-color" content="#f2f2f7">
+
+<!-- Манифест и иконки (распакуй сюда содержимое icons/ из Icon Forge) -->
+<link rel="manifest" href="/icons/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="icon" href="/icons/favicon.ico" sizes="32x32">
+<meta name="msapplication-config" content="/browserconfig.xml">
+
+<!-- Open Graph / превью при шаринге ссылки -->
+<meta property="og:title" content="Розклад Терешки">
+<meta property="og:description" content="Розклад транспорту Терешки">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://tereschky.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Розклад Терешки">
+<meta name="twitter:image" content="https://tereschky.vercel.app/og-image.png">
 <link rel="stylesheet" href="schedule-live.css">
 <style>
 /* ---------- iOS LIGHT ---------- */
@@ -105,9 +129,11 @@ tr:last-child td { border-bottom-color: transparent; }
 <div class="note"></div>
 
 <script src="theme-toggle.js"></script>
+<script src="pwa-install.js"></script>
 <script>
 /* ---------- тема ---------- */
 ThemeToggle.init();
+PWAInstall.init({ appName: 'Розклад' });
 
 /* ---------- данные ---------- */
 const raw = {
