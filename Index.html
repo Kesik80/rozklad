@@ -83,10 +83,10 @@ body { background: var(--bg-0); color: var(--label); font-size: 16px; font-weigh
   position: absolute; top: 0; bottom: 0; width: 50%;
   background: var(--bg-1);
   transform: translateY(-100%);
-  animation: curtainDown .5s cubic-bezier(.65,0,.35,1) forwards;
 }
 .curtain-left { left: 0; }
 .curtain-right { right: 0; }
+.curtain.run { animation: curtainDown .5s cubic-bezier(.65,0,.35,1) forwards; }
 .curtain-left.part { animation: curtainLeftOut .55s cubic-bezier(.65,0,.35,1) forwards; }
 .curtain-right.part { animation: curtainRightOut .55s cubic-bezier(.65,0,.35,1) forwards; }
 
@@ -113,6 +113,22 @@ body { background: var(--bg-0); color: var(--label); font-size: 16px; font-weigh
     <div class="splash-title">Розклад</div>
   </div>
 </div>
+<script>
+// Проверяем СРАЗУ, ещё до отрисовки остальной страницы: показываем заставку
+// только если приложение запущено в standalone-режиме (с экрана "Домой").
+// При обычном открытии в браузере — сразу убираем, без анимации и "мигания".
+(function () {
+  window.__isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+  var el = document.getElementById('app-splash');
+  if (window.__isStandaloneApp) {
+    el.querySelector('.curtain-left').classList.add('run');
+    el.querySelector('.curtain-right').classList.add('run');
+  } else if (el) {
+    el.remove();
+  }
+})();
+</script>
 <div class="hdr">
   Расписюлька
   <button id="theme-toggle" class="theme-toggle">🌙</button>
@@ -136,10 +152,10 @@ body { background: var(--bg-0); color: var(--label); font-size: 16px; font-weigh
 <script src="pwa-install.js"></script>
 <script src="splash-screen.js"></script>
 <script>
+if (window.__isStandaloneApp) SplashScreen.init();
 ThemeToggle.init();
 EqualizeWidth.apply('.menu .label');
 PWAInstall.init({ appName: 'Розклад' });
-SplashScreen.init();
 </script>
 </body>
 </html>
