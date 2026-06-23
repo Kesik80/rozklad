@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Микільське</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+
+<!-- PWA: скрывает адресную строку при запуске с экрана -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Розклад">
+
+<!-- Окрашивает строку статуса/адресную строку — подстраивается под тему в theme-toggle.js -->
+<meta id="themeColorMeta" name="theme-color" content="#f2f2f7">
+
+<!-- Манифест и иконки (распакуй сюда содержимое icons/ из Icon Forge) -->
+<link rel="manifest" href="/icons/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="icon" href="/icons/favicon.ico" sizes="32x32">
+<meta name="msapplication-config" content="/browserconfig.xml">
+
+<!-- Open Graph / превью при шаринге ссылки -->
+<meta property="og:title" content="Розклад Микільське">
+<meta property="og:description" content="Розклад транспорту Микільське">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://tereschky.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Розклад Микільське">
+<meta name="twitter:image" content="https://tereschky.vercel.app/og-image.png">
+<link rel="stylesheet" href="schedule-live.css">
+<style>
+/* ---------- iOS LIGHT ---------- */
+:root {
+  --bg-0: #f2f2f7;             /* фон страницы */
+  --bg-1: #ffffff;             /* шапка */
+  --bg-2: #fafafa;             /* ячейки */
+  --label: #000000;            /* основной текст */
+  --label-2: #6c6c70;          /* вторичный */
+  --label-3: #3a3a3c;
+  --separator: #c6c6c8;        /* тонкие линии */
+  --accent: #007aff;           /* синий акцент */
+  --accent-text: #ffffff;
+  --sat-red: #ff3b30;          /* выходные */
+  --warn: #ff9500;             /* предупреждения */
+  --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
+
+  --w-1: 20%;  /* Безручки */
+  --w-2: 20%;  /* Мик.     */
+  --w-3: 20%;  /* Переїзд  */
+  --w-4: 20%;  /* Полтава  */
+  --w-5: 20%;  /* Терешки  */
+}
+
+/* ---------- iOS DARK + Pure Black ---------- */
+[data-theme="dark"] {
+  --bg-0: #000000;             /* OLED чёрный */
+  --bg-1: #1c1c1e;             /* шапка */
+  --bg-2: #252528;             /* ячейки */
+  --label: #ffffff;
+  --label-2: #a2a2a7;
+  --label-3: #e5e5ea;
+  --separator: #6c6c70;
+  --accent: #0a84ff;
+  --accent-text: #ffffff;
+  --sat-red: #ff5e57;
+  --warn: #ff9f0a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); transition: background-color .25s ease, color .25s ease; }
+html { background: var(--bg-0); }
+body { background: var(--bg-0); color: var(--label); font-size: 16px; font-weight: 600; padding: 10px 8px; max-width: 640px; margin: 0 auto; }
+table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; margin: 10px 0; background: var(--bg-1); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,.12); }
+
+/* шапка таблицы */
+th { background: var(--bg-1); color: var(--label); padding: 10px 2px; font-size: 17px; font-weight: 700; letter-spacing: .2px; border-bottom: 1px solid var(--separator); white-space: normal; line-height: 1.15; }
+/* ячейки */
+td { background: var(--bg-2); padding: 0 2px; font-size: 16px; color: var(--label-2); text-align: left; white-space: nowrap; font-weight: 600; border: 3px solid transparent; transition: border-color 1s ease, color 1s ease, background-color .25s ease; }
+tr:last-child td { border-bottom-color: transparent; }
+
+.hdr { position: relative; display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: 700; padding: 10px 0; }
+.theme-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: var(--accent); color: var(--accent-text); border: none; border-radius: 20px; padding: 6px 14px; font-weight: 600; cursor: pointer; }
+.theme-toggle:hover { transform: translateY(-50%) scale(1.05); }
+.btn-back { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: var(--bg-1); color: var(--accent); border: 1px solid var(--separator); border-radius: 20px; padding: 6px 14px; font-weight: 600; font-size: 15px; text-decoration: none; }
+.btn-back:hover { transform: translateY(-50%) scale(1.05); }
+
+.spacer-row td { height: 12px; background: var(--bg-2); border: none; padding: 0; }
+
+.col-1 { width: var(--w-1); }
+.col-2 { width: var(--w-2); }
+.col-3 { width: var(--w-3); }
+.col-4 { width: var(--w-4); }
+.col-5 { width: var(--w-5); }
+
+@media (orientation: landscape) {
+  .cell-box { margin-left: 50%; transform: translateX(-50%); padding-left: 6px; }
+}
+@media (orientation: portrait) {
+  .cell-box { margin-left: 0; transform: none; padding-left: 6px; }
+}
+@media (max-width: 380px) {
+  body { font-size: 14px; }
+  th { font-size: 14px; padding: 8px 1px; }
+  td { font-size: 14px; }
+}
+@media (min-width: 600px) {
+  body { padding: 24px 32px; }
+}
+
+/* следующее отправление: подключается из schedule-live.css */
+
+.marker { color: var(--label-3); font-weight: 700; letter-spacing: 0.3px; }
+.time-black { color: var(--label-3); font-weight: 700; }
+.weekend { color: var(--sat-red) !important; font-weight: 700; }
+.text-black { color: var(--label-2) !important; font-weight: 700; }
+.text-blue { color: var(--accent) !important; font-weight: 700; }
+.text-red { color: var(--sat-red) !important; font-weight: 700; }
+.text-green { color: #34c759 !important; font-weight: 700; }
+.text-yellow { color: var(--warn) !important; font-weight: 700; }
+.text-light { color: var(--label) !important; font-weight: 700; }
+
+.note { padding: 4px 16px 16px; font-size: 15px; color: var(--label-2); line-height: 1.4; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="hdr">
+  <a class="btn-back" href="index.html">‹ Назад</a>
+  МИКІЛЬСЬКЕ
+  <button id="theme-toggle" class="theme-toggle">🌙</button>
+</div>
+
+<table id="grid"></table>
+<div class="note"></div>
+
+<script src="theme-toggle.js"></script>
+<script src="pwa-install.js"></script>
+<script>
+/* ---------- тема ---------- */
+ThemeToggle.init();
+PWAInstall.init({ appName: 'Розклад' });
+
+/* ---------- дані ---------- */
+const raw = {
+  bezruchky: "06:45, 08:45, 10:35, 14:40, 16:45",
+  mykilske:  "07:10, 08:55, 10:50, 15:00, 17:00",
+  pereizd:   "07:20, 09:05, 11:00, 15:10, 17:10",
+  poltava:   "08:05, 09:50, 13:50, 15:50, 18:15",
+  tereshky:  "08:20, 10:05, 14:05, 16:05, 18:30",
+  note: ""
+};
+
+const colorMap = {};
+
+function highlightAllMarkers(text){ return TextHighlight.highlightAllMarkers(text); }
+function colorText(text){ return TextHighlight.colorText(text, colorMap); }
+
+/* ---------- заповнення таблиці ---------- */
+function fillTable() {
+  const t = document.getElementById('grid');
+  t.innerHTML = `
+    <tr>
+      <th>Безр.</th>
+      <th>Мик.</th>
+      <th>Переїзд</th>
+      <th>Полт.</th>
+      <th>Тереш.</th>
+    </tr>`;
+
+  const spacer = document.createElement('tr');
+  spacer.className = 'spacer-row';
+  for (let k = 0; k < 5; k++) spacer.appendChild(document.createElement('td'));
+  t.appendChild(spacer);
+
+  const cols = [
+    raw.bezruchky.split(',').map(s => s.trim()),
+    raw.mykilske .split(',').map(s => s.trim()),
+    raw.pereizd  .split(',').map(s => s.trim()),
+    raw.poltava  .split(',').map(s => s.trim()),
+    raw.tereshky .split(',').map(s => s.trim())
+  ];
+  const maxRows = Math.max(...cols.map(c => c.length));
+
+  function extractTime(s){ const m = (s||'').match(/\d{1,2}:\d{2}/); return m ? m[0] : ''; }
+
+  const classes = ['col-1', 'col-2', 'col-3', 'col-4', 'col-5'];
+  // один автобус идёт по кругу через все 5 точек — поэтому все ячейки
+  // в ОДНОЙ общей группе. "Ближайший рейс" — это просто следующая по
+  // времени остановка во всей последовательности (по строкам и колонкам
+  // подряд), а не 5 независимых "ближайших" в каждой колонке
+  const group = 'col-bus';
+
+  for (let i = 0; i < maxRows; i++) {
+    const tr = document.createElement('tr');
+    classes.forEach((cls, j) => {
+      const td = document.createElement('td');
+      td.className = cls;
+      const raw_ = cols[j][i] || '';
+      const time = extractTime(raw_);
+      // рейс щодня — нема окремого графіку на вихідні
+      if (time) { td.dataset.time = time; td.dataset.always = '1'; td.dataset.group = group; }
+      td.innerHTML = `<div class="cell-box">${colorText(highlightAllMarkers(raw_))}</div>`;
+      tr.appendChild(td);
+    });
+    t.appendChild(tr);
+  }
+
+  const spacerBottom = document.createElement('tr');
+  spacerBottom.className = 'spacer-row';
+  for (let k = 0; k < 5; k++) spacerBottom.appendChild(document.createElement('td'));
+  t.appendChild(spacerBottom);
+
+  if (raw.note) {
+    document.querySelector('.note').innerHTML = colorText(highlightAllMarkers(raw.note));
+  }
+}
+</script>
+
+<script src="text-highlight.js"></script>
+<script src="schedule-live.js"></script>
+<script>
+fillTable();
+ScheduleLive.start();
+</script>
+</body>
+</html>
