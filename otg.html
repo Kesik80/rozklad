@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Копили — Терешки — Писарівка</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+
+<!-- PWA: скрывает адресную строку при запуске с экрана -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Розклад">
+
+<!-- Окрашивает строку статуса/адресную строку — подстраивается под тему в theme-toggle.js -->
+<meta id="themeColorMeta" name="theme-color" content="#f2f2f7">
+
+<!-- Манифест и иконки (распакуй сюда содержимое icons/ из Icon Forge) -->
+<link rel="manifest" href="/icons/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="icon" href="/icons/favicon.ico" sizes="32x32">
+<meta name="msapplication-config" content="/browserconfig.xml">
+
+<!-- Open Graph / превью при шаринге ссылки -->
+<meta property="og:title" content="Розклад Копили — Терешки — Писарівка">
+<meta property="og:description" content="Розклад транспорту Копили — Терешки — Писарівка">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://tereschky.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Розклад Копили — Терешки — Писарівка">
+<meta name="twitter:image" content="https://tereschky.vercel.app/og-image.png">
+<link rel="stylesheet" href="schedule-live.css">
+<style>
+/* ---------- iOS LIGHT ---------- */
+:root {
+  --bg-0: #f2f2f7;             /* фон страницы */
+  --bg-1: #ffffff;             /* шапка */
+  --bg-2: #fafafa;             /* ячейки */
+  --label: #000000;            /* основной текст */
+  --label-2: #6c6c70;          /* вторичный */
+  --label-3: #3a3a3c;
+  --separator: #c6c6c8;        /* тонкие линии */
+  --accent: #007aff;           /* синий акцент */
+  --accent-text: #ffffff;
+  --sat-red: #ff3b30;          /* выходные */
+  --warn: #ff9500;             /* предупреждения */
+  --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
+
+  --w-loc: 40%;  /* Населений пункт — 2/5 */
+  --w-r:   20%;  /* Рейс1/2/3 — по 1/5 кожна */
+}
+
+/* ---------- iOS DARK + Pure Black ---------- */
+[data-theme="dark"] {
+  --bg-0: #000000;             /* OLED чёрный */
+  --bg-1: #1c1c1e;             /* шапка */
+  --bg-2: #252528;             /* ячейки */
+  --label: #ffffff;
+  --label-2: #a2a2a7;
+  --label-3: #e5e5ea;
+  --separator: #6c6c70;
+  --accent: #0a84ff;
+  --accent-text: #ffffff;
+  --sat-red: #ff5e57;
+  --warn: #ff9f0a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); transition: background-color .25s ease, color .25s ease; }
+html { background: var(--bg-0); }
+body { background: var(--bg-0); color: var(--label); font-size: 16px; font-weight: 600; padding: 10px 8px; max-width: 640px; margin: 0 auto; }
+table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; margin: 10px 0; background: var(--bg-1); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,.12); }
+
+/* шапка таблицы */
+th { background: var(--bg-1); color: var(--label); padding: 10px 2px; font-size: 16px; font-weight: 700; letter-spacing: .2px; border-bottom: 1px solid var(--separator); white-space: normal; line-height: 1.15; }
+/* ячейки */
+td { background: var(--bg-2); padding: 0 4px; font-size: 15px; color: var(--label-2); text-align: left; white-space: nowrap; font-weight: 600; border: 3px solid transparent; transition: border-color 1s ease, color 1s ease, background-color .25s ease; }
+tr:last-child td { border-bottom-color: transparent; }
+
+.hdr { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 38px; text-align: center; }
+.hdr-title { font-size: 17px; font-weight: 700; line-height: 1.25; }
+.hdr-sub { font-size: 12px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
+.theme-toggle { position: absolute; right: 12px; top: 12px; background: var(--accent); color: var(--accent-text); border: none; border-radius: 20px; padding: 6px 14px; font-weight: 600; cursor: pointer; }
+.theme-toggle:hover { transform: scale(1.05); }
+.btn-back { position: absolute; left: 12px; top: 12px; background: var(--bg-1); color: var(--accent); border: 1px solid var(--separator); border-radius: 20px; padding: 6px 14px; font-weight: 600; font-size: 14px; text-decoration: none; }
+.btn-back:hover { transform: scale(1.05); }
+
+.spacer-row td { height: 12px; background: var(--bg-2); border: none; padding: 0; }
+
+.col-loc { width: var(--w-loc); padding-right: 8px; }
+.col-r1, .col-r2, .col-r3 { width: var(--w-r); }
+
+/* колонки рейсов — по центру, локация — по левому краю */
+.col-r1 .cell-box, .col-r2 .cell-box, .col-r3 .cell-box {
+  text-align: center; margin-left: auto; margin-right: auto; padding-left: 0;
+  display: block; width: fit-content;
+}
+@media (orientation: landscape) {
+  .col-loc .cell-box { margin-left: 50%; transform: translateX(-50%); padding-left: 6px; }
+}
+@media (orientation: portrait) {
+  .col-loc .cell-box { margin-left: 0; transform: none; padding-left: 6px; }
+}
+@media (max-width: 380px) {
+  body { font-size: 14px; }
+  th { font-size: 13px; padding: 8px 1px; }
+  td { font-size: 13px; }
+}
+@media (min-width: 600px) {
+  body { padding: 24px 32px; }
+}
+
+/* следующее отправление: подключается из schedule-live.css */
+
+.marker { color: var(--label-3); font-weight: 700; letter-spacing: 0.3px; }
+.time-black { color: var(--label-3); font-weight: 700; }
+.weekend { color: var(--sat-red) !important; font-weight: 700; }
+.text-red { color: var(--sat-red) !important; font-weight: 700; }
+.text-light { color: var(--label) !important; font-weight: 700; }
+
+.note, .price-note { padding: 4px 16px 4px; font-size: 14px; color: var(--label-2); line-height: 1.4; font-weight: 500; }
+.price-note { padding-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-title">КОПИЛИ — ТЕРЕШКИ — ПИСАРІВКА</div>
+  <div class="hdr-sub">(Понеділок – п’ятниця)</div>
+  <button id="theme-toggle" class="theme-toggle">🌙</button>
+</div>
+
+<table id="grid"></table>
+<div class="note"></div>
+<div class="price-note"></div>
+
+<script src="theme-toggle.js"></script>
+<script src="pwa-install.js"></script>
+<script>
+/* ---------- тема ---------- */
+ThemeToggle.init();
+PWAInstall.init({ appName: 'Розклад' });
+
+/* ---------- дані ---------- */
+const raw = {
+  note: "Пільгові категорії населення громади — безкоштовно!<br>Середа — пільговий день для пенсіонерів та соціальних робітників<br>КУ «Центр надання соціальних послуг Терешківської сільської ради»",
+  price_note: "Вартість проїзду:<br>Заворскло, Головач, Писарівка — Терешки (20 грн);<br>Ватажкове, Минівка — Терешки (15 грн);<br>Портнівка, Кашубівка, Ваці — Терешки (10 грн);<br>Марківка, Микільське, Копили — Терешки (5 грн).",
+
+  // Стовпці: Населений пункт, Рейс 1, Рейс 2, Рейс 3
+  col1: [
+    "Терешки", "Копили (ресторан)", "Копили (Вовківка)", "Копили (ресторан)",
+    "Терешки", "Микільське", "Марківка (переїзд)", "Ваці", "Кашубівка", "Портнівка",
+    "Минівка", "Ватажкове", "Заворскло", "Головач", "Заворскло", "Писарівка",
+    "Заворскло", "Головач", "Заворскло", "Ватажкове", "Минівка", "Портнівка",
+    "Кашубівка", "Ваці", "Марківка (переїзд)", "Микільське", "Терешки",
+    "Копили (ресторан)", "Копили (Вовківка)", "Копили (ресторан)", "Терешки"
+  ],
+  col2: [
+    "-", "-", "-", "-", "05:50", "05:55", "-", "-", "-", "06:10", "-", "-", "-", "-", "-", "06:30", "06:50", "06:55", "07:00", "07:10", "07:20", "07:30", "07:35", "07:40", "07:45", "07:50", "07:55", "08:00", "08:05", "08:10", "08:15"
+  ],
+  col3: [
+    "10:45", "10:50", "11:00", "11:05", "11:10", "11:15", "11:20", "11:25", "11:30", "11:35", "11:40", "11:45", "11:55", "12:00", "12:10", "12:45", "13:05", "13:10", "13:15", "13:25", "13:35", "13:45", "13:55", "14:00", "14:05", "14:09", "14:10", "14:20", "14:25", "14:30", "14:35"
+  ],
+  col4: [
+    "16:35", "16:40", "16:50", "16:55", "17:00", "17:05", "17:10", "17:15", "17:20", "17:25", "17:35", "17:45", "17:55", "18:00", "18:05", "18:25", "-", "-", "-", "-", "-", "18:40", "-", "-", "-", "18:50", "18:55", "-", "-", "-", "-"
+  ]
+};
+
+function highlightAllMarkers(text){ return TextHighlight.highlightAllMarkers(text); }
+function colorText(text){ return TextHighlight.colorText(text, {}); }
+
+/* ---------- заповнення таблиці ---------- */
+function fillTable(){
+  const t = document.getElementById('grid');
+  t.innerHTML = `
+    <tr>
+      <th class="col-loc">Населений пункт</th>
+      <th class="col-r1">Рейс1</th>
+      <th class="col-r2">Рейс2</th>
+      <th class="col-r3">Рейс3</th>
+    </tr>`;
+
+  const spacer = document.createElement('tr');
+  spacer.className = 'spacer-row';
+  for(let k = 0; k < 4; k++) spacer.appendChild(document.createElement('td'));
+  t.appendChild(spacer);
+
+  const cols = [raw.col1, raw.col2, raw.col3, raw.col4];
+  const maxRows = Math.max(...cols.map(c => c.length));
+
+  function extractTime(s){ const m = (s||'').match(/\d{1,2}:\d{2}/); return m ? m[0] : ''; }
+
+  // маршрут їздить лише в будні (Пн–Пт) — у Сб/Нд підсвітка "найближчого
+  // рейсу" не повинна спрацьовувати взагалі, бо автобус не ходить
+  const todayDay = new Date().getDay(); // 0 = Нд, 6 = Сб
+  const isWeekendToday = todayDay === 0 || todayDay === 6;
+
+  // один автобус робить 3 рейси по колу — всі ячейки часу в ОДНІЙ групі,
+  // "найближчий рейс" — просто наступна за часом зупинка в усій послідовності
+  const group = 'col-bus';
+
+  const classes = ['col-loc', 'col-r1', 'col-r2', 'col-r3'];
+
+  for (let i = 0; i < maxRows; i++) {
+    const tr = document.createElement('tr');
+    classes.forEach((cls, j) => {
+      const td = document.createElement('td');
+      td.className = cls;
+      const raw_ = cols[j][i] || '';
+      if (j > 0 && !isWeekendToday) {
+        const time = extractTime(raw_);
+        if (time) { td.dataset.time = time; td.dataset.always = '1'; td.dataset.group = group; }
+      }
+      td.innerHTML = `<div class="cell-box">${colorText(highlightAllMarkers(raw_))}</div>`;
+      tr.appendChild(td);
+    });
+    t.appendChild(tr);
+  }
+
+  const spacerBottom = document.createElement('tr');
+  spacerBottom.className = 'spacer-row';
+  for(let k = 0; k < 4; k++) spacerBottom.appendChild(document.createElement('td'));
+  t.appendChild(spacerBottom);
+
+  document.querySelector('.note').innerHTML = raw.note;
+  document.querySelector('.price-note').innerHTML = raw.price_note;
+}
+</script>
+
+<script src="text-highlight.js"></script>
+<script src="schedule-live.js"></script>
+<script>
+fillTable();
+ScheduleLive.start();
+</script>
+</body>
+</html>
