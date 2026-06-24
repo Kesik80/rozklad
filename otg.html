@@ -43,6 +43,9 @@
   --separator: #c6c6c8;        /* тонкие линии */
   --accent: #007aff;           /* синий акцент */
   --accent-text: #ffffff;
+  --ios-green: #248a3d;        /* iOS green (light) */
+  --th-color: #c2670a;         /* заголовок таблиці — темна оранжева для світлої теми */
+  --hint-color: #8e8e93;       /* скобки — між label і label-2 */
   --sat-red: #ff3b30;          /* выходные */
   --warn: #ff9500;             /* предупреждения */
   --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -62,6 +65,9 @@
   --separator: #6c6c70;
   --accent: #0a84ff;
   --accent-text: #ffffff;
+  --ios-green: #30d158;        /* iOS green (dark) */
+  --th-color: #ff9500;         /* заголовок таблиці — яскравий оранжевий для темної теми */
+  --hint-color: #d0d0d5;       /* скобки — між label (#fff) і label-2 (#a2a2a7) */
   --sat-red: #ff5e57;
   --warn: #ff9f0a;
 }
@@ -72,7 +78,7 @@ body { background: var(--bg-0); color: var(--label); font-size: 16px; font-weigh
 table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; margin: 10px 0; background: var(--bg-1); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,.12); }
 
 /* шапка таблицы */
-th { background: var(--bg-1); color: var(--label); padding: 10px 2px; font-size: 16px; font-weight: 700; letter-spacing: .2px; border-bottom: 1px solid var(--separator); white-space: normal; line-height: 1.15; }
+th { background: var(--bg-1); color: var(--th-color); padding: 10px 2px; font-size: 16px; font-weight: 700; letter-spacing: .2px; border-bottom: 1px solid var(--separator); white-space: normal; line-height: 1.15; }
 /* ячейки */
 td { background: var(--bg-2); padding: 0 4px; font-size: 15px; color: var(--label-2); text-align: left; white-space: nowrap; font-weight: 600; border: 3px solid transparent; transition: border-color 1s ease, color 1s ease, background-color .25s ease; }
 tr:last-child td { border-bottom-color: transparent; }
@@ -120,6 +126,13 @@ tr:last-child td { border-bottom-color: transparent; }
 
 .note, .price-note { padding: 4px 16px 4px; font-size: 14px; color: var(--label-2); line-height: 1.4; font-weight: 500; }
 .price-note { padding-bottom: 16px; }
+
+/* підсвітка в нотатках та таблиці */
+.hl       { color: var(--label);  font-weight: 700; }          /* світлий текст */
+.hl-price { color: var(--th-color); font-weight: 700; }       /* ціни — колір заголовку */
+.note-italic { font-style: italic; }                           /* курсив для .note */
+.loc-name { color: var(--label); font-weight: 600; }
+.loc-hint { color: var(--hint-color); font-weight: 500; }
 </style>
 </head>
 <body>
@@ -142,8 +155,8 @@ PWAInstall.init({ appName: 'Розклад' });
 
 /* ---------- дані ---------- */
 const raw = {
-  note: "Пільгові категорії населення громади — безкоштовно!<br>Середа — пільговий день для пенсіонерів та соціальних робітників<br>КУ «Центр надання соціальних послуг Терешківської сільської ради»",
-  price_note: "Вартість проїзду:<br>Заворскло, Головач, Писарівка — Терешки (20 грн);<br>Ватажкове, Минівка — Терешки (15 грн);<br>Портнівка, Кашубівка, Ваці — Терешки (10 грн);<br>Марківка, Микільське, Копили — Терешки (5 грн).",
+  note: "<span class='note-italic'>Пільгові категорії населення громади — <span class='hl'>безкоштовно!</span><br><span class='hl'>Середа</span> — пільговий день для пенсіонерів та соціальних робітників<br>КУ «Центр надання соціальних послуг Терешківської сільської ради»</span>",
+  price_note: "<span class='hl'>Вартість проїзду:</span><br>Заворскло, Головач, Писарівка — Терешки (<span class='hl-price'>20</span> грн);<br>Ватажкове, Минівка — Терешки (<span class='hl-price'>15</span> грн);<br>Портнівка, Кашубівка, Ваці — Терешки (<span class='hl-price'>10</span> грн);<br>Марківка, Микільське, Копили — Терешки (<span class='hl-price'>5</span> грн).",
 
   // Стовпці: Населений пункт, Рейс 1, Рейс 2, Рейс 3
   col1: [
@@ -158,7 +171,7 @@ const raw = {
     "-", "-", "-", "-", "05:50", "05:55", "-", "-", "-", "06:10", "-", "-", "-", "-", "-", "06:30", "06:50", "06:55", "07:00", "07:10", "07:20", "07:30", "07:35", "07:40", "07:45", "07:50", "07:55", "08:00", "08:05", "08:10", "08:15"
   ],
   col3: [
-    "10:45", "10:50", "11:00", "11:05", "11:10", "11:15", "11:20", "11:25", "11:30", "11:35", "11:40", "11:45", "11:55", "12:00", "12:10", "12:45", "13:05", "13:10", "13:15", "13:25", "13:35", "13:45", "13:55", "14:00", "14:05", "14:09", "14:10", "14:20", "14:25", "14:30", "14:35"
+    "10:45", "10:50", "11:00", "11:05", "11:10", "11:15", "11:20", "11:25", "11:30", "11:35", "11:40", "11:45", "11:55", "12:00", "12:10", "12:45", "13:05", "13:10", "13:15", "13:25", "13:35", "13:45", "13:55", "14:00", "14:05", "14:10", "14:15", "14:20", "14:25", "14:30", "14:35"
   ],
   col4: [
     "16:35", "16:40", "16:50", "16:55", "17:00", "17:05", "17:10", "17:15", "17:20", "17:25", "17:35", "17:45", "17:55", "18:00", "18:05", "18:25", "-", "-", "-", "-", "-", "18:40", "-", "-", "-", "18:50", "18:55", "-", "-", "-", "-"
@@ -210,7 +223,13 @@ function fillTable(){
         const time = extractTime(raw_);
         if (time) { td.dataset.time = time; td.dataset.always = '1'; td.dataset.group = group; }
       }
-      td.innerHTML = `<div class="cell-box">${colorText(highlightAllMarkers(raw_))}</div>`;
+      const cellContent = (j === 0)
+        ? (raw_.includes('(')
+            ? raw_.replace(/^([^(]+?)(\s*\(.*\))$/, (_, name, rest) =>
+                `<span class="loc-name">${name.trim()}</span><span class="loc-hint"> ${rest.trim()}</span>`)
+            : `<span class="loc-name">${raw_}</span>`)
+        : colorText(highlightAllMarkers(raw_));
+      td.innerHTML = `<div class="cell-box">${cellContent}</div>`;
       tr.appendChild(td);
     });
     t.appendChild(tr);
