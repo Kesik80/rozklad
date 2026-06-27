@@ -184,6 +184,26 @@ function getTids() {
 // Ініціалізуємо станції при завантаженні
 onSearchStationChange();
 
+/* ========== МАППІНГ СТАНЦІЙ ========== */
+// search: що шукаємо на сайті, display: що показуємо, useArr: брати час прибуття
+const STATION_MAP = [
+  { display: 'Клюшники',  search: 'Клюшинки',      useArr: false },
+  { display: '3-й км',    search: '3 км',            useArr: false },
+  { display: 'Полтава',   search: 'Полтава-Південна', useArr: null }, // useArr залежить від напрямку
+];
+
+function getStationSearch(displayName) {
+  const m = STATION_MAP.find(s => s.display === displayName);
+  return m ? m.search : displayName;
+}
+
+function getStationUseArr(displayName, isDestination) {
+  const m = STATION_MAP.find(s => s.display === displayName);
+  if (!m) return false;
+  if (m.useArr === null) return isDestination; // Полтава — arr тільки якщо кінцева
+  return m.useArr;
+}
+
 /* ========== MATCHING ========== */
 function normalizeStation(name) {
   return name
@@ -202,9 +222,12 @@ function matchStation(rawName, wanted) {
   return false;
 }
 
-function findTime(stations, wanted) {
+function findTime(stations, wanted, useArr = false) {
   for (const s of stations) {
-    if (matchStation(s.name, wanted)) return s.dep || s.arr || '-';
+    if (matchStation(s.name, wanted)) {
+      if (useArr) return s.arr || s.dep || '-';
+      return s.dep || s.arr || '-';
+    }
   }
   return '-';
 }
@@ -254,8 +277,16 @@ async function startParsing() {
     fetchTrain(tid)
       .then(data => {
         const trainNum = parseInt(data.trainNum) || 0;
+        const isOdd = trainNum % 2 === 1;
+        const isT = searchKey === 'tereschky';
+        // Полтава кінцева: для Терешки — парні (→Полтава), для Копили — непарні (→Полтава)
+        const poltavaIsDestination = isT ? !isOdd : isOdd;
         const times = {};
-        stations.forEach(st => { times[st] = findTime(data.stations, st); });
+        stations.forEach(st => {
+          const searchName = getStationSearch(st);
+          const useArr = getStationUseArr(st, poltavaIsDestination);
+          times[st] = findTime(data.stations, searchName, useArr);
+        });
         return { tid, trainNum: data.trainNum, times, parity: trainNum % 2 };
       })
       .catch(e => { console.warn(`tid=${tid}:`, e.message); return null; })
