@@ -239,33 +239,34 @@ async function startParsing() {
   document.getElementById('parseBtn').disabled = true;
   document.getElementById('output').innerHTML = '';
 
-  const odd = [];   // непарні поїзди
-  const even = [];  // парні поїзди
-  let done = 0;
+  setStatus(`Завантажую ${tids.length} поїздів паралельно...`, 'info');
+  setProgress(10);
 
-  for (const tid of tids) {
-    setStatus(`Завантаження ${done+1}/${tids.length}...`, 'info');
-    setProgress(Math.round(done / tids.length * 100));
-    try {
-      const data = await fetchTrain(tid);
-      const trainNum = parseInt(data.trainNum) || 0;
-      const times = {};
-      stations.forEach(st => { times[st] = findTime(data.stations, st); });
-      const entry = { tid, trainNum: data.trainNum, times };
-      if (trainNum % 2 === 0) even.push(entry);
-      else odd.push(entry);
-    } catch(e) {
-      console.warn(`tid=${tid}:`, e.message);
-    }
-    done++;
-    await new Promise(r => setTimeout(r, 300));
-  }
+  const fetchAll = tids.map(tid =>
+    fetchTrain(tid)
+      .then(data => {
+        const trainNum = parseInt(data.trainNum) || 0;
+        const times = {};
+        stations.forEach(st => { times[st] = findTime(data.stations, st); });
+        return { tid, trainNum: data.trainNum, times, parity: trainNum % 2 };
+      })
+      .catch(e => { console.warn(`tid=${tid}:`, e.message); return null; })
+  );
 
-  setProgress(100);
-  setProgress(0);
+  const settled = await Promise.allSettled(fetchAll);
+  const results = settled
+    .map(r => r.status === 'fulfilled' ? r.value : null)
+    .filter(Boolean);
+
+  setProgress(90);
 
   // Для Терешки: непарні = з Полтави, парні = на Полтаву
   // Для Копили: парні = з Полтави, непарні = на Полтаву
+  setProgress(0);
+
+  const odd  = results.filter(r => r.parity === 1);
+  const even = results.filter(r => r.parity === 0);
+
   let dirFrom, dirTo;
   if (searchKey === 'tereschky') {
     dirFrom = odd;   // непарні: Полтава→Терешки
