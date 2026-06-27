@@ -8,9 +8,7 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.SCRAPINGBEE_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'SCRAPINGBEE_KEY не налаштований' });
-  }
+  if (!apiKey) return res.status(500).json({ error: 'SCRAPINGBEE_KEY не налаштований' });
 
   const targetUrl = `https://swrailway.gov.ua/timetable/eltrain3-5/?tid=${tid}`;
   const proxyUrl = `https://app.scrapingbee.com/api/v1/?api_key=${apiKey}&url=${encodeURIComponent(targetUrl)}&render_js=false`;
@@ -20,10 +18,10 @@ export default async function handler(req, res) {
     const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(25000) });
     if (!response.ok) {
       const errText = await response.text();
-      return res.status(502).json({ error: `ScrapingBee ${response.status}`, detail: errText.slice(0, 200) });
+      return res.status(502).json({ error: `ScrapingBee ${response.status}`, detail: errText.slice(0,200) });
     }
     html = await response.text();
-  } catch (e) {
+  } catch(e) {
     return res.status(502).json({ error: e.message });
   }
 
@@ -32,10 +30,9 @@ export default async function handler(req, res) {
 }
 
 function parseTimetable(html, tid) {
-  // Номер поїзду
-  const trainNumMatch = html.match(/>\s*(\d{4})\s*<\/td>/) || html.match(/(\d{4})\s*<\/td>/);
-  let trainNum = null;
-  if (trainNumMatch) trainNum = trainNumMatch[1];
+  // Номер поїзду — в тегу <b>XXXX</b>
+  const trainNumMatch = html.match(/<b>(\d{4})<\/b>/);
+  const trainNum = trainNumMatch ? trainNumMatch[1] : null;
 
   const stations = [];
   const rowRegex = /<tr[^>]*>(.*?)<\/tr>/gis;
@@ -44,7 +41,7 @@ function parseTimetable(html, tid) {
   while ((m = rowRegex.exec(html)) !== null) {
     const row = m[1];
 
-    // Витягуємо всі td
+    // Витягуємо всі td як чистий текст
     const tds = [];
     const tdRegex = /<td[^>]*>(.*?)<\/td>/gis;
     let td;
@@ -57,35 +54,40 @@ function parseTimetable(html, tid) {
       tds.push(text);
     }
 
-    // Шукаємо рядок де є назва станції (кирилиця 2+ символи) та часи
-    // Структура: [номер, ?, ?, назва, ?, прибуття|відправлення, ...]
-    // або просто шукаємо td з назвою і поруч td з часами
     if (tds.length < 3) continue;
 
-    let name = null;
-    let arr = null;
-    let dep = null;
+    // Шукаємо td з назвою станції (кирилиця, 3+ символи, не є числом чи датою)
+    let name = null, arr = null, dep = null;
 
-    // Знаходимо індекс td з назвою станції
     for (let i = 0; i < tds.length; i++) {
-      if (/^[А-ЯІЇЄа-яіїє].*[А-ЯІЇЄа-яіїє]/.test(tds[i]) && tds[i].length >= 3) {
-        name = tds[i];
-        // Шукаємо час в наступних td
-        for (let j = i + 1; j < Math.min(i + 4, tds.length); j++) {
-          const t = tds[j].trim();
-          if (/^\d{2}:\d{2}$/.test(t)) {
-            if (arr === null) arr = t;
-            else if (dep === null) { dep = t; break; }
-          } else if (t === '–' || t === '-') {
-            if (arr === null) arr = null; // пропускаємо
+      const t = tds[i];
+      if (
+        /[А-ЯІЇЄа-яіїє]{2,}/.test(t) &&
+        t.length >= 3 &&
+        !/^\d/.test(t) &&           // не починається з цифри
+        !/^з \d/.test(t) &&         // не "з 2025-..."
+        !/\d{4}-\d{2}/.test(t)      // не містить дату
+      ) {
+        name = t;
+        // Наступні td — шукаємо два часи формату HH:MM або "–"
+        for (let j = i + 1; j < Math.min(i + 5, tds.length); j++) {
+          const v = tds[j].trim();
+          if (/^\d{2}:\d{2}$/.test(v)) {
+            if (arr === null) arr = v;
+            else if (dep === null) { dep = v; break; }
+          } else if (v === '–' || v === '-') {
+            if (arr === null) arr = null;
             else { dep = null; break; }
+          } else if (v !== '' && !/^\d+$/.test(v)) {
+            // Не час і не порожньо — кінець пошуку часів
+            if (arr !== null) break;
           }
         }
         break;
       }
     }
 
-    if (name && (arr || dep)) {
+    if (name && (arr !== null || dep !== null)) {
       stations.push({ name, arr, dep });
     }
   }
