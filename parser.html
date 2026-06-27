@@ -88,7 +88,11 @@ pre { background:var(--bg-2); border-radius:8px; padding:10px; font-size:11px; c
   </select>
 
   <label>TID поїздів (через кому або новий рядок)</label>
-  <textarea id="tids" placeholder="28320, 28379, 28343...">28320, 28379, 28343, 28321, 28322, 29672, 28380, 28341</textarea>
+  <div style="display:flex;gap:8px;margin-bottom:4px">
+    <button class="btn-icon" style="flex:1;font-size:13px" onclick="autoLoadTids()">🔄 Завантажити автоматично</button>
+  </div>
+  <textarea id="tids" placeholder="28320, 28379, 28343..."></textarea>
+  <div id="tidsStatus" style="font-size:12px;color:var(--label-2);margin-top:4px;display:none"></div>
 
   <label>Станції маршруту (в потрібному порядку)</label>
   <div class="stations-list" id="stationsList"></div>
@@ -105,13 +109,13 @@ pre { background:var(--bg-2); border-radius:8px; padding:10px; font-size:11px; c
 /* ========== PRESETS ========== */
 const PRESETS = {
   tereschky: {
+    sid: '2803',
     stations: ['Головач','Безручки','Клюшники','Зінці','Терешки','Полтава'],
-    // непарний номер поїзду = з Полтави до Головача (ПОЛТАВА → ТЕРЕШКИ)
-    // парний = з Головача до Полтави (ТЕРЕШКИ → ПОЛТАВА)
     oddDir:  { from:'ПОЛТАВА ПІВДЕННА', to:'ТЕРЕШКИ', key:'Терешки', group:'g_polt_ter' },
     evenDir: { from:'ТЕРЕШКИ', to:'ПОЛТАВА ПІВДЕННА', key:'Терешки', group:'g_ter_polt' },
   },
   kopily: {
+    sid: '2637',
     stations: ['Минівка','Портнівка','Кашубівка','Микільське','Копили','3-й км','Полтава'],
     oddDir:  { from:'КОПИЛИ', to:'ПОЛТАВА ПІВДЕННА', key:'Копили', group:'g_kop_polt' },
     evenDir: { from:'ПОЛТАВА ПІВДЕННА', to:'КОПИЛИ', key:'Копили', group:'g_polt_kop' },
@@ -124,6 +128,38 @@ function onSearchStationChange() {
   const list = document.getElementById('stationsList');
   list.innerHTML = '';
   preset.stations.forEach(s => addStation(s));
+  // Скидаємо TID при зміні станції
+  document.getElementById('tids').value = '';
+  document.getElementById('tidsStatus').style.display = 'none';
+}
+
+async function autoLoadTids() {
+  const key = document.getElementById('searchStation').value;
+  const preset = PRESETS[key];
+  const statusEl = document.getElementById('tidsStatus');
+  statusEl.style.display = 'block';
+  statusEl.style.color = 'var(--accent)';
+  statusEl.textContent = '⏳ Завантажую список поїздів...';
+
+  try {
+    const res = await fetch(`/api/fetch-station?sid=${preset.sid}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    if (!data.trains || !data.trains.length) {
+      statusEl.style.color = 'var(--red)';
+      statusEl.textContent = '❌ Поїзди не знайдені';
+      return;
+    }
+
+    const tids = data.trains.map(t => t.tid).join(', ');
+    document.getElementById('tids').value = tids;
+    statusEl.style.color = 'var(--green)';
+    statusEl.textContent = `✅ Знайдено ${data.trains.length} поїздів: ${data.trains.map(t => t.trainNum).join(', ')}`;
+  } catch(e) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = `❌ Помилка: ${e.message}`;
+  }
 }
 
 function addStation(val='') {
