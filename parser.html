@@ -187,9 +187,9 @@ onSearchStationChange();
 /* ========== МАППІНГ СТАНЦІЙ ========== */
 // search: що шукаємо на сайті, display: що показуємо, useArr: брати час прибуття
 const STATION_MAP = [
-  { display: 'Клюшники',  search: 'Клюшинки',      useArr: false },
-  { display: '3-й км',    search: '3 км',            useArr: false },
-  { display: 'Полтава',   search: 'Полтава-Південна', useArr: null }, // useArr залежить від напрямку
+  { display: 'Клюшники',  search: 'Клюшинки',       useArr: false },
+  { display: '3-й км',    search: '3 км',             useArr: false },
+  { display: 'Полтава',   search: 'Полтава-Південна', useArr: true  }, // завжди arr — кінцева або транзит
 ];
 
 function getStationSearch(displayName) {
@@ -197,11 +197,9 @@ function getStationSearch(displayName) {
   return m ? m.search : displayName;
 }
 
-function getStationUseArr(displayName, isDestination) {
+function getStationUseArr(displayName) {
   const m = STATION_MAP.find(s => s.display === displayName);
-  if (!m) return false;
-  if (m.useArr === null) return isDestination; // Полтава — arr тільки якщо кінцева
-  return m.useArr;
+  return m ? m.useArr : false;
 }
 
 /* ========== MATCHING ========== */
@@ -282,14 +280,10 @@ async function startParsing() {
     fetchTrain(tid)
       .then(data => {
         const trainNum = parseInt(data.trainNum) || 0;
-        const isOdd = trainNum % 2 === 1;
-        const isT = searchKey === 'tereschky';
-        // Полтава кінцева: для Терешки — парні (→Полтава), для Копили — непарні (→Полтава)
-        const poltavaIsDestination = isT ? !isOdd : isOdd;
         const times = {};
         stations.forEach(st => {
           const searchName = getStationSearch(st);
-          const useArr = getStationUseArr(st, poltavaIsDestination);
+          const useArr = getStationUseArr(st);
           times[st] = findTime(data.stations, searchName, useArr);
         });
         return { tid, trainNum: data.trainNum, times, parity: trainNum % 2 };
