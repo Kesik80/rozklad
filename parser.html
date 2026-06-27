@@ -189,9 +189,18 @@ async function fetchTrain(tid) {
 }
 
 function matchStation(name, wanted) {
-  // Порівнюємо назву з списком потрібних (без "з.п.", регістр ігноруємо)
-  const clean = name.replace(/^з\.п\.\s*/i, '').replace(/^зп\s+/i, '').trim().toLowerCase();
-  return wanted.some(w => clean.includes(w.toLowerCase()) || w.toLowerCase().includes(clean));
+  // Прибираємо префікси з.п., зп, з/п
+  const clean = name
+    .replace(/^з[\./]п[\.]?\s*/i, '')
+    .replace(/^зп\s+/i, '')
+    .trim().toLowerCase();
+  return wanted.some(w => {
+    const wl = w.toLowerCase();
+    // Пряме входження в обох напрямках
+    return clean.includes(wl) || wl.includes(clean)
+      // Або перше слово збігається (Полтава == Полтава-Південна)
+      || clean.split(/[\s\-]/)[0] === wl.split(/[\s\-]/)[0];
+  });
 }
 
 function findTime(stations, wanted) {
@@ -226,7 +235,12 @@ async function startParsing() {
       for (const name of stationNames) {
         times[name] = findTime(data.stations, name);
       }
-      results.push({ tid, trainNum: data.trainNum, times });
+  // Зберігаємо сирі назви станцій з першого поїзду для діагностики
+  if (results.length === 0 && data.stations) {
+    window._debugStations = data.stations.map(s => s.name);
+    console.log('Всі станції першого поїзду:', window._debugStations);
+  }
+  results.push({ tid, trainNum: data.trainNum, times });
       done++;
     } catch(e) {
       setStatus(`Помилка для tid=${tid}: ${e.message}`, 'error');
