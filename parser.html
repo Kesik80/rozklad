@@ -6,89 +6,71 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <style>
 :root {
-  --bg-0: #000000;
-  --bg-1: #1c1c1e;
-  --bg-2: #2c2c2e;
-  --label: #ffffff;
-  --label-2: #a2a2a7;
-  --accent: #0a84ff;
-  --green: #30d158;
-  --warn: #ff9f0a;
-  --red: #ff453a;
+  --bg-0: #000000; --bg-1: #1c1c1e; --bg-2: #2c2c2e;
+  --label: #ffffff; --label-2: #a2a2a7;
+  --accent: #0a84ff; --green: #30d158; --warn: #ff9f0a; --red: #ff453a;
   --separator: #3a3a3c;
   --font: -apple-system, Roboto, "Segoe UI", sans-serif;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); }
-html, body { background: var(--bg-0); color: var(--label); min-height: 100vh; }
-body { padding: 12px; max-width: 720px; margin: 0 auto; }
+* { margin:0; padding:0; box-sizing:border-box; font-family:var(--font); }
+html,body { background:var(--bg-0); color:var(--label); min-height:100vh; }
+body { padding:12px; max-width:720px; margin:0 auto; }
 
-h1 { font-size: 20px; font-weight: 700; text-align: center; padding: 12px 0 4px; }
-.sub { font-size: 13px; color: var(--label-2); text-align: center; margin-bottom: 16px; }
+h1 { font-size:20px; font-weight:700; text-align:center; padding:12px 0 4px; }
+.sub { font-size:13px; color:var(--label-2); text-align:center; margin-bottom:16px; }
 
-/* ---- Блок налаштувань ---- */
-.card { background: var(--bg-1); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-.card-title { font-size: 13px; font-weight: 700; color: var(--label-2); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+.card { background:var(--bg-1); border-radius:12px; padding:14px; margin-bottom:12px; }
+.card-title { font-size:13px; font-weight:700; color:var(--label-2); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
 
-label { display: block; font-size: 14px; color: var(--label-2); margin-bottom: 4px; margin-top: 10px; }
-label:first-of-type { margin-top: 0; }
-input, textarea {
-  width: 100%; background: var(--bg-2); border: 1px solid var(--separator);
-  border-radius: 8px; padding: 8px 10px; font-size: 14px;
-  color: var(--label); outline: none;
+label { display:block; font-size:14px; color:var(--label-2); margin-bottom:4px; margin-top:10px; }
+label:first-of-type { margin-top:0; }
+input, textarea, select {
+  width:100%; background:var(--bg-2); border:1px solid var(--separator);
+  border-radius:8px; padding:8px 10px; font-size:14px; color:var(--label); outline:none;
 }
-input:focus, textarea:focus { border-color: var(--accent); }
-textarea { height: 80px; resize: vertical; font-size: 13px; }
+input:focus, textarea:focus { border-color:var(--accent); }
+textarea { height:72px; resize:vertical; font-size:13px; }
+select option { background:var(--bg-1); }
 
-.row { display: flex; gap: 8px; align-items: flex-end; }
-.row input { flex: 1; }
+.stations-list { display:flex; flex-direction:column; gap:6px; margin-top:6px; }
+.station-row { display:flex; gap:6px; align-items:center; }
+.station-row input { flex:1; }
+.btn-icon { background:var(--bg-2); border:1px solid var(--separator); border-radius:6px; padding:6px 10px; color:var(--label-2); cursor:pointer; font-size:16px; flex-shrink:0; }
+.btn-icon:hover { background:var(--separator); }
 
-/* Станції */
-.stations-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-.station-row { display: flex; gap: 6px; align-items: center; }
-.station-row input { flex: 1; }
-.btn-icon { background: var(--bg-2); border: 1px solid var(--separator); border-radius: 6px; padding: 6px 10px; color: var(--label-2); cursor: pointer; font-size: 16px; flex-shrink: 0; }
-.btn-icon:hover { background: var(--separator); }
+.btn { display:block; width:100%; padding:12px; border-radius:10px; border:none; font-size:16px; font-weight:700; cursor:pointer; margin-top:8px; }
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:disabled { opacity:.4; cursor:default; }
 
-/* Кнопки */
-.btn { display: block; width: 100%; padding: 12px; border-radius: 10px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { opacity: .85; }
-.btn-primary:disabled { opacity: .4; cursor: default; }
-.btn-success { background: var(--green); color: #fff; }
-.btn-success:hover { opacity: .85; }
+.status { font-size:13px; padding:8px 10px; border-radius:8px; margin-top:8px; display:none; }
+.status.info  { background:rgba(10,132,255,.15); color:var(--accent); display:block; }
+.status.ok    { background:rgba(48,209,88,.15);  color:var(--green);  display:block; }
+.status.error { background:rgba(255,69,58,.15);  color:var(--red);    display:block; }
 
-/* Статус */
-.status { font-size: 13px; padding: 8px 10px; border-radius: 8px; margin-top: 8px; display: none; }
-.status.info  { background: rgba(10,132,255,.15); color: var(--accent); display: block; }
-.status.ok    { background: rgba(48,209,88,.15);  color: var(--green);  display: block; }
-.status.error { background: rgba(255,69,58,.15);  color: var(--red);    display: block; }
+.progress-bar { height:4px; background:var(--bg-2); border-radius:2px; margin-top:8px; overflow:hidden; display:none; }
+.progress-bar.show { display:block; }
+.progress-fill { height:100%; background:var(--accent); border-radius:2px; transition:width .3s; }
 
-/* Прогрес */
-.progress-bar { height: 4px; background: var(--bg-2); border-radius: 2px; margin-top: 8px; overflow: hidden; display: none; }
-.progress-bar.show { display: block; }
-.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s; }
+.result-block { margin-top:12px; }
+.result-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.result-title { font-size:14px; font-weight:700; color:var(--warn); }
+.copy-btn { background:var(--bg-2); border:1px solid var(--separator); border-radius:6px; padding:5px 12px; font-size:13px; color:var(--accent); cursor:pointer; }
 
-/* Результат */
-.result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.result-title { font-size: 15px; font-weight: 700; }
-.copy-btn { background: var(--bg-2); border: 1px solid var(--separator); border-radius: 6px; padding: 5px 12px; font-size: 13px; color: var(--accent); cursor: pointer; }
+.trains-grid { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { background:var(--bg-2); color:var(--warn); padding:6px 5px; text-align:center; border-bottom:1px solid var(--separator); white-space:nowrap; }
+th.s { text-align:left; }
+td { padding:4px 5px; text-align:center; color:var(--label-2); border-bottom:1px solid var(--separator); white-space:nowrap; }
+td.s { text-align:left; color:var(--label); font-weight:600; }
+td.miss { color:var(--separator); }
+tr:last-child td { border-bottom:none; }
 
-.trains-grid { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { background: var(--bg-2); color: var(--warn); padding: 7px 6px; text-align: center; border-bottom: 1px solid var(--separator); white-space: nowrap; }
-th.s { text-align: left; }
-td { padding: 5px 6px; text-align: center; color: var(--label-2); border-bottom: 1px solid var(--separator); white-space: nowrap; }
-td.s { text-align: left; color: var(--label); font-weight: 600; }
-td.miss { color: var(--separator); }
-tr:last-child td { border-bottom: none; }
+pre { background:var(--bg-2); border-radius:8px; padding:10px; font-size:11px; color:var(--green);
+  overflow-x:auto; white-space:pre-wrap; word-break:break-all; max-height:220px; overflow-y:auto; margin-top:8px; }
 
-/* GitHub блок */
-pre {
-  background: var(--bg-2); border-radius: 8px; padding: 10px;
-  font-size: 11px; color: var(--green); overflow-x: auto;
-  white-space: pre-wrap; word-break: break-all; max-height: 200px;
-  overflow-y: auto; margin-top: 8px;
-}
+.direction-badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; font-weight:700; margin-left:6px; }
+.dir-odd  { background:rgba(10,132,255,.2); color:var(--accent); }
+.dir-even { background:rgba(48,209,88,.2);  color:var(--green); }
 </style>
 </head>
 <body>
@@ -96,76 +78,61 @@ pre {
 <h1>🚂 Парсер розкладу</h1>
 <p class="sub">swrailway.gov.ua → elektrychky.html</p>
 
-<!-- Налаштування -->
 <div class="card">
-  <div class="card-title">Поїзди для парсингу</div>
+  <div class="card-title">Налаштування</div>
 
-  <label>Назва маршруту (для заголовку)</label>
-  <input type="text" id="routeName" value="ТЕРЕШКИ — ПОЛТАВА ПІВДЕННА" placeholder="ТЕРЕШКИ — ПОЛТАВА ПІВДЕННА">
+  <label>Станція пошуку (визначає напрямки)</label>
+  <select id="searchStation" onchange="onSearchStationChange()">
+    <option value="tereschky">Терешки (непарні ← з Полтави, парні → на Полтаву)</option>
+    <option value="kopily">Копили (парні ← з Полтави, непарні → на Полтаву)</option>
+  </select>
 
-  <label>Ключова станція (виділяється кольором)</label>
-  <input type="text" id="keyStop" value="Терешки" placeholder="Терешки">
+  <label>TID поїздів (через кому або новий рядок)</label>
+  <textarea id="tids" placeholder="28320, 28379, 28343...">28320, 28379, 28343, 28321, 28322, 29672, 28380, 28341</textarea>
 
-  <label>TID поїздів (через кому або кожен з нового рядка)</label>
-  <textarea id="tids" placeholder="28320, 28379, 28343, 28321&#10;або по одному на рядку">28320, 28379, 28343, 28321, 28322, 29672, 28380, 28341</textarea>
-
-  <label>Станції які потрібні (в потрібному порядку)</label>
-  <div class="stations-list" id="stationsList">
-    <div class="station-row"><input type="text" value="Головач" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-    <div class="station-row"><input type="text" value="Безручки" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-    <div class="station-row"><input type="text" value="Клюшники" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-    <div class="station-row"><input type="text" value="Зінці" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-    <div class="station-row"><input type="text" value="Терешки" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-    <div class="station-row"><input type="text" value="Полтава" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-  </div>
+  <label>Станції маршруту (в потрібному порядку)</label>
+  <div class="stations-list" id="stationsList"></div>
   <button class="btn-icon" style="margin-top:8px;width:100%" onclick="addStation()">+ Додати станцію</button>
 </div>
 
-<!-- Запуск -->
 <button class="btn btn-primary" id="parseBtn" onclick="startParsing()">🔍 Завантажити розклад</button>
-
 <div class="status" id="status"></div>
 <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
 
-<!-- Результат таблиця -->
-<div class="card" id="resultCard" style="display:none; margin-top:12px;">
-  <div class="result-header">
-    <div class="result-title" id="resultTitle"></div>
-    <button class="copy-btn" onclick="copyJS()">Копіювати JS</button>
-  </div>
-  <div class="trains-grid" id="resultTable"></div>
-</div>
-
-<!-- JS код для elektrychky.html -->
-<div class="card" id="jsCard" style="display:none; margin-top:12px;">
-  <div class="card-title">Готовий JS для elektrychky.html</div>
-  <pre id="jsOutput"></pre>
-</div>
+<div id="output"></div>
 
 <script>
-/* ===================== UTILS ===================== */
-function setStatus(msg, type='info') {
-  const el = document.getElementById('status');
-  el.textContent = msg;
-  el.className = 'status ' + type;
+/* ========== PRESETS ========== */
+const PRESETS = {
+  tereschky: {
+    stations: ['Головач','Безручки','Клюшники','Зінці','Терешки','Полтава'],
+    // непарний номер поїзду = з Полтави до Головача (ПОЛТАВА → ТЕРЕШКИ)
+    // парний = з Головача до Полтави (ТЕРЕШКИ → ПОЛТАВА)
+    oddDir:  { from:'ПОЛТАВА ПІВДЕННА', to:'ТЕРЕШКИ', key:'Терешки', group:'g_polt_ter' },
+    evenDir: { from:'ТЕРЕШКИ', to:'ПОЛТАВА ПІВДЕННА', key:'Терешки', group:'g_ter_polt' },
+  },
+  kopily: {
+    stations: ['Минівка','Портнівка','Кашубівка','Микільське','Копили','3-й км','Полтава'],
+    oddDir:  { from:'КОПИЛИ', to:'ПОЛТАВА ПІВДЕННА', key:'Копили', group:'g_kop_polt' },
+    evenDir: { from:'ПОЛТАВА ПІВДЕННА', to:'КОПИЛИ', key:'Копили', group:'g_polt_kop' },
+  }
+};
+
+function onSearchStationChange() {
+  const key = document.getElementById('searchStation').value;
+  const preset = PRESETS[key];
+  const list = document.getElementById('stationsList');
+  list.innerHTML = '';
+  preset.stations.forEach(s => addStation(s));
 }
 
-function setProgress(pct) {
-  const bar = document.getElementById('progressBar');
-  bar.classList.toggle('show', pct > 0 && pct < 100);
-  document.getElementById('progressFill').style.width = pct + '%';
-}
-
-function addStation() {
+function addStation(val='') {
   const list = document.getElementById('stationsList');
   const div = document.createElement('div');
   div.className = 'station-row';
-  div.innerHTML = `<input type="text" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button>`;
+  div.innerHTML = `<input type="text" value="${val}" placeholder="Назва станції">
+    <button class="btn-icon" onclick="this.parentElement.remove()">✕</button>`;
   list.appendChild(div);
-}
-
-function removeStation(btn) {
-  btn.parentElement.remove();
 }
 
 function getStations() {
@@ -178,165 +145,193 @@ function getTids() {
     .split(/[\s,\n]+/).map(s => s.trim()).filter(s => /^\d+$/.test(s));
 }
 
-/* ===================== PARSING ===================== */
-async function fetchTrain(tid) {
-  // Через Vercel proxy функцію /api/fetch-timetable
-  const url = `/api/fetch-timetable?tid=${tid}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} для tid=${tid}`);
-  const data = await res.json();
-  return data; // { tid, trainNum, stations: [{name, dep}] }
-}
+// Ініціалізуємо станції при завантаженні
+onSearchStationChange();
 
-function matchStation(name, wanted) {
-  // Прибираємо префікси з.п., зп, з/п
-  const clean = name
+/* ========== MATCHING ========== */
+function normalizeStation(name) {
+  return name
     .replace(/^з[\./]п[\.]?\s*/i, '')
     .replace(/^зп\s+/i, '')
     .trim().toLowerCase();
-  return wanted.some(w => {
-    const wl = w.toLowerCase();
-    // Пряме входження в обох напрямках
-    return clean.includes(wl) || wl.includes(clean)
-      // Або перше слово збігається (Полтава == Полтава-Південна)
-      || clean.split(/[\s\-]/)[0] === wl.split(/[\s\-]/)[0];
-  });
+}
+
+function matchStation(rawName, wanted) {
+  const clean = normalizeStation(rawName);
+  const w = wanted.toLowerCase();
+  // Точне входження
+  if (clean.includes(w) || w.includes(clean)) return true;
+  // По перших 5 символах (для опечаток типу Клюшники/Клюшинки)
+  if (clean.length >= 4 && w.length >= 4 && clean.slice(0,5) === w.slice(0,5)) return true;
+  return false;
 }
 
 function findTime(stations, wanted) {
   for (const s of stations) {
-    if (matchStation(s.name, [wanted])) return s.dep || s.arr || '-';
+    if (matchStation(s.name, wanted)) return s.dep || s.arr || '-';
   }
   return '-';
 }
 
+/* ========== FETCH ========== */
+async function fetchTrain(tid) {
+  const res = await fetch(`/api/fetch-timetable?tid=${tid}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+}
+
+/* ========== MAIN ========== */
+function setStatus(msg, type='info') {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+function setProgress(pct) {
+  document.getElementById('progressBar').classList.toggle('show', pct > 0 && pct < 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
 async function startParsing() {
   const tids = getTids();
-  const stationNames = getStations();
-  const routeName = document.getElementById('routeName').value.trim();
-  const keyStop = document.getElementById('keyStop').value.trim();
+  const stations = getStations();
+  const searchKey = document.getElementById('searchStation').value;
+  const preset = PRESETS[searchKey];
 
   if (!tids.length) { setStatus('Введіть TID поїздів', 'error'); return; }
-  if (!stationNames.length) { setStatus('Додайте хоча б одну станцію', 'error'); return; }
+  if (!stations.length) { setStatus('Додайте станції', 'error'); return; }
 
   document.getElementById('parseBtn').disabled = true;
-  document.getElementById('resultCard').style.display = 'none';
-  document.getElementById('jsCard').style.display = 'none';
+  document.getElementById('output').innerHTML = '';
 
-  const results = []; // [{trainNum, times: {станція: час}}]
+  const odd = [];   // непарні поїзди
+  const even = [];  // парні поїзди
   let done = 0;
 
   for (const tid of tids) {
-    setStatus(`Завантаження поїзду tid=${tid}... (${done+1}/${tids.length})`, 'info');
+    setStatus(`Завантаження ${done+1}/${tids.length}...`, 'info');
     setProgress(Math.round(done / tids.length * 100));
     try {
       const data = await fetchTrain(tid);
+      const trainNum = parseInt(data.trainNum) || 0;
       const times = {};
-      for (const name of stationNames) {
-        times[name] = findTime(data.stations, name);
-      }
-  // Зберігаємо сирі назви станцій з першого поїзду для діагностики
-  if (results.length === 0 && data.stations) {
-    window._debugStations = data.stations.map(s => s.name);
-    console.log('Всі станції першого поїзду:', window._debugStations);
-  }
-  results.push({ tid, trainNum: data.trainNum, times });
-      done++;
+      stations.forEach(st => { times[st] = findTime(data.stations, st); });
+      const entry = { tid, trainNum: data.trainNum, times };
+      if (trainNum % 2 === 0) even.push(entry);
+      else odd.push(entry);
     } catch(e) {
-      setStatus(`Помилка для tid=${tid}: ${e.message}`, 'error');
-      done++;
+      console.warn(`tid=${tid}:`, e.message);
     }
-    await new Promise(r => setTimeout(r, 300)); // пауза між запитами
+    done++;
+    await new Promise(r => setTimeout(r, 300));
   }
 
   setProgress(100);
+  setProgress(0);
 
-  if (!results.length) {
-    setStatus('Нічого не вдалось завантажити', 'error');
-    document.getElementById('parseBtn').disabled = false;
-    return;
+  // Для Терешки: непарні = з Полтави, парні = на Полтаву
+  // Для Копили: парні = з Полтави, непарні = на Полтаву
+  let dirFrom, dirTo;
+  if (searchKey === 'tereschky') {
+    dirFrom = odd;   // непарні: Полтава→Терешки
+    dirTo   = even;  // парні:   Терешки→Полтава
+  } else {
+    dirFrom = even;  // парні:   Полтава→Копили
+    dirTo   = odd;   // непарні: Копили→Полтава
   }
 
-  // Фільтруємо поїзди де є хоч одна потрібна станція
-  const validResults = results.filter(r => Object.values(r.times).some(t => t !== '-'));
+  // Сортуємо за часом першої станції
+  const sortByTime = arr => arr.sort((a,b) => {
+    const ta = Object.values(a.times).find(t => t !== '-') || '99:99';
+    const tb = Object.values(b.times).find(t => t !== '-') || '99:99';
+    return ta.localeCompare(tb);
+  });
+  sortByTime(dirFrom);
+  sortByTime(dirTo);
 
-  renderTable(validResults, stationNames, routeName);
-  renderJS(validResults, stationNames, routeName, keyStop);
+  const output = document.getElementById('output');
 
-  setStatus(`✅ Готово! Завантажено ${validResults.length} поїздів.`, 'ok');
-  setProgress(0);
+  if (dirFrom.length) renderBlock(output, dirFrom, stations, preset.oddDir, searchKey === 'tereschky' ? 'odd' : 'even');
+  if (dirTo.length)   renderBlock(output, dirTo,   stations, preset.evenDir, searchKey === 'tereschky' ? 'even' : 'odd');
+
+  if (!dirFrom.length && !dirTo.length) {
+    setStatus('Нічого не вдалось завантажити', 'error');
+  } else {
+    setStatus(`✅ Готово! ${dirFrom.length + dirTo.length} поїздів у двох напрямках.`, 'ok');
+  }
+
   document.getElementById('parseBtn').disabled = false;
 }
 
-/* ===================== RENDER TABLE ===================== */
-function renderTable(results, stations, routeName) {
-  const card = document.getElementById('resultCard');
-  const titleEl = document.getElementById('resultTitle');
-  const tableEl = document.getElementById('resultTable');
+/* ========== RENDER ========== */
+function renderBlock(container, results, stations, dir, parity) {
+  const card = document.createElement('div');
+  card.className = 'card result-block';
 
-  titleEl.textContent = routeName;
+  // Заголовок
+  const hdr = document.createElement('div');
+  hdr.className = 'result-header';
+  const badge = parity === 'odd'
+    ? `<span class="direction-badge dir-odd">непарні</span>`
+    : `<span class="direction-badge dir-even">парні</span>`;
+  hdr.innerHTML = `
+    <div class="result-title">${dir.from} — ${dir.to} ${badge}</div>
+    <button class="copy-btn" onclick="copyJS(this)">Копіювати JS</button>`;
+  card.appendChild(hdr);
 
+  // Таблиця
+  const grid = document.createElement('div');
+  grid.className = 'trains-grid';
   let html = '<table><tr><th class="s">Станція</th>';
-  for (const r of results) {
-    html += `<th>🚂${r.trainNum || r.tid}</th>`;
-  }
+  results.forEach(r => { html += `<th>🚂${r.trainNum||'?'}</th>`; });
   html += '</tr>';
-
-  for (const st of stations) {
+  stations.forEach(st => {
     html += `<tr><td class="s">${st}</td>`;
-    for (const r of results) {
+    results.forEach(r => {
       const t = r.times[st] || '-';
-      html += `<td class="${t === '-' ? 'miss' : ''}">${t}</td>`;
-    }
+      html += `<td class="${t==='-'?'miss':''}">${t}</td>`;
+    });
     html += '</tr>';
-  }
+  });
   html += '</table>';
+  grid.innerHTML = html;
+  card.appendChild(grid);
 
-  tableEl.innerHTML = html;
-  card.style.display = 'block';
-}
+  // JS
+  const jsBlock = document.createElement('pre');
+  jsBlock.textContent = buildJS(results, stations, dir);
+  jsBlock.style.display = 'none';
+  card.appendChild(jsBlock);
 
-/* ===================== RENDER JS ===================== */
-function renderJS(results, stations, routeName, keyStop) {
-  // Визначаємо напрям: від — до
-  const parts = routeName.split('—').map(s => s.trim());
-  const from = parts[0] || 'МАРШРУТ';
-  const to = parts[1] || 'ПОЛТАВА';
-
-  // ID групи
-  const groupId = 'g_' + from.toLowerCase().replace(/[^a-zа-яіїє]/gi, '_').slice(0, 10);
-
-  const rows = stations.map(st => {
-    const times = results.map(r => `'${r.times[st] || '-'}'`).join(', ');
-    const isKey = st.toLowerCase().includes(keyStop.toLowerCase());
-    return `      { loc: '${st}', times: [${times}], key: ${isKey} },`;
+  // Зберігаємо для копіювання
+  card.querySelector('.copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(jsBlock.textContent).then(() => {
+      const btn = card.querySelector('.copy-btn');
+      btn.textContent = '✓ Скопійовано';
+      setTimeout(() => btn.textContent = 'Копіювати JS', 2000);
+    });
   });
 
-  const js = `{
-    id: '${groupId}',
-    from: '${from}',
-    to: '${to}',
-    keyStop: '${keyStop}',
-    group: '${groupId}',
-    cols: ['Станція'${results.map((_, i) => `, 'Рейс${i+1}'`).join('')}],
+  container.appendChild(card);
+}
+
+function buildJS(results, stations, dir) {
+  const rows = stations.map(st => {
+    const times = results.map(r => `'${r.times[st]||'-'}'`).join(', ');
+    const isKey = st.toLowerCase().includes(dir.key.toLowerCase());
+    return `      { loc: '${st}', times: [${times}], key: ${isKey} },`;
+  });
+  return `  {
+    id: '${dir.group}',
+    from: '${dir.from}',
+    to: '${dir.to}',
+    keyStop: '${dir.key}',
+    group: '${dir.group}',
+    cols: ['Станція'${results.map((_,i)=>`, 'Рейс${i+1}'`).join('')}],
     rows: [
 ${rows.join('\n')}
     ]
-  }`;
-
-  document.getElementById('jsOutput').textContent = js;
-  document.getElementById('jsCard').style.display = 'block';
-}
-
-function copyJS() {
-  const text = document.getElementById('jsOutput').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('.copy-btn');
-    btn.textContent = '✓ Скопійовано';
-    setTimeout(() => btn.textContent = 'Копіювати JS', 2000);
-  });
+  },`;
 }
 </script>
-<script src="console.js"></script>
 </body>
 </html>
