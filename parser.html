@@ -210,10 +210,18 @@ function findTime(stations, wanted) {
 }
 
 /* ========== FETCH ========== */
-async function fetchTrain(tid) {
-  const res = await fetch(`/api/fetch-timetable?tid=${tid}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.json();
+async function fetchTrain(tid, attempt = 0) {
+  try {
+    const res = await fetch(`/api/fetch-timetable?tid=${tid}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch(e) {
+    if (attempt < 2) {
+      await new Promise(r => setTimeout(r, 1000));
+      return fetchTrain(tid, attempt + 1);
+    }
+    throw e;
+  }
 }
 
 /* ========== MAIN ========== */
@@ -264,36 +272,31 @@ async function startParsing() {
   // Для Копили: парні = з Полтави, непарні = на Полтаву
   setProgress(0);
 
-  const odd  = results.filter(r => r.parity === 1);
-  const even = results.filter(r => r.parity === 0);
-
-  let dirFrom, dirTo;
-  if (searchKey === 'tereschky') {
-    dirFrom = odd;   // непарні: Полтава→Терешки
-    dirTo   = even;  // парні:   Терешки→Полтава
-  } else {
-    dirFrom = even;  // парні:   Полтава→Копили
-    dirTo   = odd;   // непарні: Копили→Полтава
-  }
-
-  // Сортуємо за часом першої станції
   const sortByTime = arr => arr.sort((a,b) => {
     const ta = Object.values(a.times).find(t => t !== '-') || '99:99';
     const tb = Object.values(b.times).find(t => t !== '-') || '99:99';
     return ta.localeCompare(tb);
   });
-  sortByTime(dirFrom);
-  sortByTime(dirTo);
 
-  const output = document.getElementById('output');
+  const odd  = results.filter(r => r.parity === 1);
+  const even = results.filter(r => r.parity === 0);
 
-  if (dirFrom.length) renderBlock(output, dirFrom, stations, preset.oddDir, searchKey === 'tereschky' ? 'odd' : 'even');
-  if (dirTo.length)   renderBlock(output, dirTo,   stations, preset.evenDir, searchKey === 'tereschky' ? 'even' : 'odd');
+  // Терешки: непарні = Полтава→Терешки, парні = Терешки→Полтава
+  // Копили:  парні  = Полтава→Копили,  непарні = Копили→Полтава
+  const isT = searchKey === 'tereschky';
+  const dirA = { trains: isT ? odd  : even, meta: preset.oddDir,  badge: 'odd'  };
+  const dirB = { trains: isT ? even : odd,  meta: preset.evenDir, badge: 'even' };
 
-  if (!dirFrom.length && !dirTo.length) {
+  sortByTime(dirA.trains);
+  sortByTime(dirB.trains);
+
+  if (dirA.trains.length) renderBlock(output, dirA.trains, stations, dirA.meta, dirA.badge);
+  if (dirB.trains.length) renderBlock(output, dirB.trains, stations, dirB.meta, dirB.badge);
+
+  if (!dirA.trains.length && !dirB.trains.length) {
     setStatus('Нічого не вдалось завантажити', 'error');
   } else {
-    setStatus(`✅ Готово! ${dirFrom.length + dirTo.length} поїздів у двох напрямках.`, 'ok');
+    setStatus(`✅ Готово! ${dirA.trains.length + dirB.trains.length} поїздів у двох напрямках.`, 'ok');
   }
 
   document.getElementById('parseBtn').disabled = false;
