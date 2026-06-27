@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(25000) });
     if (!response.ok) {
       const errText = await response.text();
-      return res.status(502).json({ error: `ScrapingBee ${response.status}`, detail: errText.slice(0,200) });
+      return res.status(502).json({ error: `ScrapingBee ${response.status}`, detail: errText.slice(0, 200) });
     }
     html = await response.text();
   } catch(e) {
@@ -28,6 +28,13 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 's-maxage=21600, stale-while-revalidate');
   return res.status(200).json(parseTimetable(html, tid));
 }
+
+function cleanTd(html) {
+  return html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function isTime(s) { return /^\d{2}:\d{2}$/.test(s); }
+function isDash(s) { return s === '–' || s === '-'; }
 
 function parseTimetable(html, tid) {
   // Номер поїзду — в тегу <b>XXXX</b>
@@ -40,54 +47,29 @@ function parseTimetable(html, tid) {
 
   while ((m = rowRegex.exec(html)) !== null) {
     const row = m[1];
-
-    // Витягуємо всі td як чистий текст
     const tds = [];
     const tdRegex = /<td[^>]*>(.*?)<\/td>/gis;
     let td;
     while ((td = tdRegex.exec(row)) !== null) {
-      const text = td[1]
-        .replace(/<[^>]+>/g, '')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      tds.push(text);
+      tds.push(cleanTd(td[1]));
     }
 
-    if (tds.length < 3) continue;
+    // Структура рядка станції: [номер, назва, прибуття, відправлення, стоянка, ...]
+    // tds[0] = номер (ціле число)
+    // tds[1] = назва станції (кирилиця)
+    // tds[2] = прибуття (HH:MM або –)
+    // tds[3] = відправлення (HH:MM або –)
+    if (tds.length < 4) continue;
+    if (!/^\d+$/.test(tds[0])) continue;  // перша td має бути номером рядка
+    const name = tds[1];
+    if (!/[А-ЯІЇЄа-яіїє]{2,}/.test(name)) continue;
 
-    // Шукаємо td з назвою станції (кирилиця, 3+ символи, не є числом чи датою)
-    let name = null, arr = null, dep = null;
+    const arrRaw = tds[2];
+    const depRaw = tds[3];
+    const arr = isTime(arrRaw) ? arrRaw : null;
+    const dep = isTime(depRaw) ? depRaw : null;
 
-    for (let i = 0; i < tds.length; i++) {
-      const t = tds[i];
-      if (
-        /[А-ЯІЇЄа-яіїє]{2,}/.test(t) &&
-        t.length >= 3 &&
-        !/^\d/.test(t) &&           // не починається з цифри
-        !/^з \d/.test(t) &&         // не "з 2025-..."
-        !/\d{4}-\d{2}/.test(t)      // не містить дату
-      ) {
-        name = t;
-        // Наступні td — шукаємо два часи формату HH:MM або "–"
-        for (let j = i + 1; j < Math.min(i + 5, tds.length); j++) {
-          const v = tds[j].trim();
-          if (/^\d{2}:\d{2}$/.test(v)) {
-            if (arr === null) arr = v;
-            else if (dep === null) { dep = v; break; }
-          } else if (v === '–' || v === '-') {
-            if (arr === null) arr = null;
-            else { dep = null; break; }
-          } else if (v !== '' && !/^\d+$/.test(v)) {
-            // Не час і не порожньо — кінець пошуку часів
-            if (arr !== null) break;
-          }
-        }
-        break;
-      }
-    }
-
-    if (name && (arr !== null || dep !== null)) {
+    if (arr || dep) {
       stations.push({ name, arr, dep });
     }
   }
