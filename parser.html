@@ -216,7 +216,12 @@ function matchStation(rawName, wanted) {
   const clean = normalizeStation(rawName);
   const w = wanted.toLowerCase();
   // Точне входження
+  if (clean === w) return true;
   if (clean.includes(w) || w.includes(clean)) return true;
+  // Порівняння без дефісів і пробілів
+  const cleanND = clean.replace(/[\s\-]/g, '');
+  const wND = w.replace(/[\s\-]/g, '');
+  if (cleanND === wND) return true;
   // По перших 5 символах (для опечаток типу Клюшники/Клюшинки)
   if (clean.length >= 4 && w.length >= 4 && clean.slice(0,5) === w.slice(0,5)) return true;
   return false;
@@ -312,11 +317,11 @@ async function startParsing() {
   const odd  = results.filter(r => r.parity === 1);
   const even = results.filter(r => r.parity === 0);
 
-  // Терешки: непарні = Полтава→Терешки, парні = Терешки→Полтава
-  // Копили:  парні  = Полтава→Копили,  непарні = Копили→Полтава
+  // Терешки: непарні = ПОЛТАВА→ТЕРЕШКИ (oddDir), парні = ТЕРЕШКИ→ПОЛТАВА (evenDir)
+  // Копили:  парні  = КОПИЛИ→ПОЛТАВА  (oddDir), непарні = ПОЛТАВА→КОПИЛИ (evenDir)
   const isT = searchKey === 'tereschky';
-  const dirA = { trains: isT ? odd  : even, meta: preset.oddDir,  badge: 'odd'  };
-  const dirB = { trains: isT ? even : odd,  meta: preset.evenDir, badge: 'even' };
+  const dirA = { trains: isT ? odd  : even, meta: preset.oddDir,  badge: isT ? 'odd' : 'even' };
+  const dirB = { trains: isT ? even : odd,  meta: preset.evenDir, badge: isT ? 'even' : 'odd'  };
 
   sortByTime(dirA.trains);
   sortByTime(dirB.trains);
@@ -327,7 +332,10 @@ async function startParsing() {
   if (!dirA.trains.length && !dirB.trains.length) {
     setStatus('Нічого не вдалось завантажити', 'error');
   } else {
-    setStatus(`✅ Готово! ${dirA.trains.length + dirB.trains.length} поїздів у двох напрямках.`, 'ok');
+    const total = dirA.trains.length + dirB.trains.length;
+    const failed = tids.length - total;
+    const failedMsg = failed > 0 ? ` (${failed} не завантажились)` : '';
+    setStatus(`✅ Готово! ${total} поїздів у двох напрямках${failedMsg}.`, 'ok');
   }
 
   document.getElementById('parseBtn').disabled = false;
