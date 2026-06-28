@@ -187,9 +187,9 @@ onSearchStationChange();
 /* ========== МАППІНГ СТАНЦІЙ ========== */
 // search: що шукаємо на сайті, display: що показуємо, useArr: брати час прибуття
 const STATION_MAP = [
-  { display: 'Клюшники', search: 'Клюшинки', useArr: false },
-  { display: '3-й км',   search: '3 км',      useArr: false },
-  { display: 'Полтава',  search: 'Полтава-Південна', useArr: false },
+  { display: 'Клюшники', search: 'Клюшинки',        useArr: false },
+  { display: '3-й км',   search: '3 км',             useArr: false },
+  { display: 'Полтава',  search: 'Полтава-Південна', useArr: 'byDir' }, // залежить від напрямку
 ];
 
 function getStationSearch(displayName) {
@@ -197,9 +197,11 @@ function getStationSearch(displayName) {
   return m ? m.search : displayName;
 }
 
-function getStationUseArr(displayName) {
+function getStationUseArr(displayName, poltavaIsDestination) {
   const m = STATION_MAP.find(s => s.display === displayName);
-  return m ? m.useArr : false;
+  if (!m) return false;
+  if (m.useArr === 'byDir') return poltavaIsDestination;
+  return m.useArr;
 }
 
 /* ========== MATCHING ========== */
@@ -271,7 +273,8 @@ async function startParsing() {
   if (!stations.length) { setStatus('Додайте станції', 'error'); return; }
 
   document.getElementById('parseBtn').disabled = true;
-  document.getElementById('output').innerHTML = '';
+  const outputEl = document.getElementById('output');
+  outputEl.innerHTML = '';
 
   setStatus(`Завантажую ${tids.length} поїздів паралельно...`, 'info');
   setProgress(10);
@@ -280,10 +283,15 @@ async function startParsing() {
     fetchTrain(tid)
       .then(data => {
         const trainNum = parseInt(data.trainNum) || 0;
+        const isOdd = trainNum % 2 === 1;
+        const isT = searchKey === 'tereschky';
+        // Полтава кінцева (useArr=true) коли поїзд іде НА Полтаву:
+        // Терешки: парні → на Полтаву; Копили: непарні → на Полтаву
+        const poltavaIsDestination = isT ? !isOdd : isOdd;
         const times = {};
         stations.forEach(st => {
           const searchName = getStationSearch(st);
-          const useArr = getStationUseArr(st);
+          const useArr = getStationUseArr(st, poltavaIsDestination);
           times[st] = findTime(data.stations, searchName, useArr);
         });
         return { tid, trainNum: data.trainNum, times, parity: trainNum % 2 };
@@ -320,8 +328,8 @@ async function startParsing() {
   sortByTime(dirA.trains);
   sortByTime(dirB.trains);
 
-  if (dirA.trains.length) renderBlock(output, dirA.trains, stations, dirA.meta, dirA.badge);
-  if (dirB.trains.length) renderBlock(output, dirB.trains, stations, dirB.meta, dirB.badge);
+  if (dirA.trains.length) renderBlock(outputEl, dirA.trains, stations, dirA.meta, dirA.badge);
+  if (dirB.trains.length) renderBlock(outputEl, dirB.trains, stations, dirB.meta, dirB.badge);
 
   if (!dirA.trains.length && !dirB.trains.length) {
     setStatus('Нічого не вдалось завантажити', 'error');
