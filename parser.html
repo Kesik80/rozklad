@@ -100,6 +100,7 @@ pre { background:var(--bg-2); border-radius:8px; padding:10px; font-size:11px; c
 </div>
 
 <button class="btn btn-primary" id="parseBtn" onclick="startParsing()">🔍 Завантажити розклад</button>
+<button class="btn" id="retryBtn" onclick="retryFailed()" style="display:none; background:var(--warn); color:#000; margin-top:6px;">🔄 Дозавантажити</button>
 <div class="status" id="status"></div>
 <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
 
@@ -237,18 +238,6 @@ function findTime(stations, wanted, useArr = false) {
   return '-';
 }
 
-/* ========== ПУЛ ПАРАЛЕЛЬНИХ ЗАПИТІВ (з обмеженням, бо ScrapingBee free має ліміт ~5) ========== */
-async function runWithConcurrency(items, limit, worker) {
-  let i = 0;
-  async function next() {
-    if (i >= items.length) return;
-    const item = items[i++];
-    await worker(item);
-    await next();
-  }
-  await Promise.all(Array(Math.min(limit, items.length)).fill(0).map(() => next()));
-}
-
 /* ========== FETCH ========== */
 async function fetchTrain(tid, attempt = 0) {
   try {
@@ -275,136 +264,121 @@ function setProgress(pct) {
   document.getElementById('progressFill').style.width = pct + '%';
 }
 
-let resultsMap = new Map();   // tid -> {tid, trainNum, times, parity}
-let failedTids = [];
-let currentStations = [];
-let currentSearchKey = '';
+// Глобальний стан — зберігаємо між запусками
+let _state = {
+  searchKey: null,
+  stations: [],
+  preset: null,
+  results: [],      // успішно завантажені
+  failedTids: [],   // не завантажились
+};
 
-function computeResult(data, stations, searchKey) {
-  const trainNum = parseInt(data.trainNum) || 0;
-  const isOdd = trainNum % 2 === 1;
-  const isT = searchKey === 'tereschky';
-  // Полтава кінцева (useArr=true) коли поїзд іде НА Полтаву:
-  // Терешки: парні → на Полтаву; Копили: непарні → на Полтаву
-  const poltavaIsDestination = isT ? !isOdd : isOdd;
-  const times = {};
-  stations.forEach(st => {
-    const searchName = getStationSearch(st);
-    const useArr = getStationUseArr(st, poltavaIsDestination);
-    times[st] = findTime(data.stations, searchName, useArr);
-  });
-  return { trainNum: data.trainNum, times, parity: trainNum % 2 };
-}
+async function startParsing() {
+  const tids = getTids();
+  const stations = getStations();
+  const searchKey = document.getElementById('searchStation').value;
+  const preset = PRESETS[searchKey];
 
-async function runBatch(tids, stations, searchKey) {
-  failedTids = [];
-  let done = 0;
-  await runWithConcurrency(tids, 4, async (tid) => {
-    try {
-      const data = await fetchTrain(tid);
-      resultsMap.set(tid, { tid, ...computeResult(data, stations, searchKey) });
-    } catch(e) {
-      console.warn(`tid=${tid}:`, e.message);
-      failedTids.push(tid);
-    }
-    done++;
-    setProgress(Math.round(done / tids.length * 90) + 5);
-  });
-}
+  if (!tids.length) { setStatus('Введіть TID поїздів', 'error'); return; }
+  if (!stations.length) { setStatus('Додайте станції', 'error'); return; }
 
-function renderRetryButton() {
-  let btn = document.getElementById('retryBtn');
-  if (!failedTids.length) { if (btn) btn.remove(); return; }
-  if (!btn) {
-    btn = document.createElement('button');
-    btn.id = 'retryBtn';
-    btn.className = 'btn btn-primary';
-    document.getElementById('parseBtn').insertAdjacentElement('afterend', btn);
-  }
-  btn.disabled = false;
-  btn.textContent = `🔁 Повторити невдалі (${failedTids.length})`;
-  btn.onclick = retryFailed;
+  // Скидаємо стан при новому запуску
+  _state = { searchKey, stations, preset, results: [], failedTids: [] };
+  document.getElementById('output').innerHTML = '';
+  document.getElementById('retryBtn').style.display = 'none';
+
+  await runFetch(tids);
 }
 
 async function retryFailed() {
-  const toRetry = [...failedTids];
-  const btn = document.getElementById('retryBtn');
-  if (btn) btn.disabled = true;
-  document.getElementById('parseBtn').disabled = true;
-  setStatus(`Повторне завантаження ${toRetry.length} поїздів...`, 'info');
-  setProgress(5);
+  if (!_state.failedTids.length) return;
+  const tids = [..._state.failedTids];
+  _state.failedTids = [];
+  document.getElementById('retryBtn').style.display = 'none';
+  await runFetch(tids);
+}
 
-  await runBatch(toRetry, currentStations, currentSearchKey);
+async function runFetch(tids) {
+  const { searchKey, stations, preset } = _state;
+
+  document.getElementById('parseBtn').disabled = true;
+  setStatus(`Завантажую ${tids.length} поїздів...`, 'info');
+  setProgress(10);
+
+  const fetchAll = tids.map(tid =>
+    fetchTrain(tid)
+      .then(data => {
+        const trainNum = parseInt(data.trainNum) || 0;
+        const isOdd = trainNum % 2 === 1;
+        const isT = searchKey === 'tereschky';
+        const poltavaIsDestination = isT ? !isOdd : isOdd;
+        const times = {};
+        stations.forEach(st => {
+          const searchName = getStationSearch(st);
+          const useArr = getStationUseArr(st, poltavaIsDestination);
+          times[st] = findTime(data.stations, searchName, useArr);
+        });
+        return { tid, trainNum: data.trainNum, times, parity: trainNum % 2 };
+      })
+      .catch(e => { console.warn(`tid=${tid}:`, e.message); return { tid, failed: true }; })
+  );
+
+  const settled = await Promise.allSettled(fetchAll);
+  settled.forEach(r => {
+    if (r.status === 'fulfilled' && r.value) {
+      if (r.value.failed) {
+        _state.failedTids.push(r.value.tid);
+      } else {
+        // Не дублюємо — видаляємо старий якщо є
+        _state.results = _state.results.filter(x => x.tid !== r.value.tid);
+        _state.results.push(r.value);
+      }
+    }
+  });
 
   setProgress(0);
   renderAll();
-  renderRetryButton();
+
+  const total = _state.results.length;
+  const failed = _state.failedTids.length;
+
+  if (!total) {
+    setStatus('Нічого не вдалось завантажити', 'error');
+  } else if (failed > 0) {
+    setStatus(`✅ Завантажено ${total} поїздів. Не вдалось: ${failed}.`, 'ok');
+    const btn = document.getElementById('retryBtn');
+    btn.textContent = `🔄 Дозавантажити (${failed} поїздів)`;
+    btn.style.display = 'block';
+  } else {
+    setStatus(`✅ Готово! Всі ${total} поїздів завантажено.`, 'ok');
+  }
+
   document.getElementById('parseBtn').disabled = false;
 }
 
 function renderAll() {
+  const { searchKey, stations, preset, results } = _state;
   const outputEl = document.getElementById('output');
   outputEl.innerHTML = '';
-
-  const preset = PRESETS[currentSearchKey];
-  const isT = currentSearchKey === 'tereschky';
-  const all = [...resultsMap.values()];
-  const odd  = all.filter(r => r.parity === 1);
-  const even = all.filter(r => r.parity === 0);
-
-  // Терешки: непарні = ПОЛТАВА→ТЕРЕШКИ (oddDir), парні = ТЕРЕШКИ→ПОЛТАВА (evenDir)
-  // Копили:  парні  = КОПИЛИ→ПОЛТАВА  (oddDir), непарні = ПОЛТАВА→КОПИЛИ (evenDir)
-  const dirA = { trains: isT ? odd  : even, meta: preset.oddDir,  badge: isT ? 'odd' : 'even' };
-  const dirB = { trains: isT ? even : odd,  meta: preset.evenDir, badge: isT ? 'even' : 'odd'  };
 
   const sortByTime = arr => arr.sort((a,b) => {
     const ta = Object.values(a.times).find(t => t !== '-') || '99:99';
     const tb = Object.values(b.times).find(t => t !== '-') || '99:99';
     return ta.localeCompare(tb);
   });
+
+  const odd  = results.filter(r => r.parity === 1);
+  const even = results.filter(r => r.parity === 0);
+
+  const isT = searchKey === 'tereschky';
+  const dirA = { trains: isT ? odd  : even, meta: preset.oddDir,  badge: isT ? 'odd' : 'even' };
+  const dirB = { trains: isT ? even : odd,  meta: preset.evenDir, badge: isT ? 'even' : 'odd' };
+
   sortByTime(dirA.trains);
   sortByTime(dirB.trains);
 
-  if (dirA.trains.length) renderBlock(outputEl, dirA.trains, currentStations, dirA.meta, dirA.badge);
-  if (dirB.trains.length) renderBlock(outputEl, dirB.trains, currentStations, dirB.meta, dirB.badge);
-
-  const total = all.length;
-  if (!total) {
-    setStatus('Нічого не вдалось завантажити', 'error');
-  } else if (failedTids.length) {
-    setStatus(`✅ Завантажено ${total} поїздів, не вдалось ${failedTids.length} — натисніть "Повторити невдалі"`, 'error');
-  } else {
-    setStatus(`✅ Готово! ${total} поїздів у двох напрямках.`, 'ok');
-  }
-}
-
-async function startParsing() {
-  const tids = getTids();
-  const stations = getStations();
-  const searchKey = document.getElementById('searchStation').value;
-
-  if (!tids.length) { setStatus('Введіть TID поїздів', 'error'); return; }
-  if (!stations.length) { setStatus('Додайте станції', 'error'); return; }
-
-  resultsMap = new Map();
-  failedTids = [];
-  currentStations = stations;
-  currentSearchKey = searchKey;
-
-  document.getElementById('parseBtn').disabled = true;
-  document.getElementById('output').innerHTML = '';
-  const oldRetryBtn = document.getElementById('retryBtn');
-  if (oldRetryBtn) oldRetryBtn.remove();
-
-  setStatus(`Завантажую ${tids.length} поїздів (паралельно, по 4)...`, 'info');
-  setProgress(5);
-
-  await runBatch(tids, stations, searchKey);
-
-  setProgress(0);
-  renderAll();
-  renderRetryButton();
-  document.getElementById('parseBtn').disabled = false;
+  if (dirA.trains.length) renderBlock(outputEl, dirA.trains, stations, dirA.meta, dirA.badge);
+  if (dirB.trains.length) renderBlock(outputEl, dirB.trains, stations, dirB.meta, dirB.badge);
 }
 
 /* ========== RENDER ========== */
