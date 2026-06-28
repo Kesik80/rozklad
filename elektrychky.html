@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Електрички</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Розклад">
+
+<meta id="themeColorMeta" name="theme-color" content="#f2f2f7">
+
+<link rel="manifest" href="/icons/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="icon" href="/icons/favicon.ico" sizes="32x32">
+<meta name="msapplication-config" content="/browserconfig.xml">
+
+<meta property="og:title" content="Розклад Електрички">
+<meta property="og:description" content="Розклад електричок">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://tereschky.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Розклад Електрички">
+<meta name="twitter:image" content="https://tereschky.vercel.app/og-image.png">
+
+<link rel="stylesheet" href="schedule-live.css">
+<style>
+/* ---------- iOS LIGHT ---------- */
+:root {
+  --bg-0: #f2f2f7;
+  --bg-1: #ffffff;
+  --bg-2: #fafafa;
+  --label: #000000;
+  --label-2: #6c6c70;
+  --label-3: #3a3a3c;
+  --separator: #c6c6c8;
+  --accent: #007aff;
+  --accent-text: #ffffff;
+  --th-color: #c2670a;
+  --hint-color: #8e8e93;
+  --sat-red: #ff3b30;
+  --warn: #ff9500;
+  --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* ---------- iOS DARK ---------- */
+[data-theme="dark"] {
+  --bg-0: #000000;
+  --bg-1: #1c1c1e;
+  --bg-2: #252528;
+  --label: #ffffff;
+  --label-2: #a2a2a7;
+  --label-3: #e5e5ea;
+  --separator: #6c6c70;
+  --accent: #0a84ff;
+  --accent-text: #ffffff;
+  --th-color: #ff9500;
+  --hint-color: #d0d0d5;
+  --sat-red: #ff5e57;
+  --warn: #ff9f0a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); transition: background-color .25s ease, color .25s ease; }
+html { background: var(--bg-0); }
+body { background: var(--bg-0); color: var(--label); font-size: 16px; font-weight: 600; padding: 10px 8px; max-width: 640px; margin: 0 auto; }
+
+.hdr { display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: 700; padding: 10px 0; }
+.theme-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: var(--accent); color: var(--accent-text); border: none; border-radius: 20px; padding: 6px 14px; font-weight: 600; cursor: pointer; }
+
+/* Заголовок маршруту всередині таблиці */
+.section { margin-bottom: 12px; }
+
+table {
+  width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0;
+  background: var(--bg-1); border-radius: 12px; overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,.12);
+}
+.tbl-title {
+  text-align: center; font-size: 16px; font-weight: 700;
+  color: var(--label); padding: 9px 8px;
+  border-bottom: 1px solid var(--separator);
+  letter-spacing: .2px; white-space: nowrap; overflow: hidden;
+}
+.tbl-title .from { color: var(--th-color); }
+td {
+  background: var(--bg-2); padding: 1.5px 2px;
+  font-size: 15px; color: var(--label-2); text-align: center;
+  white-space: nowrap; font-weight: 600; overflow: hidden;
+  border: 3px solid transparent;
+  transition: border-color 1s ease, color 1s ease, background-color .25s ease;
+}
+td.col-loc { text-align: left; padding-left: 8px; color: var(--label); font-weight: 600; }
+td.col-loc.key-stop { color: var(--th-color); }
+tr:last-child td { border-bottom-color: transparent; }
+
+.note { padding: 8px 4px 16px; font-size: 13px; color: var(--label-2); line-height: 1.5; font-weight: 500; }
+.note a { color: var(--accent); }
+.note .warn-text { color: var(--sat-red); font-weight: 700; }
+
+@media (max-width: 380px) {
+  body { font-size: 12px; padding: 8px 4px; }
+  td { font-size: 13px; padding: 4px 1px; }
+  .tbl-title { font-size: 14px; }
+}
+@media (min-width: 600px) {
+  body { padding: 24px 32px; }
+}
+</style>
+</head>
+<body>
+
+<div class="hdr" style="position:relative">
+  ЕЛЕКТРИЧКИ
+  <button id="theme-toggle" class="theme-toggle">🌙</button>
+</div>
+
+<div id="app"></div>
+
+<script src="theme-toggle.js"></script>
+<script src="pwa-install.js"></script>
+<script>
+ThemeToggle.init();
+PWAInstall.init({ appName: 'Розклад' });
+
+/* ===================== ДАНІ ===================== */
+const ROUTES = [
+  {
+    id: 'ter_polt',
+    from: 'ТЕРЕШКИ',
+    to: 'ПОЛТАВА ПІВДЕННА',
+    keyStop: 'Терешки',
+    group: 'g_ter_polt',
+    cols: ['Станція', 'Рейс1', 'Рейс2', 'Рейс3', 'Рейс4'],
+    rows: [
+      { loc: 'Головач',    times: ['06:30','11:11','16:44','22:57'], key: false },
+      { loc: 'Безручки',   times: ['06:35','11:16','16:49','-'],     key: false },
+      { loc: 'Клюшники',   times: ['06:38','11:19','16:52','-'],     key: false },
+      { loc: 'Зінці',      times: ['06:41','11:22','16:56','-'],     key: false },
+      { loc: 'Терешки',    times: ['06:45','11:25','16:59','23:06'], key: true  },
+      { loc: 'Полтава',    times: ['06:55','11:35','17:09','23:15'], key: false },
+    ]
+  },
+  {
+    id: 'polt_ter',
+    from: 'ПОЛТАВА ПІВДЕННА',
+    to: 'ТЕРЕШКИ',
+    keyStop: 'Терешки',
+    group: 'g_polt_ter',
+    cols: ['Станція', 'Рейс1', 'Рейс2', 'Рейс3', 'Рейс4'],
+    rows: [
+      { loc: 'Полтава',    times: ['04:08','09:05','14:00','20:40'], key: false },
+      { loc: 'Терешки',    times: ['04:19','09:16','14:11','20:51'], key: true  },
+      { loc: 'Зінці',      times: ['04:23','09:19','14:14','20:54'], key: false },
+      { loc: 'Клюшники',   times: ['-',    '09:22','14:17','20:57'], key: false },
+      { loc: 'Безручки',   times: ['-',    '09:26','14:20','21:01'], key: false },
+      { loc: 'Головач',    times: ['04:31','09:31','14:25','21:06'], key: false },
+    ]
+  },
+  {
+    id: 'kop_polt',
+    from: 'КОПИЛИ',
+    to: 'ПОЛТАВА ПІВДЕННА',
+    keyStop: 'Копили',
+    group: 'g_kop_polt',
+    cols: ['Станція', 'Рейс1', 'Рейс2', 'Рейс3', 'Рейс4', 'Рейс5'],
+    rows: [
+      { loc: 'Минівка',    times: ['06:09','09:29','14:19','18:31','21:59'], key: false },
+      { loc: 'Портнівка',  times: ['06:12','09:32','14:22','18:35','22:03'], key: false },
+      { loc: 'Кашубівка',  times: ['06:15','09:36','14:25','18:39','22:06'], key: false },
+      { loc: 'Микільське', times: ['06:19','09:41','14:28','18:44','22:11'], key: false },
+      { loc: 'Копили',     times: ['06:24','09:44','14:34','18:49','22:18'], key: true  },
+      { loc: '3-й км',     times: ['06:27','09:52','14:37','18:53','22:22'], key: false },
+      { loc: 'Полтава',    times: ['06:35','-',    '14:45','19:02','22:31'], key: false },
+    ]
+  },
+  {
+    id: 'polt_kop',
+    from: 'ПОЛТАВА ПІВДЕННА',
+    to: 'КОПИЛИ',
+    keyStop: 'Копили',
+    group: 'g_polt_kop',
+    cols: ['Станція', 'Рейс1', 'Рейс2', 'Рейс3', 'Рейс4', 'Рейс5'],
+    rows: [
+      { loc: 'Полтава',    times: ['05:10','08:31','14:20','17:30','20:59'], key: false },
+      { loc: '3-й км',     times: ['05:19','08:40','14:29','17:39','21:08'], key: false },
+      { loc: 'Копили',     times: ['05:22','08:43','14:32','17:43','21:11'], key: true  },
+      { loc: 'Микільське', times: ['05:27','08:48','14:37','17:48','21:16'], key: false },
+      { loc: 'Кашубівка',  times: ['05:31','08:51','14:41','17:52','21:20'], key: false },
+      { loc: 'Портнівка',  times: ['05:34','08:54','14:44','17:55','21:23'], key: false },
+      { loc: 'Минівка',    times: ['05:37','08:57','14:47','17:58','21:26'], key: false },
+    ]
+  }
+];
+
+/* ===================== РЕНДЕР ===================== */
+function buildTable(route) {
+  const numCols = route.cols.length - 1; // кількість колонок з часом
+  // колонка станції = 12 символів, решта ділиться рівно
+  const locW = '11ch';
+  const timeW = `calc((100% - 11ch) / ${numCols})`;
+
+  let html = `
+  <div class="section">
+    <table>
+      <colgroup>
+        <col style="width:${locW}">
+        ${Array(numCols).fill(`<col style="width:${timeW}">`).join('')}
+      </colgroup>
+      <tr>
+        <th class="tbl-title" colspan="${route.cols.length}">
+          <span class="from">${route.from}</span> — ${route.to}
+        </th>
+      </tr>`;
+
+  route.rows.forEach(row => {
+    html += `<tr>`;
+    html += `<td class="col-loc${row.key ? ' key-stop' : ''}">${row.loc}</td>`;
+    row.times.forEach(t => {
+      const isTime = /\d{2}:\d{2}/.test(t);
+      const attrs = isTime
+        ? ` data-time="${t}" data-always="1" data-group="${route.group}"`
+        : '';
+      html += `<td${attrs}>${t}</td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</table></div>`;
+  return html;
+}
+
+const app = document.getElementById('app');
+app.innerHTML = ROUTES.map(buildTable).join('') + `
+<div class="note">
+  <span class="warn-text">У розкладі поїздів можливі поточні зміни.</span><br>
+  Перевіряйте інформацію на сайті <a href="https://pz.gov.ua" target="_blank">pz.gov.ua</a><br>
+  Довідкове бюро: <a href="tel:+380532512000">+38 0532 51 20 00</a> цілодобово.
+</div>`;
+</script>
+
+<script src="text-highlight.js"></script>
+<script src="schedule-live.js"></script>
+<script>
+ScheduleLive.start();
+</script>
+</body>
+</html>
