@@ -6,93 +6,71 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <style>
 :root {
-  --bg-0: #000000;
-  --bg-1: #1c1c1e;
-  --bg-2: #2c2c2e;
-  --label: #ffffff;
-  --label-2: #a2a2a7;
-  --accent: #0a84ff;
-  --green: #30d158;
-  --warn: #ff9f0a;
-  --red: #ff453a;
+  --bg-0: #000000; --bg-1: #1c1c1e; --bg-2: #2c2c2e;
+  --label: #ffffff; --label-2: #a2a2a7;
+  --accent: #0a84ff; --green: #30d158; --warn: #ff9f0a; --red: #ff453a;
   --separator: #3a3a3c;
   --font: -apple-system, Roboto, "Segoe UI", sans-serif;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); }
-html, body { background: var(--bg-0); color: var(--label); min-height: 100vh; }
-body { padding: 12px; max-width: 720px; margin: 0 auto; }
+* { margin:0; padding:0; box-sizing:border-box; font-family:var(--font); }
+html,body { background:var(--bg-0); color:var(--label); min-height:100vh; }
+body { padding:12px; max-width:720px; margin:0 auto; }
 
-h1 { font-size: 20px; font-weight: 700; text-align: center; padding: 12px 0 4px; }
-.sub { font-size: 13px; color: var(--label-2); text-align: center; margin-bottom: 16px; }
+h1 { font-size:20px; font-weight:700; text-align:center; padding:12px 0 4px; }
+.sub { font-size:13px; color:var(--label-2); text-align:center; margin-bottom:16px; }
 
-/* ---- Блок налаштувань ---- */
-.card { background: var(--bg-1); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-.card-title { font-size: 13px; font-weight: 700; color: var(--label-2); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+.card { background:var(--bg-1); border-radius:12px; padding:14px; margin-bottom:12px; }
+.card-title { font-size:13px; font-weight:700; color:var(--label-2); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
 
-label { display: block; font-size: 14px; color: var(--label-2); margin-bottom: 4px; margin-top: 10px; }
-label:first-of-type { margin-top: 0; }
-input, textarea {
-  width: 100%; background: var(--bg-2); border: 1px solid var(--separator);
-  border-radius: 8px; padding: 8px 10px; font-size: 14px;
-  color: var(--label); outline: none;
+label { display:block; font-size:14px; color:var(--label-2); margin-bottom:4px; margin-top:10px; }
+label:first-of-type { margin-top:0; }
+input, textarea, select {
+  width:100%; background:var(--bg-2); border:1px solid var(--separator);
+  border-radius:8px; padding:8px 10px; font-size:14px; color:var(--label); outline:none;
 }
-input:focus, textarea:focus { border-color: var(--accent); }
-textarea { height: 80px; resize: vertical; font-size: 13px; }
+input:focus, textarea:focus { border-color:var(--accent); }
+textarea { height:72px; resize:vertical; font-size:13px; }
+select option { background:var(--bg-1); }
 
-.row { display: flex; gap: 8px; align-items: flex-end; }
-.row input { flex: 1; }
+.stations-list { display:flex; flex-direction:column; gap:6px; margin-top:6px; }
+.station-row { display:flex; gap:6px; align-items:center; }
+.station-row input { flex:1; }
+.btn-icon { background:var(--bg-2); border:1px solid var(--separator); border-radius:6px; padding:6px 10px; color:var(--label-2); cursor:pointer; font-size:16px; flex-shrink:0; }
+.btn-icon:hover { background:var(--separator); }
 
-/* Станції */
-.stations-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-.station-row { display: flex; gap: 6px; align-items: center; }
-.station-row input { flex: 1; }
-.btn-icon { background: var(--bg-2); border: 1px solid var(--separator); border-radius: 6px; padding: 6px 10px; color: var(--label-2); cursor: pointer; font-size: 16px; flex-shrink: 0; }
-.btn-icon:hover { background: var(--separator); }
+.btn { display:block; width:100%; padding:12px; border-radius:10px; border:none; font-size:16px; font-weight:700; cursor:pointer; margin-top:8px; }
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:disabled { opacity:.4; cursor:default; }
 
-/* Кнопки */
-.btn { display: block; width: 100%; padding: 12px; border-radius: 10px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { opacity: .85; }
-.btn-primary:disabled { opacity: .4; cursor: default; }
-.btn-success { background: var(--green); color: #fff; }
-.btn-success:hover { opacity: .85; }
+.status { font-size:13px; padding:8px 10px; border-radius:8px; margin-top:8px; display:none; }
+.status.info  { background:rgba(10,132,255,.15); color:var(--accent); display:block; }
+.status.ok    { background:rgba(48,209,88,.15);  color:var(--green);  display:block; }
+.status.error { background:rgba(255,69,58,.15);  color:var(--red);    display:block; }
 
-/* Статус */
-.status { font-size: 13px; padding: 8px 10px; border-radius: 8px; margin-top: 8px; display: none; }
-.status.info  { background: rgba(10,132,255,.15); color: var(--accent); display: block; }
-.status.ok    { background: rgba(48,209,88,.15);  color: var(--green);  display: block; }
-.status.error { background: rgba(255,69,58,.15);  color: var(--red);    display: block; }
+.progress-bar { height:4px; background:var(--bg-2); border-radius:2px; margin-top:8px; overflow:hidden; display:none; }
+.progress-bar.show { display:block; }
+.progress-fill { height:100%; background:var(--accent); border-radius:2px; transition:width .3s; }
 
-/* Прогрес */
-.progress-bar { height: 4px; background: var(--bg-2); border-radius: 2px; margin-top: 8px; overflow: hidden; display: none; }
-.progress-bar.show { display: block; }
-.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s; }
+.result-block { margin-top:12px; }
+.result-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.result-title { font-size:14px; font-weight:700; color:var(--warn); }
+.copy-btn { background:var(--bg-2); border:1px solid var(--separator); border-radius:6px; padding:5px 12px; font-size:13px; color:var(--accent); cursor:pointer; }
 
-/* Результат */
-.result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.result-title { font-size: 15px; font-weight: 700; }
-.copy-btn { background: var(--bg-2); border: 1px solid var(--separator); border-radius: 6px; padding: 5px 12px; font-size: 13px; color: var(--accent); cursor: pointer; }
+.trains-grid { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { background:var(--bg-2); color:var(--warn); padding:6px 5px; text-align:center; border-bottom:1px solid var(--separator); white-space:nowrap; }
+th.s { text-align:left; }
+td { padding:4px 5px; text-align:center; color:var(--label-2); border-bottom:1px solid var(--separator); white-space:nowrap; }
+td.s { text-align:left; color:var(--label); font-weight:600; }
+td.miss { color:var(--separator); }
+tr:last-child td { border-bottom:none; }
 
-.trains-grid { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { background: var(--bg-2); color: var(--warn); padding: 7px 6px; text-align: center; border-bottom: 1px solid var(--separator); white-space: nowrap; }
-th.s { text-align: left; }
-td { padding: 5px 6px; text-align: center; color: var(--label-2); border-bottom: 1px solid var(--separator); white-space: nowrap; }
-td.s { text-align: left; color: var(--label); font-weight: 600; }
-td.miss { color: var(--separator); }
-tr:last-child td { border-bottom: none; }
+pre { background:var(--bg-2); border-radius:8px; padding:10px; font-size:11px; color:var(--green);
+  overflow-x:auto; white-space:pre-wrap; word-break:break-all; max-height:220px; overflow-y:auto; margin-top:8px; }
 
-/* Ручний список */
-.manual-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-2); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; font-size: 13px; }
-.manual-item .x { color: var(--red); cursor: pointer; font-weight: 700; padding: 0 4px; }
-
-/* GitHub блок */
-pre {
-  background: var(--bg-2); border-radius: 8px; padding: 10px;
-  font-size: 11px; color: var(--green); overflow-x: auto;
-  white-space: pre-wrap; word-break: break-all; max-height: 200px;
-  overflow-y: auto; margin-top: 8px;
-}
+.direction-badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; font-weight:700; margin-left:6px; }
+.dir-odd  { background:rgba(10,132,255,.2); color:var(--accent); }
+.dir-even { background:rgba(48,209,88,.2);  color:var(--green); }
 </style>
 </head>
 <body>
@@ -100,89 +78,97 @@ pre {
 <h1>🚂 Парсер розкладу</h1>
 <p class="sub">swrailway.gov.ua → elektrychky.html</p>
 
-<!-- Налаштування -->
 <div class="card">
-  <div class="card-title">Поїзди для парсингу</div>
+  <div class="card-title">Налаштування</div>
 
-  <label>Назва маршруту (для заголовку)</label>
-  <input type="text" id="routeName" value="ТЕРЕШКИ — ПОЛТАВА ПІВДЕННА" placeholder="ТЕРЕШКИ — ПОЛТАВА ПІВДЕННА">
+  <label>Станція пошуку (визначає напрямки)</label>
+  <select id="searchStation" onchange="onSearchStationChange()">
+    <option value="tereschky">Терешки (непарні ← з Полтави, парні → на Полтаву)</option>
+    <option value="kopily">Копили (парні ← з Полтави, непарні → на Полтаву)</option>
+  </select>
 
-  <label>Ключова станція (виділяється кольором)</label>
-  <input type="text" id="keyStop" value="Терешки" placeholder="Терешки">
-
-  <label>TID поїздів (через кому або кожен з нового рядка)</label>
-  <textarea id="tids" placeholder="28320, 28379, 28343, 28321&#10;або по одному на рядку">28320, 28379, 28343, 28321, 28322, 29672, 28380, 28341</textarea>
-
-  <label>Станції які потрібні (в потрібному порядку)</label>
-  <div class="stations-list" id="stationsList">
-    <div class="station-row"><input type="text" value="Головач" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-    <div class="station-row"><input type="text" value="Безручки" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-    <div class="station-row"><input type="text" value="Клюшники" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-    <div class="station-row"><input type="text" value="Зінці" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-    <div class="station-row"><input type="text" value="Терешки" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
-    <div class="station-row"><input type="text" value="Полтава" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button></div>
+  <label>TID поїздів (через кому або новий рядок)</label>
+  <div style="display:flex;gap:8px;margin-bottom:4px">
+    <button class="btn-icon" style="flex:1;font-size:13px" onclick="autoLoadTids()">🔄 Завантажити автоматично</button>
   </div>
+  <textarea id="tids" placeholder="28320, 28379, 28343..."></textarea>
+  <div id="tidsStatus" style="font-size:12px;color:var(--label-2);margin-top:4px;display:none"></div>
+
+  <label>Станції маршруту (в потрібному порядку)</label>
+  <div class="stations-list" id="stationsList"></div>
   <button class="btn-icon" style="margin-top:8px;width:100%" onclick="addStation()">+ Додати станцію</button>
 </div>
 
-<!-- Ручне додавання (HTML з телефону) -->
-<div class="card">
-  <div class="card-title">➕ Додати поїзд вручну (HTML зі сторінки)</div>
-  <p class="sub" style="margin:0 0 8px;text-align:left;">
-    На сайті swrailway.gov.ua в адресному рядку допишіть <b>view-source:</b> перед https:// — відкриється код сторінки.
-    Виділіть все (Select All) → Скопіювати → вставте сюди.
-  </p>
-  <textarea id="manualHtml" placeholder="Вставте HTML код сторінки поїзда тут..." style="height:120px;"></textarea>
-  <button class="btn btn-success" onclick="addManual()">➕ Додати поїзд зі вставленого HTML</button>
-  <div id="manualList" style="margin-top:10px;display:none;"></div>
-</div>
-
-<!-- Запуск -->
-<button class="btn btn-primary" id="parseBtn" onclick="startParsing()">☁️ Завантажити розклад (паралельно)</button>
-<button class="btn" style="background:var(--bg-2);border:1px solid var(--separator);color:var(--label);" onclick="generateOutput()">📋 Згенерувати таблицю та JS</button>
-
+<button class="btn btn-primary" id="parseBtn" onclick="startParsing()">🔍 Завантажити розклад</button>
 <div class="status" id="status"></div>
 <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
 
-<!-- Результат таблиця -->
-<div class="card" id="resultCard" style="display:none; margin-top:12px;">
-  <div class="result-header">
-    <div class="result-title" id="resultTitle"></div>
-    <button class="copy-btn" onclick="copyJS()">Копіювати JS</button>
-  </div>
-  <div class="trains-grid" id="resultTable"></div>
-</div>
-
-<!-- JS код для elektrychky.html -->
-<div class="card" id="jsCard" style="display:none; margin-top:12px;">
-  <div class="card-title">Готовий JS для elektrychky.html</div>
-  <pre id="jsOutput"></pre>
-</div>
+<div id="output"></div>
 
 <script>
-/* ===================== UTILS ===================== */
-function setStatus(msg, type='info') {
-  const el = document.getElementById('status');
-  el.textContent = msg;
-  el.className = 'status ' + type;
+/* ========== PRESETS ========== */
+const PRESETS = {
+  tereschky: {
+    sid: '2803',
+    stations: ['Головач','Безручки','Клюшники','Зінці','Терешки','Полтава'],
+    oddDir:  { from:'ПОЛТАВА ПІВДЕННА', to:'ТЕРЕШКИ', key:'Терешки', group:'g_polt_ter' },
+    evenDir: { from:'ТЕРЕШКИ', to:'ПОЛТАВА ПІВДЕННА', key:'Терешки', group:'g_ter_polt' },
+  },
+  kopily: {
+    sid: '2637',
+    stations: ['Минівка','Портнівка','Кашубівка','Микільське','Копили','3-й км','Полтава'],
+    oddDir:  { from:'КОПИЛИ', to:'ПОЛТАВА ПІВДЕННА', key:'Копили', group:'g_kop_polt' },
+    evenDir: { from:'ПОЛТАВА ПІВДЕННА', to:'КОПИЛИ', key:'Копили', group:'g_polt_kop' },
+  }
+};
+
+function onSearchStationChange() {
+  const key = document.getElementById('searchStation').value;
+  const preset = PRESETS[key];
+  const list = document.getElementById('stationsList');
+  list.innerHTML = '';
+  preset.stations.forEach(s => addStation(s));
+  // Скидаємо TID при зміні станції
+  document.getElementById('tids').value = '';
+  document.getElementById('tidsStatus').style.display = 'none';
 }
 
-function setProgress(pct) {
-  const bar = document.getElementById('progressBar');
-  bar.classList.toggle('show', pct > 0 && pct < 100);
-  document.getElementById('progressFill').style.width = pct + '%';
+async function autoLoadTids() {
+  const key = document.getElementById('searchStation').value;
+  const preset = PRESETS[key];
+  const statusEl = document.getElementById('tidsStatus');
+  statusEl.style.display = 'block';
+  statusEl.style.color = 'var(--accent)';
+  statusEl.textContent = '⏳ Завантажую список поїздів...';
+
+  try {
+    const res = await fetch(`/api/fetch-station?sid=${preset.sid}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    if (!data.trains || !data.trains.length) {
+      statusEl.style.color = 'var(--red)';
+      statusEl.textContent = '❌ Поїзди не знайдені';
+      return;
+    }
+
+    const tids = data.trains.map(t => t.tid).join(', ');
+    document.getElementById('tids').value = tids;
+    statusEl.style.color = 'var(--green)';
+    statusEl.textContent = `✅ Знайдено ${data.trains.length} поїздів: ${data.trains.map(t => t.trainNum).join(', ')}`;
+  } catch(e) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = `❌ Помилка: ${e.message}`;
+  }
 }
 
-function addStation() {
+function addStation(val='') {
   const list = document.getElementById('stationsList');
   const div = document.createElement('div');
   div.className = 'station-row';
-  div.innerHTML = `<input type="text" placeholder="Назва станції"><button class="btn-icon" onclick="removeStation(this)">✕</button>`;
+  div.innerHTML = `<input type="text" value="${val}" placeholder="Назва станції">
+    <button class="btn-icon" onclick="this.parentElement.remove()">✕</button>`;
   list.appendChild(div);
-}
-
-function removeStation(btn) {
-  btn.parentElement.remove();
 }
 
 function getStations() {
@@ -195,293 +181,237 @@ function getTids() {
     .split(/[\s,\n]+/).map(s => s.trim()).filter(s => /^\d+$/.test(s));
 }
 
-/* ===================== СТАН (накопичені поїзди) ===================== */
-// collected = [{ tid, trainNum, stations: [{name, arr, dep}] }]
-let collected = [];
+// Ініціалізуємо станції при завантаженні
+onSearchStationChange();
 
-function renderManualList() {
-  const box = document.getElementById('manualList');
-  if (!collected.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
-  box.style.display = 'block';
-  box.innerHTML = `<div style="font-size:12px;color:var(--label-2);margin-bottom:6px;">Додано поїздів: ${collected.length}</div>` +
-    collected.map((c, i) =>
-      `<div class="manual-item"><span>🚂 ${c.trainNum || c.tid} <span style="color:var(--label-2)">(tid=${c.tid})</span></span><span class="x" onclick="removeCollected(${i})">✕</span></div>`
-    ).join('');
+/* ========== МАППІНГ СТАНЦІЙ ========== */
+// search: що шукаємо на сайті, display: що показуємо, useArr: брати час прибуття
+const STATION_MAP = [
+  { display: 'Клюшники', search: 'Клюшинки',        useArr: false },
+  { display: '3-й км',   search: '3 км',             useArr: false },
+  { display: 'Полтава',  search: 'Полтава-Південна', useArr: 'byDir' }, // залежить від напрямку
+];
+
+function getStationSearch(displayName) {
+  const m = STATION_MAP.find(s => s.display === displayName);
+  return m ? m.search : displayName;
 }
 
-function removeCollected(i) {
-  collected.splice(i, 1);
-  renderManualList();
+function getStationUseArr(displayName, poltavaIsDestination) {
+  const m = STATION_MAP.find(s => s.display === displayName);
+  if (!m) return false;
+  if (m.useArr === 'byDir') return poltavaIsDestination;
+  return m.useArr;
 }
 
-/* ===================== КЛІЄНТСЬКИЙ ПАРСЕР HTML ===================== */
-// Той самий алгоритм, що й на сервері (api/fetch-timetable.js), але виконується прямо в браузері —
-// тож працює навіть якщо swrailway.gov.ua недоступний з будь-якого хмарного сервера.
-function parseTimetableClient(html, tid) {
-  const trainNumMatch = html.match(/Поїзд[:\s№#]*(\d{4})/i)
-    || html.match(/<b[^>]*>(\d{4})<\/b>/)
-    || html.match(/tid=\d+"[^>]*>(\d{4})/);
-  const trainNum = trainNumMatch ? trainNumMatch[1] : null;
-
-  const stations = [];
-  const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
-  let match;
-  while ((match = rowRegex.exec(html)) !== null) {
-    const row = match[1];
-    const cells = [];
-    const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
-    let cell;
-    while ((cell = cellRegex.exec(row)) !== null) {
-      const text = cell[1].replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
-      cells.push(text);
-    }
-    if (cells.length >= 4) {
-      const name = cells[1];
-      const arr = cells[2];
-      const dep = cells[3];
-      if (name && /[А-ЯІЇЄа-яіїє]{2,}/.test(name) && name !== 'Пункт') {
-        const timeRegex = /^\d{2}:\d{2}$/;
-        stations.push({
-          name: name.replace(/^\d+\s*/, '').trim(),
-          arr: timeRegex.test(arr) ? arr : null,
-          dep: timeRegex.test(dep) ? dep : null,
-        });
-      }
-    }
-  }
-  return { tid, trainNum, stations };
+/* ========== MATCHING ========== */
+function normalizeStation(name) {
+  return name
+    .replace(/^з[\./]п[\.]?\s*/i, '')
+    .replace(/^зп\s+/i, '')
+    .trim().toLowerCase();
 }
 
-function addManual() {
-  const html = document.getElementById('manualHtml').value;
-  if (!html.trim()) { setStatus('Вставте HTML код сторінки', 'error'); return; }
-
-  // Намагаємось знайти tid у самому HTML (з посилань на сторінці), якщо ні — лишаємо порожнім
-  const tidMatch = html.match(/[?&]tid=(\d+)/);
-  const tid = tidMatch ? tidMatch[1] : 'manual_' + Date.now();
-
-  const data = parseTimetableClient(html, tid);
-
-  if (!data.stations.length) {
-    setStatus('Не вдалось знайти жодної станції у вставленому HTML. Перевірте, чи це повний код сторінки (view-source), а не просто видимий текст.', 'error');
-    return;
-  }
-  if (collected.some(c => c.tid === data.tid)) {
-    setStatus(`Поїзд tid=${data.tid} вже додано`, 'error');
-    return;
-  }
-
-  collected.push(data);
-  document.getElementById('manualHtml').value = '';
-  renderManualList();
-  setStatus(`✅ Додано поїзд ${data.trainNum || data.tid} (${data.stations.length} станцій знайдено)`, 'ok');
+function matchStation(rawName, wanted) {
+  const clean = normalizeStation(rawName);
+  const w = wanted.toLowerCase();
+  // Точне входження
+  if (clean === w) return true;
+  if (clean.includes(w) || w.includes(clean)) return true;
+  // Порівняння без дефісів і пробілів
+  const cleanND = clean.replace(/[\s\-]/g, '');
+  const wND = w.replace(/[\s\-]/g, '');
+  if (cleanND === wND) return true;
+  // По перших 5 символах (для опечаток типу Клюшники/Клюшинки)
+  if (clean.length >= 4 && w.length >= 4 && clean.slice(0,5) === w.slice(0,5)) return true;
+  return false;
 }
 
-/* ===================== ПУЛ ПАРАЛЕЛЬНИХ ЗАПИТІВ ===================== */
-async function runWithConcurrency(items, limit, worker) {
-  let i = 0;
-  async function next() {
-    if (i >= items.length) return;
-    const item = items[i++];
-    await worker(item);
-    await next();
-  }
-  await Promise.all(Array(Math.min(limit, items.length)).fill(0).map(() => next()));
-}
-
-async function fetchTrainRetry(tid, attempts = 2) {
-  let lastErr;
-  for (let a = 0; a < attempts; a++) {
-    try {
-      return await fetchTrain(tid);
-    } catch (e) {
-      lastErr = e;
-      if (a < attempts - 1) await new Promise(r => setTimeout(r, 800 * (a + 1)));
-    }
-  }
-  throw lastErr;
-}
-
-let failedTids = [];
-
-function renderRetryButton() {
-  let btn = document.getElementById('retryBtn');
-  if (!failedTids.length) { if (btn) btn.remove(); return; }
-  if (!btn) {
-    btn = document.createElement('button');
-    btn.id = 'retryBtn';
-    btn.className = 'btn btn-primary';
-    document.getElementById('parseBtn').insertAdjacentElement('afterend', btn);
-  }
-  btn.textContent = `🔁 Повторити невдалі (${failedTids.length})`;
-  btn.onclick = () => runTids([...failedTids]);
-}
-
-async function runTids(tidsToLoad) {
-  const tids = tidsToLoad.filter(t => !collected.some(c => c.tid === t));
-  if (!tids.length) { setStatus('Усі вказані поїзди вже додано', 'ok'); return; }
-
-  document.getElementById('parseBtn').disabled = true;
-  setStatus(`Завантаження ${tids.length} поїздів (паралельно, по 4)...`, 'info');
-  setProgress(1);
-
-  failedTids = [];
-  let okCount = 0, doneCount = 0;
-
-  await runWithConcurrency(tids, 4, async (tid) => {
-    try {
-      const data = await fetchTrainRetry(tid, 2); // спроба + 1 повтор
-      collected.push(data);
-      okCount++;
-    } catch (e) {
-      failedTids.push(tid);
-      console.warn(`tid=${tid} не вдалось: ${e.message}`);
-    }
-    doneCount++;
-    setProgress(Math.round(doneCount / tids.length * 100));
-  });
-
-  setProgress(0);
-  renderManualList();
-  renderRetryButton();
-  document.getElementById('parseBtn').disabled = false;
-
-  if (!failedTids.length) {
-    setStatus(`✅ Завантажено всі ${okCount} поїздів`, 'ok');
-  } else {
-    setStatus(`⚠️ Завантажено ${okCount}, не вдалось ${failedTids.length} — натисніть "Повторити невдалі"`, 'error');
-  }
-}
-
-/* ===================== АВТОМАТИЧНЕ ЗАВАНТАЖЕННЯ ===================== */
-async function fetchTrain(tid) {
-  const url = `/api/fetch-timetable?tid=${tid}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} для tid=${tid}`);
-  const data = await res.json();
-  return data; // { tid, trainNum, stations: [{name, arr, dep}] }
-}
-
-function matchStation(name, wanted) {
-  const clean = name.replace(/^з\.п\.\s*/i, '').replace(/^зп\s+/i, '').trim().toLowerCase();
-  return wanted.some(w => clean.includes(w.toLowerCase()) || w.toLowerCase().includes(clean));
-}
-
-function findTime(stations, wanted) {
+function findTime(stations, wanted, useArr = false) {
   for (const s of stations) {
-    if (matchStation(s.name, [wanted])) return s.dep || s.arr || '-';
+    if (matchStation(s.name, wanted)) {
+      if (useArr) return s.arr || s.dep || '-';
+      return s.dep || s.arr || '-';
+    }
   }
   return '-';
 }
 
+/* ========== FETCH ========== */
+async function fetchTrain(tid, attempt = 0) {
+  try {
+    const res = await fetch(`/api/fetch-timetable?tid=${tid}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch(e) {
+    if (attempt < 2) {
+      await new Promise(r => setTimeout(r, 1000));
+      return fetchTrain(tid, attempt + 1);
+    }
+    throw e;
+  }
+}
+
+/* ========== MAIN ========== */
+function setStatus(msg, type='info') {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+function setProgress(pct) {
+  document.getElementById('progressBar').classList.toggle('show', pct > 0 && pct < 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
 async function startParsing() {
   const tids = getTids();
+  const stations = getStations();
+  const searchKey = document.getElementById('searchStation').value;
+  const preset = PRESETS[searchKey];
+
   if (!tids.length) { setStatus('Введіть TID поїздів', 'error'); return; }
-  await runTids(tids);
-}
+  if (!stations.length) { setStatus('Додайте станції', 'error'); return; }
 
-/* ===================== ГЕНЕРАЦІЯ РЕЗУЛЬТАТУ З НАКОПИЧЕНИХ ПОЇЗДІВ ===================== */
-function generateOutput() {
-  const stationNames = getStations();
-  const routeName = document.getElementById('routeName').value.trim();
-  const keyStop = document.getElementById('keyStop').value.trim();
+  document.getElementById('parseBtn').disabled = true;
+  const outputEl = document.getElementById('output');
+  outputEl.innerHTML = '';
 
-  if (!collected.length) { setStatus('Спочатку додайте хоча б один поїзд (вручну або автоматично)', 'error'); return; }
-  if (!stationNames.length) { setStatus('Додайте хоча б одну станцію', 'error'); return; }
+  setStatus(`Завантажую ${tids.length} поїздів паралельно...`, 'info');
+  setProgress(10);
 
-  const results = collected.map(c => {
-    const times = {};
-    for (const name of stationNames) times[name] = findTime(c.stations, name);
-    return { tid: c.tid, trainNum: c.trainNum, times };
+  const fetchAll = tids.map(tid =>
+    fetchTrain(tid)
+      .then(data => {
+        const trainNum = parseInt(data.trainNum) || 0;
+        const isOdd = trainNum % 2 === 1;
+        const isT = searchKey === 'tereschky';
+        // Полтава кінцева (useArr=true) коли поїзд іде НА Полтаву:
+        // Терешки: парні → на Полтаву; Копили: непарні → на Полтаву
+        const poltavaIsDestination = isT ? !isOdd : isOdd;
+        const times = {};
+        stations.forEach(st => {
+          const searchName = getStationSearch(st);
+          const useArr = getStationUseArr(st, poltavaIsDestination);
+          times[st] = findTime(data.stations, searchName, useArr);
+        });
+        return { tid, trainNum: data.trainNum, times, parity: trainNum % 2 };
+      })
+      .catch(e => { console.warn(`tid=${tid}:`, e.message); return null; })
+  );
+
+  const settled = await Promise.allSettled(fetchAll);
+  const results = settled
+    .map(r => r.status === 'fulfilled' ? r.value : null)
+    .filter(Boolean);
+
+  setProgress(90);
+
+  // Для Терешки: непарні = з Полтави, парні = на Полтаву
+  // Для Копили: парні = з Полтави, непарні = на Полтаву
+  setProgress(0);
+
+  const sortByTime = arr => arr.sort((a,b) => {
+    const ta = Object.values(a.times).find(t => t !== '-') || '99:99';
+    const tb = Object.values(b.times).find(t => t !== '-') || '99:99';
+    return ta.localeCompare(tb);
   });
 
-  const validResults = results.filter(r => Object.values(r.times).some(t => t !== '-'));
+  const odd  = results.filter(r => r.parity === 1);
+  const even = results.filter(r => r.parity === 0);
 
-  // Сортуємо по часу на ключовій станції (хронологічно), '-' відправляємо в кінець
-  const keyTimeOf = r => {
-    const matchKey = stationNames.find(n => n.toLowerCase().includes(keyStop.toLowerCase()) || keyStop.toLowerCase().includes(n.toLowerCase()));
-    const t = matchKey ? r.times[matchKey] : null;
-    return (t && t !== '-') ? t : '99:99';
-  };
-  validResults.sort((a, b) => keyTimeOf(a).localeCompare(keyTimeOf(b)));
+  // Терешки: непарні = ПОЛТАВА→ТЕРЕШКИ (oddDir), парні = ТЕРЕШКИ→ПОЛТАВА (evenDir)
+  // Копили:  парні  = КОПИЛИ→ПОЛТАВА  (oddDir), непарні = ПОЛТАВА→КОПИЛИ (evenDir)
+  const isT = searchKey === 'tereschky';
+  const dirA = { trains: isT ? odd  : even, meta: preset.oddDir,  badge: isT ? 'odd' : 'even' };
+  const dirB = { trains: isT ? even : odd,  meta: preset.evenDir, badge: isT ? 'even' : 'odd'  };
 
-  if (!validResults.length) {
-    setStatus('Жодна із потрібних станцій не знайдена у накопичених поїздах. Перевірте назви станцій.', 'error');
-    return;
+  sortByTime(dirA.trains);
+  sortByTime(dirB.trains);
+
+  if (dirA.trains.length) renderBlock(outputEl, dirA.trains, stations, dirA.meta, dirA.badge);
+  if (dirB.trains.length) renderBlock(outputEl, dirB.trains, stations, dirB.meta, dirB.badge);
+
+  if (!dirA.trains.length && !dirB.trains.length) {
+    setStatus('Нічого не вдалось завантажити', 'error');
+  } else {
+    const total = dirA.trains.length + dirB.trains.length;
+    const failed = tids.length - total;
+    const failedMsg = failed > 0 ? ` (${failed} не завантажились)` : '';
+    setStatus(`✅ Готово! ${total} поїздів у двох напрямках${failedMsg}.`, 'ok');
   }
 
-  renderTable(validResults, stationNames, routeName);
-  renderJS(validResults, stationNames, routeName, keyStop);
-  setStatus(`✅ Готово! Згенеровано ${validResults.length} поїздів.`, 'ok');
+  document.getElementById('parseBtn').disabled = false;
 }
 
-/* ===================== RENDER TABLE ===================== */
-function renderTable(results, stations, routeName) {
-  const card = document.getElementById('resultCard');
-  const titleEl = document.getElementById('resultTitle');
-  const tableEl = document.getElementById('resultTable');
+/* ========== RENDER ========== */
+function renderBlock(container, results, stations, dir, parity) {
+  const card = document.createElement('div');
+  card.className = 'card result-block';
 
-  titleEl.textContent = routeName;
+  // Заголовок
+  const hdr = document.createElement('div');
+  hdr.className = 'result-header';
+  const badge = parity === 'odd'
+    ? `<span class="direction-badge dir-odd">непарні</span>`
+    : `<span class="direction-badge dir-even">парні</span>`;
+  hdr.innerHTML = `
+    <div class="result-title">${dir.from} — ${dir.to} ${badge}</div>
+    <button class="copy-btn" onclick="copyJS(this)">Копіювати JS</button>`;
+  card.appendChild(hdr);
 
+  // Таблиця
+  const grid = document.createElement('div');
+  grid.className = 'trains-grid';
   let html = '<table><tr><th class="s">Станція</th>';
-  for (const r of results) {
-    html += `<th>🚂${r.trainNum || r.tid}</th>`;
-  }
+  results.forEach(r => { html += `<th>🚂${r.trainNum||'?'}</th>`; });
   html += '</tr>';
-
-  for (const st of stations) {
+  stations.forEach(st => {
     html += `<tr><td class="s">${st}</td>`;
-    for (const r of results) {
+    results.forEach(r => {
       const t = r.times[st] || '-';
-      html += `<td class="${t === '-' ? 'miss' : ''}">${t}</td>`;
-    }
+      html += `<td class="${t==='-'?'miss':''}">${t}</td>`;
+    });
     html += '</tr>';
-  }
+  });
   html += '</table>';
+  grid.innerHTML = html;
+  card.appendChild(grid);
 
-  tableEl.innerHTML = html;
-  card.style.display = 'block';
+  // JS
+  const jsBlock = document.createElement('pre');
+  jsBlock.textContent = buildJS(results, stations, dir);
+  jsBlock.style.display = 'none';
+  card.appendChild(jsBlock);
+
+  // Зберігаємо для копіювання
+  card.querySelector('.copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(jsBlock.textContent).then(() => {
+      const btn = card.querySelector('.copy-btn');
+      btn.textContent = '✓ Скопійовано';
+      setTimeout(() => btn.textContent = 'Копіювати JS', 2000);
+    });
+  });
+
+  container.appendChild(card);
 }
 
-/* ===================== RENDER JS ===================== */
-function renderJS(results, stations, routeName, keyStop) {
-  // Визначаємо напрям: від — до
-  const parts = routeName.split('—').map(s => s.trim());
-  const from = parts[0] || 'МАРШРУТ';
-  const to = parts[1] || 'ПОЛТАВА';
-
-  // ID групи
-  const groupId = 'g_' + from.toLowerCase().replace(/[^a-zа-яіїє]/gi, '_').slice(0, 10);
-
+function buildJS(results, stations, dir) {
   const rows = stations.map(st => {
-    const times = results.map(r => `'${r.times[st] || '-'}'`).join(', ');
-    const isKey = st.toLowerCase().includes(keyStop.toLowerCase());
+    const times = results.map(r => `'${r.times[st]||'-'}'`).join(', ');
+    const isKey = st.toLowerCase().includes(dir.key.toLowerCase());
     return `      { loc: '${st}', times: [${times}], key: ${isKey} },`;
   });
-
-  const js = `{
-    id: '${groupId}',
-    from: '${from}',
-    to: '${to}',
-    keyStop: '${keyStop}',
-    group: '${groupId}',
-    cols: ['Станція'${results.map((_, i) => `, 'Рейс${i+1}'`).join('')}],
+  return `  {
+    id: '${dir.group}',
+    from: '${dir.from}',
+    to: '${dir.to}',
+    keyStop: '${dir.key}',
+    group: '${dir.group}',
+    cols: ['Станція'${results.map((_,i)=>`, 'Рейс${i+1}'`).join('')}],
     rows: [
 ${rows.join('\n')}
     ]
-  }`;
-
-  document.getElementById('jsOutput').textContent = js;
-  document.getElementById('jsCard').style.display = 'block';
-}
-
-function copyJS() {
-  const text = document.getElementById('jsOutput').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('.copy-btn');
-    btn.textContent = '✓ Скопійовано';
-    setTimeout(() => btn.textContent = 'Копіювати JS', 2000);
-  });
+  },`;
 }
 </script>
 </body>
