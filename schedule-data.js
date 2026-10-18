@@ -165,7 +165,7 @@ window.SCHEDULE = {
     },
 
     vovkivka: {
-      title: 'ВОВКІВКА', type: 'grid', align: 'left',
+      title: 'ВОВКІВКА', type: 'grid',
       unordered: true,   // у даних «Верх»-рейси йдуть не по порядку другої колонки — це не помилка
       cols: [
         { th: 'Вовківка', day: 'wd', group: 'vov', t: ['06:15', '06:45 Верх Пн', '07:05 Б', '07:40', '08:20 Верх Пн', '08:55', '10:05', '11:15', '12:40 Верх', '13:15', '15:00', '15:50 Верх Пн', '16:50 Б', '17:20 Верх Пн'] },
@@ -175,7 +175,6 @@ window.SCHEDULE = {
       toggle: {
         label: 'Верхоли', key: 'vov-ver-show',
         grid: {
-          align: 'left',
           cols: [
             { th: 'Верхоли',  day: 'wd', group: 'ver', t: 'ver_ver' },
             { th: 'Вовківка', day: 'wd', group: 'ver', t: 'ver_vov' },
@@ -184,12 +183,12 @@ window.SCHEDULE = {
         }
       },
       notes: [
-        { raw: "07:05 — до <span class='text-blue'>Б. Хмельницького</span>.<br>16:50 — через <span class='text-blue'>Б. Хмельницького</span>.<br>06:15, 06:40, 07:05 — тільки в робочі дні.<br><span class='text-red'>НЕДІЛЯ — до 15:30.</span><br><span class='marker'>Верх</span> — маршрут через Верхоли. <span class='marker'>Пн</span> — рейси у понеділок." }
+        { raw: "07:05 — до <span class='text-blue'>Б. Хмельницького</span>.<br>16:50 — через <span class='text-blue'>Б. Хмельницького</span>.<br>06:15, 06:40, 07:05 — тільки в робочі дні.<br><span class='text-red'>НЕДІЛЯ — до 15:30.</span><br><span class='marker'>Верх</span> — маршрут через Верхоли.<br><span class='marker'>Пн</span> — рейси у понеділок." }
       ]
     },
 
     verkholy: {
-      title: 'ВЕРХОЛИ', type: 'grid', align: 'left',
+      title: 'ВЕРХОЛИ', type: 'grid',
       cols: [
         { th: 'Верхоли',  day: 'wd', group: 'ver', t: 'ver_ver' },
         { th: 'Вовківка', day: 'wd', group: 'ver', t: 'ver_vov' },
@@ -199,7 +198,7 @@ window.SCHEDULE = {
     },
 
     golovach: {
-      title: 'ГОЛОВАЧ', type: 'grid', align: 'left',
+      title: 'ГОЛОВАЧ', type: 'grid',
       cols: [
         { th: 'Автост.-2', day: 'wd', group: 'gol', t: ['', '07:00', '09:40', '13:10 Пн', '16:00'] },
         { th: 'Головач',   day: 'wd', group: 'gol', t: ['05:40 Пн', '', '11:00', '14:30 Пн', ''] }
