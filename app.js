@@ -366,13 +366,16 @@
               .replace(/(^|[\s,}])body\b/g, '$1.snap');
   }
 
-  function snapMarkup() {
+  function snapMarkup(withVer) {
     var app = $('#app').cloneNode(true), hdr = $('.hdr').cloneNode(true);
     [].forEach.call(app.querySelectorAll('button, .toggle-wrap'), function (n) { n.remove(); });
     [].forEach.call(app.querySelectorAll('.next-dep'), function (n) { n.classList.remove('next-dep'); });
     [].forEach.call(app.querySelectorAll('td'), function (n) { n.style.removeProperty('color'); n.style.removeProperty('font-weight'); });
     var sec = app.querySelector('.ver-section');
-    if (sec) { sec.classList.add('show'); [].forEach.call(app.querySelectorAll('.ver-row'), function (n) { n.style.display = 'none'; }); }   // повний вигляд: основна таблиця + блок «Верхоли»
+    if (sec) {   // два вигляди сторінки: з блоком «Верхоли» (рейси «Верх» переходять у нього) і без нього
+      if (withVer) { sec.classList.add('show'); [].forEach.call(app.querySelectorAll('.ver-row'), function (n) { n.style.display = 'none'; }); }
+      else { sec.remove(); [].forEach.call(app.querySelectorAll('.ver-row'), function (n) { n.style.display = ''; }); }
+    }
     [].forEach.call(hdr.querySelectorAll('a.btn-icon, button.btn-icon'), function (n) { n.outerHTML = '<span class="hdr-side"></span>'; });
     var d = new Date(), p2 = function (n) { return (n < 10 ? '0' : '') + n; };
     return '<div class="snap" data-theme="light" xmlns="http://www.w3.org/1999/xhtml" style="width:' + SNAP_W + 'px;max-width:none;margin:0;">' +
@@ -381,10 +384,11 @@
       p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + '.' + d.getFullYear() + '</div></div>';
   }
 
-  function saveImage() {
-    var name = document.body.getAttribute('data-page');
+  function saveImage(withVer, suffix, done) {
+    var name = document.body.getAttribute('data-page') + (suffix || '');
+    function fin(msg) { exitToast(msg); if (done) done(); }
     fetch('app.css').then(function (r) { return r.text(); }).then(function (css0) {
-      var css = snapCss(css0), html = snapMarkup();
+      var css = snapCss(css0), html = snapMarkup(withVer);
       var fr = document.createElement('iframe');
       fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:' + SNAP_W + 'px;height:100px;border:0;visibility:hidden';
       fr.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>' + css + '</style></head><body style="margin:0">' + html + '</body></html>';
@@ -403,23 +407,23 @@
               var ctx = c.getContext('2d');
               ctx.scale(SNAP_SCALE, SNAP_SCALE); ctx.drawImage(img, 0, 0);
               c.toBlob(function (b) {
-                if (!b) { exitToast('Не вдалося створити картинку'); return; }
+                if (!b) { fin('Не вдалося створити картинку'); return; }
                 var d = new Date(), p2 = function (n) { return (n < 10 ? '0' : '') + n; };
                 var a = document.createElement('a');
                 a.href = URL.createObjectURL(b);
                 a.download = 'rozklad_' + name + '_' + p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2) + '.png';
                 document.body.appendChild(a); a.click(); a.remove();
                 setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
-                exitToast('Картинку збережено');
+                fin('Картинку збережено');
               }, 'image/png');
             };
-            img.onerror = function () { exitToast('Не вдалося створити картинку'); };
+            img.onerror = function () { fin('Не вдалося створити картинку'); };
             img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-          } catch (e) { warn('картинка: ' + e.message); exitToast('Не вдалося створити картинку'); }
+          } catch (e) { warn('картинка: ' + e.message); fin('Не вдалося створити картинку'); }
         }, 150);
       };
       document.body.appendChild(fr);
-    }).catch(function () { exitToast('Не вдалося створити картинку'); });
+    }).catch(function () { fin('Не вдалося створити картинку'); });
   }
 
   function initNav(isHome) {
@@ -493,7 +497,11 @@
     if (P.type === 'menu') equalize('.menu .label');
     initTheme();
     var si = $('#save-img');
-    if (si) si.addEventListener('click', function () { exitToast('Створюю картинку…'); saveImage(); });
+    if (si) si.addEventListener('click', function () {
+      exitToast('Створюю картинку…');
+      var sec = $('#ver-section');   // сторінка з перемикачем: зберігаємо той вигляд, що зараз на екрані
+      saveImage(!!(P.toggle && sec && sec.classList.contains('show')), '');
+    });
     startLive();
     if (P.toggle) initToggle(P);
     initUpdateToast();
