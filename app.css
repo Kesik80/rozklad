@@ -1,0 +1,194 @@
+/* ============================================================
+   app.css — ЄДИНИЙ СТИЛЬ усіх сторінок «Розкладу».
+   Кольори — тільки через змінні нижче. Для світлої теми кольори
+   темніші (контраст ≥ 4.5:1 на фоні ячейок), для темної — яскравіші.
+   ============================================================ */
+
+/* ---------- СВІТЛА ТЕМА (за замовчуванням) ---------- */
+:root {
+  color-scheme: light;
+  --bg-0: #f2f2f7;      /* фон сторінки */
+  --bg-1: #ffffff;      /* картки, шапка таблиці */
+  --bg-2: #fafafa;      /* ячейки */
+  --label: #000000;     /* основний текст */
+  --label-2: #55555a;   /* час у ячейках, другорядний текст */
+  --label-3: #3a3a3c;   /* маркери К П Б Ф */
+  --separator: #c6c6c8;
+  --hair: rgba(0, 0, 0, .07);
+  --accent: #0066d6;    /* кнопки */
+  --accent-text: #ffffff;
+  --next: #0057c2;      /* найближчий рейс */
+  --th: #b25a00;        /* акцент: ключові зупинки, ціни */
+  --hint: #66666b;
+  --red: #d70015;       /* вихідні, застереження */
+  --ok: #1f7a35;        /* до рейсу ще є час (початок градієнта) */
+  --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* ---------- ТЕМНА ТЕМА ---------- */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-0: #000000;
+  --bg-1: #1c1c1e;
+  --bg-2: #252528;
+  --label: #ffffff;
+  --label-2: #a2a2a7;
+  --label-3: #e5e5ea;
+  --separator: #6c6c70;
+  --hair: rgba(255, 255, 255, .09);
+  --accent: #0a84ff;
+  --next: #5eaaff;
+  --th: #ff9f0a;
+  --hint: #d0d0d5;
+  --red: #ff6961;
+  --ok: #30d158;
+}
+
+/* Якщо JS ще не встиг (або вимкнений) — слухаємось системної теми */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --bg-0: #000000; --bg-1: #1c1c1e; --bg-2: #252528;
+    --label: #ffffff; --label-2: #a2a2a7; --label-3: #e5e5ea;
+    --separator: #6c6c70; --hair: rgba(255, 255, 255, .09);
+    --accent: #0a84ff; --next: #5eaaff; --th: #ff9f0a;
+    --hint: #d0d0d5; --red: #ff6961; --ok: #30d158;
+  }
+}
+
+/* ---------- БАЗА ---------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { background: var(--bg-0); -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg-0); color: var(--label);
+  font: 600 16px/1.3 var(--font);
+  max-width: 640px; margin: 0 auto;
+  padding: max(10px, env(safe-area-inset-top)) 8px max(16px, env(safe-area-inset-bottom));
+}
+@media (min-width: 600px) { body { padding-left: 32px; padding-right: 32px; } }
+
+/* плавна зміна теми — тільки на ключових елементах, не на всьому */
+body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s ease, color .25s ease; }
+
+/* ---------- ШАПКА ---------- */
+.hdr { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 6px; padding: 4px 0 8px; }
+.hdr-mid { text-align: center; min-width: 0; }
+.hdr-title { font-size: 19px; font-weight: 700; line-height: 1.2; }
+.hdr-sub { font-size: 13px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
+.btn-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg-1); color: var(--accent); border: 1px solid var(--separator);
+  font: 600 26px/1 var(--font); text-decoration: none; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+#theme-toggle { font-size: 20px; }
+.btn-icon:active { transform: scale(.94); }
+.hdr-side { display: block; width: 44px; }
+
+/* ---------- ТАБЛИЦІ ---------- */
+table {
+  width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0;
+  margin: 6px 0 12px; background: var(--bg-1);
+  border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0, 0, 0, .12);
+}
+th {
+  background: var(--bg-1); color: var(--label); padding: 10px 10px 10px 2px;
+  font-size: 16px; font-weight: 700; letter-spacing: .2px; line-height: 1.15;
+  border-bottom: 1px solid var(--separator); white-space: normal;
+}
+th.red { color: var(--red); }
+th.tbl-title { padding: 10px 6px; font-size: 16px; white-space: nowrap; overflow: hidden; }
+.tbl-title .from { color: var(--th); }
+
+td {
+  background: var(--bg-2); color: var(--label-2);
+  padding: 6px 10px 6px 2px; font-size: 16px; font-weight: 600;   /* 10px справа — місце для маркера */
+  text-align: center; white-space: nowrap; overflow: hidden;
+  border-top: 1px solid var(--hair);
+  font-variant-numeric: tabular-nums;
+}
+tr:first-child + tr td { border-top: none; }
+table.plain td { padding-right: 2px; font-size: 15px; }   /* таблиці без маркерів (електрички) */
+td.loc { text-align: left; padding: 6px 2px 6px 8px; color: var(--label); }
+td.loc .loc-hint { color: var(--hint); font-weight: 500; font-size: .85em; }
+td.key { color: var(--th); }
+td.mf { color: var(--red); }   /* рейс лише Пн–Пт (~ у даних) */
+
+/* час + маркер: цифри часу завжди рівно по центру, маркер «висить» праворуч */
+.tm { position: relative; display: inline-block; }
+td .tm .marker { position: absolute; left: 100%; margin-left: 3px; }
+
+/* ---------- ПІДСВІТКА ТЕКСТУ ---------- */
+.marker   { color: var(--label-3); font-weight: 700; letter-spacing: .3px; }
+.weekend, .text-red { color: var(--red); font-weight: 700; }
+.text-light { color: var(--label); font-weight: 700; }
+.text-blue  { color: var(--next); font-weight: 700; }
+.text-green { color: var(--ok); font-weight: 700; }
+.text-yellow { color: var(--th); font-weight: 700; }
+.hl       { color: var(--label); font-weight: 700; }
+.hl-price { color: var(--th); font-weight: 700; }
+.note-italic { font-style: italic; }
+.warn-text { color: var(--red); font-weight: 700; }
+
+/* ---------- «ЖИВЕ» РОЗКЛАДАННЯ ---------- */
+[data-time] { transition: color 1s ease, background-color .25s ease; }
+[data-time].next-dep { font-weight: 800; color: var(--next); }
+
+/* ---------- ПРИМІТКИ ---------- */
+.note { padding: 4px 14px 12px; font-size: 14px; color: var(--label-2); line-height: 1.45; font-weight: 500; }
+.note a { color: var(--next); }
+.updated { padding: 2px 14px 16px; font-size: 12px; color: var(--hint); font-weight: 500; text-align: center; }
+
+/* ---------- МЕНЮ ---------- */
+.menu { margin: 10px 0 24px; background: var(--bg-1); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0, 0, 0, .12); }
+.row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 18px; font-size: 17px; font-weight: 600; color: var(--label);
+  text-decoration: none; border-top: 1px solid var(--separator);
+  -webkit-tap-highlight-color: transparent;
+}
+.row:first-child { border-top: none; }
+a.row:active { background: var(--bg-2); }
+.row .chev { color: var(--hint); font-weight: 500; }
+.row.soon { color: var(--hint); }
+.row.soon .chev { font-size: 12px; font-weight: 600; }
+
+/* ---------- ПОВІДОМЛЕННЯ «РОЗКЛАД ОНОВЛЕНО» ---------- */
+.toast {
+  position: fixed; left: 12px; right: 12px; top: max(10px, env(safe-area-inset-top)); z-index: 9500;
+  max-width: 616px; margin: 0 auto; padding: 12px 16px;
+  background: var(--accent); color: var(--accent-text); border: none; border-radius: 14px;
+  font: 700 15px/1.3 var(--font); text-align: center; cursor: pointer;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .35);
+}
+
+/* ---------- ЗАСТАВКА (тільки в встановленому додатку) ---------- */
+#app-splash { position: fixed; inset: 0; z-index: 99999; overflow: hidden; }
+.curtain { position: absolute; top: 0; bottom: 0; width: 50%; background: var(--bg-1); transform: translateY(-100%); }
+.curtain-left { left: 0; }
+.curtain-right { right: 0; }
+.curtain.run { animation: curtainDown .5s cubic-bezier(.65, 0, .35, 1) forwards; }
+.curtain-left.part { animation: curtainLeftOut .55s cubic-bezier(.65, 0, .35, 1) forwards; }
+.curtain-right.part { animation: curtainRightOut .55s cubic-bezier(.65, 0, .35, 1) forwards; }
+@keyframes curtainDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+@keyframes curtainLeftOut { from { transform: translate(0, 0); } to { transform: translate(-100%, 0); } }
+@keyframes curtainRightOut { from { transform: translate(0, 0); } to { transform: translate(100%, 0); } }
+.splash-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; opacity: 0; transition: opacity .3s ease; }
+.splash-content.show { opacity: 1; }
+.splash-icon { width: 84px; height: 84px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0, 0, 0, .35); }
+.splash-title { font-size: 19px; font-weight: 700; color: var(--label); letter-spacing: .3px; }
+
+/* ---------- ВУЗЬКІ ЕКРАНИ ---------- */
+@media (max-width: 380px) {
+  body { font-size: 14px; }
+  th { font-size: 14px; padding: 8px 8px 8px 1px; }
+  th.tbl-title { font-size: 14px; padding: 8px 4px; }
+  td { font-size: 14px; }
+  .hdr-title { font-size: 17px; }
+}
+
+/* ---------- МЕНШЕ РУХУ ---------- */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation-duration: .01ms !important; }
+}
