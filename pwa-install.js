@@ -7,7 +7,7 @@
    Колір банера бере тему додатка (світла/темна).
 
    Налагодження через console.js:
-     localStorage.removeItem('pwa-install-dismissed')  — повернути банер
+     localStorage.removeItem('pwa-install-dismissed-v2')  — повернути банер
      localStorage.setItem('pwa-install-debug','1')     — показувати завжди
 */
 (function () {
@@ -33,7 +33,7 @@
       || window.navigator.standalone === true;
     if (standalone && !DEBUG) { log('вже встановлено'); return; }
 
-    var KEY = 'pwa-install-dismissed', WEEK = 7 * 24 * 60 * 60 * 1000;
+    var KEY = 'pwa-install-dismissed-v2', WEEK = 7 * 24 * 60 * 60 * 1000;
     if (!DEBUG) {
       try {
         var d = parseInt(localStorage.getItem(KEY), 10);
