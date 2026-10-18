@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Info — Розклад</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Розклад">
+<meta id="themeColorMeta" name="theme-color" content="#f2f2f7">
+<meta property="og:title" content="Розклад — Info">
+<meta property="og:type" content="website">
+<link rel="manifest" href="/icons/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="icon" href="/icons/favicon.ico" sizes="32x32">
+<meta name="msapplication-config" content="/browserconfig.xml">
+<link rel="stylesheet" href="app.css">
+<!-- тема ставиться ДО малювання сторінки, щоб не було світлого «спалаху» -->
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-page="info">
+<header class="hdr"></header>
+<main id="app">
+  <p class="info-text">
+    Додаток створено для власного користування, по фото розкладу руху з місцевих маршруток.
+    Носить інформаційний характер і не може впливати на графік руху транспортних засобів.
+  </p>
+
+  <p class="info-red">Знайшли неточності або змінився графік — напишіть в TELEGRAM каналі. Виправлю.</p>
+
+  <p class="info-bold">
+    Версія: Android; формат А4 (iPhone)<br>
+    Скануємо або ТИКАЄМО :) QR-код.
+  </p>
+
+  <div class="qr-wrap">
+    <!-- Замінити YOUR_CHANNEL на посилання Telegram-каналу -->
+    <img id="qr-img" alt="QR-код Telegram" loading="lazy"
+         src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=https://t.me/YOUR_CHANNEL">
+    <span class="qr-label">Telegram канал</span>
+  </div>
+
+  <p class="thanks">Бажаючі подякувати можуть нижче</p>
+
+  <!-- Замінити YOUR_LINK на посилання для донату -->
+  <a class="btn-tea" href="https://send.monobank.ua/YOUR_LINK" target="_blank" rel="noopener">НА ЧАЙ :)</a>
+
+  <div class="bottom-bar">
+    <button class="btn-reload" id="reload-btn" type="button">ОНОВИТИ</button>
+    <div class="bottom-meta">
+      <span>Автор: <span class="author">SERGII KYSELOV</span></span>
+      <span id="version-label">Версія: —</span>
+    </div>
+  </div>
+</main>
+
+<script src="schedule-data.js"></script>
+<script src="pwa-install.js"></script>
+<script src="app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {   // після того, як app.js намалював шапку
+  // версія = дата останньої зміни розкладу (SCHEDULE.updated), поки не задана — стара
+  var u = String((window.SCHEDULE && SCHEDULE.updated) || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  document.getElementById('version-label').textContent = 'Версія: ' + (u ? u[3] + '.' + u[2] + '.' + u[1] : '19.07.25');
+
+  // ОНОВИТИ: скидає кеш додатку і службовий скрипт, потім перезавантажує — завжди свіжа версія
+  document.getElementById('reload-btn').addEventListener('click', function () {
+    var jobs = [];
+    if (window.caches) jobs.push(caches.keys().then(function (k) { return Promise.all(k.map(function (n) { return caches.delete(n); })); }));
+    if (navigator.serviceWorker) jobs.push(navigator.serviceWorker.getRegistrations().then(function (r) { return Promise.all(r.map(function (x) { return x.unregister(); })); }));
+    Promise.all(jobs).catch(function () {}).then(function () { location.reload(); });
+  });
+
+  document.getElementById('share-btn').addEventListener('click', function () {
+    var btn = this;
+    if (navigator.share) { navigator.share({ title: 'Розклад маршруток', url: location.origin }).catch(function () {}); }
+    else if (navigator.clipboard) {
+      navigator.clipboard.writeText(location.origin);
+      btn.textContent = '✓'; setTimeout(function () { btn.textContent = '⬆️'; }, 1500);
+    }
+  });
+});
+</script>
+<script src="console.js"></script>
+</body>
+</html>

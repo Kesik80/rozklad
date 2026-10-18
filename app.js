@@ -57,7 +57,7 @@
 
   /* ============================================================
      ПІДСВІТКА ТЕКСТУ — ОДНИМ ПРОХОДОМ
-     • час + маркер (К П Б Ф Пн) → цифри по центру, маркер збоку
+     • час + маркер (К П Б Ф Пн Верх) → цифри по центру, маркер збоку
      • окремі маркери → .marker
      • фрази з SCHEDULE.colors → свій css-клас
      Теги HTML не чіпаємо; результат уже підсвіченого не підсвічується вдруге.
@@ -67,10 +67,11 @@
     var ph = Object.keys(D.colors || {})
       .sort(function (a, b) { return b.length - a.length; })
       .map(function (s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
+    var MK = '(?:Верх|Пн|[КПБФ])(?:\\s+(?:Верх|Пн))*';   // маркер або кілька підряд: «Верх Пн»
     var src =
       '(' + (ph.length ? ph.join('|') : '\\b\\B') + ')' +                  // 1: фраза
-      '|(\\d{1,2}:\\d{2})(?:\\s*(Пн|[КПБФ])(?![\\p{L}\\d]))?' +            // 2: час, 3: маркер після часу
-      '|(^|[^\\p{L}\\d])(Пн|[КПБФ])(?![\\p{L}\\d])';                       // 4: що перед, 5: окремий маркер
+      '|(\\d{1,2}:\\d{2})(?:\\s*(' + MK + ')(?![\\p{L}\\d]))?' +          // 2: час, 3: маркер після часу
+      '|(^|[^\\p{L}\\d])(' + MK + ')(?![\\p{L}\\d])';                      // 4: що перед, 5: окремий маркер
     RE = new RegExp(src, 'gu');
   }
 
@@ -91,35 +92,40 @@
   /* ============================================================
      ДАНІ → ТАБЛИЦІ
      ============================================================ */
-  function parse(str) { return String(str).split(',').map(function (s) { return s.trim(); }); }
-  function timesOf(key) { return D.times && D.times[key] != null ? D.times[key] : key; }
+  function parse(x) { return (Array.isArray(x) ? x : String(x).split(',')).map(function (s) { return String(s).trim(); }); }
+  function timesOf(key) { return typeof key === 'string' && D.times && D.times[key] != null ? D.times[key] : key; }
   function isTime(s) { return /\d{1,2}:\d{2}/.test(s || ''); }
   function timeOf(s) { var m = (s || '').match(/\d{1,2}:\d{2}/); return m ? m[0] : ''; }
 
   /* перевірка формату й порядку часу — помилки йдуть у консоль */
-  function validate(name, tokens) {
+  function validate(name, tokens, unordered) {
     var prev = -1;
     tokens.forEach(function (tk, i) {
       var t = tk.replace(/^~/, '');
       if (!t || t === '-') return;
-      var m = t.match(/^(\d{1,2}):(\d{2})\s*(Пн|[КПБФ])?$/);
+      var m = t.match(/^(\d{1,2}):(\d{2})\s*((?:Верх|Пн|[КПБФ])(?:\s+(?:Верх|Пн))*)?$/);
       if (!m || +m[1] > 23 || +m[2] > 59) { warn(name + ' #' + (i + 1) + ': "' + tk + '" — невірний формат часу'); return; }
       var min = +m[1] * 60 + +m[2];
-      if (min < prev) warn(name + ' #' + (i + 1) + ': ' + t + ' раніше за попередній рядок');
+      if (!unordered && min < prev) warn(name + ' #' + (i + 1) + ': ' + t + ' раніше за попередній рядок');
       prev = min;
     });
   }
 
-  function cellAttrs(tok, day, group) {
+  var MON_RE = /(^|[\s\d])Пн(?![\p{L}\d])/u;      // маркер «Пн» → рейс лише в понеділок
+  var VERH_RE = /(^|[\s\d])Верх(?![\p{L}\d])/u;   // маркер «Верх» → рейс через Верхоли
+
+  function cellAttrs(tok, day, group, split) {
     var t = timeOf(tok);
     if (!t) return '';
-    return ' data-time="' + t + '" data-day="' + (tok.charAt(0) === '~' ? 'mf' : day) + '" data-group="' + group + '"';
+    var mf = tok.charAt(0) === '~';
+    var d = mf ? 'mf' : MON_RE.test(tok) ? 'mon' : day;
+    return ' data-time="' + t + '" data-day="' + d + '" data-group="' + (split && mf ? group + '~' : group) + '"';
   }
 
-  function cellHtml(tok, day, group, extraCls) {
+  function cellHtml(tok, day, group, extraCls, split) {
     var mf = tok.charAt(0) === '~';
     var cls = (extraCls || '') + (mf ? ' mf' : '');
-    return '<td' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + cellAttrs(tok, day, group) + '>' +
+    return '<td' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + cellAttrs(tok, day, group, split) + '>' +
       fmt(mf ? tok.slice(1) : tok) + '</td>';
   }
 
@@ -129,28 +135,58 @@
              : '<td class="loc">' + name + '</td>';
   }
 
-  function renderGrid(P, pageName) {
+  function renderGrid(P, pageName, id, hideVerRows) {
     var cols = P.cols.map(function (c) {
       var toks = c.loc ? parse(P.loc) : parse(timesOf(c.t));
-      if (!c.loc) validate(pageName + ' / ' + c.th + ' (' + (c.t.length < 20 ? c.t : 'колонка') + ')', toks);
+      if (!c.loc) validate(pageName + ' / ' + c.th + ' (' + (typeof c.t === 'string' && c.t.length < 20 ? c.t : 'колонка') + ')', toks, P.unordered);
       return { spec: c, toks: toks };
     });
     var n = cols.length;
     var widths = P.widths || cols.map(function () { return 100 / n; });
     var rows = Math.max.apply(null, cols.map(function (c) { return c.toks.length; }));
 
-    var h = '<table><colgroup>' + widths.map(function (w) { return '<col style="width:' + w + '%">'; }).join('') + '</colgroup><tr>';
+    var h = '<table' + (id ? ' id="' + id + '"' : '') + (P.align === 'left' ? ' class="left"' : '') + '><colgroup>' +
+      widths.map(function (w) { return '<col style="width:' + w + '%">'; }).join('') + '</colgroup><tr>';
     cols.forEach(function (c) { h += '<th' + (c.spec.red ? ' class="red"' : '') + '>' + c.spec.th + '</th>'; });
     h += '</tr>';
     for (var i = 0; i < rows; i++) {
-      h += '<tr>';
+      var ver = hideVerRows && cols.some(function (c) { return VERH_RE.test(c.toks[i] || ''); });
+      h += '<tr' + (ver ? ' class="ver-row"' : '') + '>';
       cols.forEach(function (c) {
         var tok = c.toks[i] || '';
-        h += c.spec.loc ? locHtml(tok) : cellHtml(tok, c.spec.day || 'all', c.spec.group || ('c' + cols.indexOf(c)));
+        h += c.spec.loc ? locHtml(tok) : cellHtml(tok, c.spec.day || 'all', c.spec.group || ('c' + cols.indexOf(c)), '', P.splitMf);
       });
       h += '</tr>';
     }
     return h + '</table>';
+  }
+
+  /* Вовківка: кнопка «Верхоли» ховає рейси «Верх» з головної таблиці й показує окрему */
+  function renderToggle(P, pageName) {
+    var T = P.toggle;
+    return '<div class="toggle-wrap"><button id="ver-toggle" class="toggle-ver" type="button">▼ ' + T.label + '</button></div>' +
+      '<div id="ver-section" class="ver-section"><div class="gr-label">' + T.label + '</div>' +
+      renderGrid(T.grid, pageName + ' / ' + T.label, 'ver-grid') + '</div>';
+  }
+
+  function initToggle(P) {
+    var T = P.toggle, btn = $('#ver-toggle'), sec = $('#ver-section');
+    if (!btn || !sec) return;
+    var on = false;
+    try { on = localStorage.getItem(T.key) === '1'; } catch (e) {}
+    function apply() {
+      sec.classList.toggle('show', on);
+      btn.classList.toggle('active', on);
+      btn.textContent = (on ? '▲ ' : '▼ ') + T.label;
+      document.querySelectorAll('#grid .ver-row').forEach(function (tr) { tr.style.display = on ? 'none' : ''; });
+      updateLive();
+    }
+    btn.addEventListener('click', function () {
+      on = !on;
+      try { localStorage.setItem(T.key, on ? '1' : '0'); } catch (e) {}
+      apply();
+    });
+    apply();
   }
 
   function renderRoutes(P, pageName) {
@@ -191,6 +227,7 @@
   function renderNotes(P) {
     function res(s) { return s.charAt(0) === '@' ? (D.notes[s.slice(1)] || '') : s; }
     var h = (P.notes || []).map(function (n) {
+      if (n && n.raw) return '<div class="note">' + n.raw + '</div>';   // без автопідсвітки
       var html = Array.isArray(n) ? n.map(res).join('<br>') : res(n);
       return '<div class="note">' + fmt(html) + '</div>';
     }).join('');
@@ -209,7 +246,9 @@
                         : '<a class="btn-icon" href="index.html" aria-label="Назад">‹</a>') +
       '<div class="hdr-mid"><div class="hdr-title">' + P.title + '</div>' +
       (P.sub ? '<div class="hdr-sub">' + P.sub + '</div>' : '') + '</div>' +
-      '<button id="theme-toggle" class="btn-icon" type="button" aria-label="Змінити тему"></button>';
+      (P.right === 'share'
+        ? '<button id="share-btn" class="btn-icon" type="button" aria-label="Поділитися">⬆️</button>'
+        : '<button id="theme-toggle" class="btn-icon" type="button" aria-label="Змінити тему"></button>');
   }
 
   /* ============================================================
@@ -244,7 +283,7 @@
     var info = [];
 
     cells.forEach(function (td) {
-      if (!dayActive(td.dataset.day, dow)) { info.push(null); return; }
+      if (!dayActive(td.dataset.day, dow) || td.offsetParent === null) { info.push(null); return; }  // не той день або рядок схований
       var p = td.dataset.time.split(':');
       var diff = +p[0] * 3600 + +p[1] * 60 - nowSec;
       info.push(diff);
@@ -306,9 +345,12 @@
 
     renderHeader(P);
     try {
-      app.innerHTML =
-        (P.type === 'menu' ? renderMenu() : P.type === 'routes' ? renderRoutes(P, name) : renderGrid(P, name)) +
-        renderNotes(P);
+      if (P.type !== 'static') {   // 'static' — сторінка зі своєю розміткою (info.html)
+        app.innerHTML =
+          (P.type === 'menu' ? renderMenu() : P.type === 'routes' ? renderRoutes(P, name) : renderGrid(P, name, 'grid', !!P.toggle)) +
+          (P.toggle ? renderToggle(P, name) : '') +
+          renderNotes(P);
+      }
     } catch (e) {
       app.innerHTML = '<div class="note">Помилка даних розкладу. Перевірте schedule-data.js</div>';
       warn('помилка рендеру: ' + e.message);
@@ -317,6 +359,7 @@
     if (P.type === 'menu') equalize('.menu .label');
     initTheme();
     startLive();
+    if (P.toggle) initToggle(P);
     initUpdateToast();
     if (window.PWAInstall) PWAInstall.init({ appName: 'Розклад' });
   }

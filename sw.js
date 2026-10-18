@@ -13,7 +13,8 @@ const NET_TIMEOUT = 2500;     // мс очікування мережі, пот�
 
 const PRECACHE = [
   './', 'index.html', 'pereizd.html', 'tereschky.html', 'otg.html',
-  'mykilske.html', 'elektrychky.html',
+  'mykilske.html', 'elektrychky.html', 'mynivka.html', 'kashubivka.html', 'vovkivka.html',
+  'verkholy.html', 'golovach.html', 'info.html',
   'app.css', 'app.js', 'schedule-data.js', 'pwa-install.js', 'splash-screen.js', 'console.js',
   'icons/manifest.json', 'icons/icon-192x192.png', 'icons/favicon.ico'
 ];

@@ -153,6 +153,46 @@ a.row:active { background: var(--bg-2); }
 .row.soon { color: var(--hint); }
 .label { display: inline-block; text-align: left; }   /* ширину всім підписам задає app.js */
 
+/* ---------- ТАБЛИЦІ З ВИРІВНЯНИМ ВЛІВО (Вовківка, Верхоли, Головач) ---------- */
+table.left td { text-align: left; padding-left: 14px; padding-right: 2px; }
+table.left td .tm .marker { position: static; margin-left: 4px; }
+
+/* ---------- ПЕРЕМИКАЧ «ВЕРХОЛИ» (Вовківка) ---------- */
+.toggle-wrap { display: flex; justify-content: center; margin: 4px 0 0; }
+.toggle-ver {
+  background: var(--bg-1); color: var(--accent); border: 1.5px solid var(--accent);
+  border-radius: 20px; padding: 8px 20px; font: 600 15px var(--font); cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: background-color .15s, color .15s;
+}
+.toggle-ver.active { background: var(--accent); color: var(--accent-text); }
+.ver-section { display: none; }
+.ver-section.show { display: block; }
+.gr-label { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; padding: 14px 2px 2px; color: var(--label-2); }
+.gr-label::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+/* ---------- СТОРІНКА INFO ---------- */
+body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 15px; }
+.info-text { line-height: 1.6; color: var(--label-2); margin: 6px 6px 14px; }
+.info-red  { color: var(--red); font-weight: 700; line-height: 1.5; margin: 0 6px 14px; }
+.info-bold { font-weight: 700; color: var(--label); line-height: 1.6; margin: 0 6px 14px; }
+.qr-wrap { display: flex; flex-direction: column; align-items: center; margin: 16px 0; gap: 12px; }
+.qr-wrap img { width: 200px; height: 200px; border-radius: 12px; background: #fff; padding: 8px; box-shadow: 0 2px 16px rgba(0, 0, 0, .15); }
+.qr-label { font-size: 14px; color: var(--label-2); text-align: center; }
+.thanks { text-align: center; font-weight: 700; color: var(--label); margin: 20px 0 10px; }
+.btn-tea, .btn-reload {
+  display: block; text-align: center; text-decoration: none; background: transparent; color: var(--red);
+  border: 2px solid var(--red); font: 700 17px var(--font); cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.btn-tea { width: fit-content; margin: 0 auto; padding: 12px 32px; border-radius: 14px; }
+.btn-tea:active, .btn-reload:active { background: var(--red); color: #fff; }
+.bottom-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg-0); border-top: 1px solid var(--separator);
+  padding: 10px 16px max(10px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 6px; z-index: 100;
+}
+.btn-reload { width: 100%; max-width: 616px; margin: 0 auto; padding: 12px; border-radius: 14px; letter-spacing: .5px; }
+.bottom-meta { display: flex; justify-content: space-between; max-width: 616px; width: 100%; margin: 0 auto; font-size: 13px; font-weight: 600; color: var(--label-2); }
+.bottom-meta .author { color: var(--red); }
+
 /* ---------- ПОВІДОМЛЕННЯ «РОЗКЛАД ОНОВЛЕНО» ---------- */
 .toast {
   position: fixed; left: 12px; right: 12px; top: max(10px, env(safe-area-inset-top)); z-index: 9500;
