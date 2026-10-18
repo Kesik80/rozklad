@@ -334,6 +334,68 @@
     });
   }
 
+
+  /* ============================================================
+     НАВІГАЦІЯ «НАЗАД»
+     • кнопка ‹ і системна «Назад» на підсторінці → завжди головна;
+     • на головній: перше «Назад» — підказка, друге (протягом 2.5 с) — вихід.
+     Захисний запис в історію додається після першого дотику
+     (інакше Chrome його пропускає).
+     ============================================================ */
+  function exitToast() {
+    var t = document.querySelector('.exit-toast');
+    if (!t) { t = document.createElement('div'); t.className = 'exit-toast'; document.body.appendChild(t); }
+    t.textContent = 'Натисніть «Назад» ще раз, щоб вийти';
+    t.classList.add('show');
+    clearTimeout(exitToast._t);
+    exitToast._t = setTimeout(function () { t.classList.remove('show'); }, 2500);
+  }
+
+  function initNav(isHome) {
+    var S = history.state || {}, armed = false;
+    function onGesture(fn) {
+      ['pointerdown', 'touchstart', 'keydown'].forEach(function (ev) { addEventListener(ev, fn, { once: true, passive: true }); });
+    }
+    try {
+      if (isHome) {
+        if (S.rz === 'guard') armed = true;
+        else if (S.rz !== 'home') history.replaceState({ rz: 'home' }, '');
+        var arm = function () {
+          if (armed || !history.state || history.state.rz !== 'home') return;
+          armed = true; history.pushState({ rz: 'guard' }, '');
+        };
+        onGesture(arm);
+        addEventListener('popstate', function () {
+          if (!history.state || history.state.rz !== 'home') return;
+          armed = false;               // ми на першому записі: наступне «Назад» вийде з додатка
+          exitToast();
+          setTimeout(function () { onGesture(arm); }, 2600);
+        });
+      } else {
+        var fi = false;
+        if (S.rz) fi = !!S.fi;
+        else {
+          try { var u = new URL(document.referrer); fi = u.origin === location.origin && /(^\/$|index\.html$)/.test(u.pathname); } catch (e) {}
+          history.replaceState({ rz: 'sub', fi: fi }, '');
+        }
+        if (S.rz === 'subguard') armed = true;
+        onGesture(function () {
+          if (armed || !history.state || history.state.rz !== 'sub') return;
+          armed = true; history.pushState({ rz: 'subguard', fi: fi }, '');
+        });
+        addEventListener('popstate', function () {
+          if (history.state && history.state.rz === 'sub') { fi ? history.go(-1) : location.replace('index.html'); }
+        });
+        var b = document.querySelector('.hdr a.btn-icon[href]');
+        if (b) b.addEventListener('click', function (e) {
+          e.preventDefault();
+          var guard = history.state && history.state.rz === 'subguard';
+          if (fi) history.go(guard ? -2 : -1); else location.replace('index.html');
+        });
+      }
+    } catch (e) { warn('навігація: ' + e.message); }
+  }
+
   /* ============================================================
      СТАРТ
      ============================================================ */
@@ -344,6 +406,7 @@
     if (!P || !app) { warn('невідома сторінка: ' + name); return; }
 
     renderHeader(P);
+    initNav(P.back === false);
     try {
       if (P.type !== 'static') {   // 'static' — сторінка зі своєю розміткою (info.html)
         app.innerHTML =
