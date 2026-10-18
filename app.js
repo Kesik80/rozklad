@@ -250,7 +250,7 @@
         ? '<button id="share-btn" class="btn-icon" type="button" aria-label="Поділитися">⬆️</button>'
         : P.type === 'menu'
           ? '<button id="theme-toggle" class="btn-icon" type="button" aria-label="Змінити тему"></button>'
-          : '<button id="save-img" class="btn-icon" type="button" aria-label="Зберегти картинкою">🖼️</button>');
+          : '<button id="save-img" class="btn-icon" type="button" aria-label="Зберегти картинкою"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="M7.5 10 12 14.5 16.5 10"/><path d="M5 19h14"/></svg></button>');
   }
 
   /* ============================================================
