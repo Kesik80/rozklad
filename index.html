@@ -29,12 +29,18 @@
   </div>
 </div>
 <script>
-// Заставка — тільки в встановленому додатку (standalone). У браузері прибираємо одразу.
+// Заставка — лише при ЗАПУСКУ встановленого додатку (standalone), один раз за запуск.
+// Повернення на головну з іншої сторінки заставку не показує.
 (function () {
-  window.__isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches
+  var standalone = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
+  var seen = false;
+  try { seen = sessionStorage.getItem('splashShown') === '1'; } catch (e) {}
+  try { if (document.referrer && new URL(document.referrer).origin === location.origin) seen = true; } catch (e) {}
+  window.__showSplash = standalone && !seen;
   var el = document.getElementById('app-splash');
-  if (window.__isStandaloneApp) {
+  if (window.__showSplash) {
+    try { sessionStorage.setItem('splashShown', '1'); } catch (e) {}
     el.querySelector('.curtain-left').classList.add('run');
     el.querySelector('.curtain-right').classList.add('run');
   } else if (el) {
@@ -48,7 +54,7 @@
 <script src="schedule-data.js"></script>
 <script src="pwa-install.js"></script>
 <script src="splash-screen.js"></script>
-<script>if (window.__isStandaloneApp) SplashScreen.init();</script>
+<script>if (window.__showSplash) SplashScreen.init();</script>
 <script src="app.js"></script>
 <script src="console.js"></script>
 </body>

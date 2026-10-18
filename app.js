@@ -173,11 +173,19 @@
   }
 
   function renderMenu() {
-    return '<nav class="menu">' + D.menu.map(function (m) {
+    return '<div class="menu">' + D.menu.map(function (m) {
       return m.soon || !m.href
-        ? '<div class="row soon">' + m.label + '<span class="chev">скоро</span></div>'
-        : '<a class="row" href="' + m.href + '">' + m.label + '<span class="chev">›</span></a>';
-    }).join('') + '</nav>';
+        ? '<div class="row soon"><span class="label">' + m.label + '</span></div>'
+        : '<a class="row" href="' + m.href + '"><span class="label">' + m.label + '</span></a>';
+    }).join('') + '</div>';
+  }
+
+  /* усі підписи меню — однієї ширини (по найширшому), щоб стояли рівним стовпчиком */
+  function equalize(sel) {
+    var els = document.querySelectorAll(sel), max = 0;
+    els.forEach(function (e) { e.style.width = 'auto'; });
+    els.forEach(function (e) { max = Math.max(max, e.getBoundingClientRect().width); });
+    els.forEach(function (e) { e.style.width = max + 'px'; });
   }
 
   function renderNotes(P) {
@@ -306,6 +314,7 @@
       warn('помилка рендеру: ' + e.message);
     }
 
+    if (P.type === 'menu') equalize('.menu .label');
     initTheme();
     startLive();
     initUpdateToast();
