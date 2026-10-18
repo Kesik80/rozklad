@@ -1,6 +1,38 @@
 {
   "functions": {
-    "api/fetch-timetable.js": { "maxDuration": 30 },
-    "api/fetch-station.js":   { "maxDuration": 30 }
-  }
+    "api/fetch-timetable.js": {
+      "maxDuration": 30
+    },
+    "api/fetch-station.js": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/icons/manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        }
+      ]
+    }
+  ]
 }

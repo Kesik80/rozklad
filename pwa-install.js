@@ -132,14 +132,19 @@
     if (window.__pwaPromptEvent) usePrompt(window.__pwaPromptEvent);
     window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); usePrompt(e); });
 
-    // браузер не прислав подію (Firefox, Samsung Internet…) — показуємо ручну інструкцію
-    setTimeout(function () {
-      if (fired) return;
-      $('pwa-sub').textContent = 'Через меню браузера';
-      $('pwa-go').textContent = 'Як?';
-      $('pwa-go').onclick = function () { guide('android'); };
-      show();
-    }, 5000);
+    // Браузер не прислав подію. Chrome/Edge так роблять, коли додаток уже встановлений
+    // або ще не відповідає вимогам — тоді мовчимо (як у WashTime), не заважаємо.
+    // Інструкцію показуємо лише браузерам, які цієї події не мають зовсім (Firefox, Samsung Internet).
+    var chromium = /chrome|crios|edg\//i.test(ua) && !/samsungbrowser|firefox|fxios/i.test(ua);
+    if (!chromium) {
+      setTimeout(function () {
+        if (fired) return;
+        $('pwa-sub').textContent = 'Через меню браузера';
+        $('pwa-go').textContent = 'Як?';
+        $('pwa-go').onclick = function () { guide('android'); };
+        show();
+      }, 3000);
+    } else log('Chrome не прислав beforeinstallprompt (додаток вже встановлений або не виконані вимоги PWA)');
 
     window.addEventListener('appinstalled', function () {
       hide();

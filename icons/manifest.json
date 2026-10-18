@@ -25,5 +25,10 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "scope": "/",
+  "display_override": [
+    "standalone"
+  ],
+  "orientation": "portrait"
 }
