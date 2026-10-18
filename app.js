@@ -248,7 +248,9 @@
       (P.sub ? '<div class="hdr-sub">' + P.sub + '</div>' : '') + '</div>' +
       (P.right === 'share'
         ? '<button id="share-btn" class="btn-icon" type="button" aria-label="Поділитися">⬆️</button>'
-        : '<button id="theme-toggle" class="btn-icon" type="button" aria-label="Змінити тему"></button>');
+        : P.type === 'menu'
+          ? '<button id="theme-toggle" class="btn-icon" type="button" aria-label="Змінити тему"></button>'
+          : '<button id="save-img" class="btn-icon" type="button" aria-label="Зберегти картинкою">🖼️</button>');
   }
 
   /* ============================================================
@@ -342,13 +344,82 @@
      Захисний запис в історію додається після першого дотику
      (інакше Chrome його пропускає).
      ============================================================ */
-  function exitToast() {
+  function exitToast(msg) {
     var t = document.querySelector('.exit-toast');
     if (!t) { t = document.createElement('div'); t.className = 'exit-toast'; document.body.appendChild(t); }
-    t.textContent = 'Натисніть «Назад» ще раз, щоб вийти';
+    t.textContent = msg || 'Натисніть «Назад» ще раз, щоб вийти';
     t.classList.add('show');
     clearTimeout(exitToast._t);
     exitToast._t = setTimeout(function () { t.classList.remove('show'); }, 2500);
+  }
+
+  /* ============================================================
+     ЗБЕРЕЖЕННЯ СТОРІНКИ КАРТИНКОЮ (PNG)
+     Завжди у СВІТЛІЙ темі, разом із примітками. Без сторонніх бібліотек:
+     копія сторінки → SVG (foreignObject) → canvas → PNG.
+     ============================================================ */
+  var SNAP_W = 480, SNAP_SCALE = 2;
+
+  function snapCss(css) {   // :root / html / body → .snap, щоб змінні теми та фон працювали всередині картинки
+    return css.replace(/:root\b/g, '.snap')
+              .replace(/(^|[\s,}])html\b/g, '$1.snap')
+              .replace(/(^|[\s,}])body\b/g, '$1.snap');
+  }
+
+  function snapMarkup() {
+    var app = $('#app').cloneNode(true), hdr = $('.hdr').cloneNode(true);
+    [].forEach.call(app.querySelectorAll('button, .toggle-wrap'), function (n) { n.remove(); });
+    [].forEach.call(app.querySelectorAll('.next-dep'), function (n) { n.classList.remove('next-dep'); });
+    [].forEach.call(app.querySelectorAll('td'), function (n) { n.style.removeProperty('color'); n.style.removeProperty('font-weight'); });
+    var sec = app.querySelector('.ver-section');
+    if (sec) { sec.classList.add('show'); [].forEach.call(app.querySelectorAll('.ver-row'), function (n) { n.style.display = 'none'; }); }   // повний вигляд: основна таблиця + блок «Верхоли»
+    [].forEach.call(hdr.querySelectorAll('a.btn-icon, button.btn-icon'), function (n) { n.outerHTML = '<span class="hdr-side"></span>'; });
+    var d = new Date(), p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+    return '<div class="snap" data-theme="light" xmlns="http://www.w3.org/1999/xhtml" style="width:' + SNAP_W + 'px;max-width:none;margin:0;">' +
+      '<div class="hdr">' + hdr.innerHTML + '</div>' + app.outerHTML +
+      '<div style="text-align:center;font:500 12px sans-serif;color:#66666b;padding:10px 0 2px;">Розклад Терешки · tereschky.vercel.app · ' +
+      p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + '.' + d.getFullYear() + '</div></div>';
+  }
+
+  function saveImage() {
+    var name = document.body.getAttribute('data-page');
+    fetch('app.css').then(function (r) { return r.text(); }).then(function (css0) {
+      var css = snapCss(css0), html = snapMarkup();
+      var fr = document.createElement('iframe');
+      fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:' + SNAP_W + 'px;height:100px;border:0;visibility:hidden';
+      fr.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>' + css + '</style></head><body style="margin:0">' + html + '</body></html>';
+      fr.onload = function () {
+        setTimeout(function () {
+          try {
+            var el = fr.contentDocument.querySelector('.snap'), h = Math.ceil(el.getBoundingClientRect().height);
+            var xml = new XMLSerializer().serializeToString(el);
+            fr.remove();
+            var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + SNAP_W + '" height="' + h + '"><foreignObject width="100%" height="100%">' +
+              '<style xmlns="http://www.w3.org/1999/xhtml"><![CDATA[' + css + ']]></style>' + xml + '</foreignObject></svg>';
+            var img = new Image();
+            img.onload = function () {
+              var c = document.createElement('canvas');
+              c.width = SNAP_W * SNAP_SCALE; c.height = h * SNAP_SCALE;
+              var ctx = c.getContext('2d');
+              ctx.scale(SNAP_SCALE, SNAP_SCALE); ctx.drawImage(img, 0, 0);
+              c.toBlob(function (b) {
+                if (!b) { exitToast('Не вдалося створити картинку'); return; }
+                var d = new Date(), p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(b);
+                a.download = 'rozklad_' + name + '_' + p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(2) + '.png';
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+                exitToast('Картинку збережено');
+              }, 'image/png');
+            };
+            img.onerror = function () { exitToast('Не вдалося створити картинку'); };
+            img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+          } catch (e) { warn('картинка: ' + e.message); exitToast('Не вдалося створити картинку'); }
+        }, 150);
+      };
+      document.body.appendChild(fr);
+    }).catch(function () { exitToast('Не вдалося створити картинку'); });
   }
 
   function initNav(isHome) {
@@ -421,6 +492,8 @@
 
     if (P.type === 'menu') equalize('.menu .label');
     initTheme();
+    var si = $('#save-img');
+    if (si) si.addEventListener('click', function () { exitToast('Створюю картинку…'); saveImage(); });
     startLive();
     if (P.toggle) initToggle(P);
     initUpdateToast();
