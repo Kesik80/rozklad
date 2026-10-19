@@ -383,7 +383,7 @@
      Завжди у СВІТЛІЙ темі, разом із примітками. Без сторонніх бібліотек:
      копія сторінки → SVG (foreignObject) → canvas → PNG.
      ============================================================ */
-  var SNAP_W = 480, SNAP_SCALE = 2;
+  var SNAP_W = 412, SNAP_SCALE = 3;
 
   function snapCss(css) {   // :root / html / body → .snap, щоб змінні теми та фон працювали всередині картинки
     return css.replace(/:root\b/g, '.snap')
