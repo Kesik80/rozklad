@@ -487,6 +487,12 @@
       var sec = $('#ver-section');   // сторінка з перемикачем: зберігаємо той вигляд, що зараз на екрані
       saveImage(!!(P.toggle && sec && sec.classList.contains('show')), '');
     });
+    /* м'яка підказка: раз на 30 с кнопка «Зберегти» легенько «дихає» (щоб не робили скриншоти) */
+    if (si) setInterval(function () {
+      if (document.hidden) return;
+      si.classList.add('nudge');
+      setTimeout(function () { si.classList.remove('nudge'); }, 1800);
+    }, 30000);
     startLive();
     if (P.toggle) initToggle(P);
     initUpdateToast();

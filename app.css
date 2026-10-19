@@ -84,6 +84,10 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 }
 #theme-toggle, #save-img, #share-btn { font-size: 20px; }
 .btn-icon:active { transform: scale(.94); }
+/* м'який пульс кнопки «Зберегти» раз на 30 с */
+.btn-icon.nudge { animation: nudge .9s ease-in-out 2; }
+@keyframes nudge { 50% { transform: scale(1.12); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .btn-icon.nudge { animation: none; } }
 .hdr-side { display: block; width: 44px; }
 
 /* ---------- ТАБЛИЦІ ---------- */
