@@ -12,7 +12,7 @@
 <meta property="og:title" content="Розклад Терешки">
 <meta property="og:type" content="website">
 <link rel="manifest" href="/icons/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="apple-touch-icon" href="/icons/icon-180x180.png">
 <link rel="icon" href="/icons/favicon.ico" sizes="32x32">
 <meta name="msapplication-config" content="/browserconfig.xml">
 <link rel="stylesheet" href="app.css">
@@ -22,37 +22,11 @@
 <script>window.__pwaPromptEvent=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__pwaPromptEvent=e;if(window.__pwaOnPrompt)window.__pwaOnPrompt(e)});</script>
 </head>
 <body data-page="index" data-install="banner">
-<div id="app-splash">
-  <div class="splash-content">
-    <img src="/icons/icon-192x192.png" class="splash-icon" alt="">
-    <div class="splash-title">РАСПИСЮЛЬКА</div>
-  </div>
-</div>
-<script>
-// Заставка — лише при ЗАПУСКУ встановленого додатку (standalone), один раз за запуск.
-// Повернення на головну з іншої сторінки заставку не показує.
-(function () {
-  var standalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true;
-  var seen = false;
-  try { seen = sessionStorage.getItem('splashShown') === '1'; } catch (e) {}
-  try { if (document.referrer && new URL(document.referrer).origin === location.origin) seen = true; } catch (e) {}
-  window.__showSplash = standalone && !seen;
-  var el = document.getElementById('app-splash');
-  if (window.__showSplash) {
-    try { sessionStorage.setItem('splashShown', '1'); } catch (e) {}
-  } else if (el) {
-    el.remove();
-  }
-})();
-</script>
 <header class="hdr"></header>
 <main id="app"></main>
 
 <script src="schedule-data.js"></script>
 <script src="pwa-install.js"></script>
-<script src="splash-screen.js"></script>
-<script>if (window.__showSplash) SplashScreen.init();</script>
 <script src="app.js"></script>
 <script src="console.js"></script>
 </body>
