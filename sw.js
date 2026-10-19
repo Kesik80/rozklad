@@ -16,7 +16,7 @@ const PRECACHE = [
   'mykilske.html', 'elektrychky.html', 'mynivka.html', 'kashubivka.html', 'vovkivka.html',
   'verkholy.html', 'golovach.html', 'info.html',
   'app.css', 'app.js', 'schedule-data.js', 'pwa-install.js', 'splash-screen.js', 'console.js',
-  'icons/manifest.json', 'icons/icon-192x192.png', 'icons/favicon.ico'
+  'icons/manifest.json', 'icons/qr-app.png', 'icons/icon-192x192.png', 'icons/favicon.ico'
 ];
 
 async function broadcast(msg) {

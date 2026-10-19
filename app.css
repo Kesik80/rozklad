@@ -176,7 +176,7 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 15p
 .info-red  { color: var(--red); font-weight: 700; line-height: 1.5; margin: 0 6px 14px; }
 .info-bold { font-weight: 700; color: var(--label); line-height: 1.6; margin: 0 6px 14px; }
 .qr-wrap { display: flex; flex-direction: column; align-items: center; margin: 16px 0; gap: 12px; }
-.qr-wrap img { width: 200px; height: 200px; border-radius: 12px; background: #fff; padding: 8px; box-shadow: 0 2px 16px rgba(0, 0, 0, .15); }
+.qr-wrap img { width: 230px; height: 230px; }   /* у самої картинки вже є біла рамка з тінню */
 .qr-label { font-size: 14px; color: var(--label-2); text-align: center; }
 .thanks { text-align: center; font-weight: 700; color: var(--label); margin: 20px 0 10px; }
 .btn-tea, .btn-reload {
