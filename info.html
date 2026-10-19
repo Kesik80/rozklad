@@ -31,20 +31,24 @@
 
   <p class="info-bold">
     Додаток можна встановити як на Android, так і на iOS (iPhone).<br>
-    Скануємо або ТИКАЄМО :) QR-код.
   </p>
 
-  <div class="qr-wrap">
-    <!-- Замінити YOUR_CHANNEL на посилання Telegram-каналу -->
-    <img id="qr-img" alt="QR-код Telegram" loading="lazy"
-         src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=https://t.me/YOUR_CHANNEL">
-    <span class="qr-label">Telegram канал</span>
+  <div class="share-hint">
+    <span>Поділитися додатком</span>
+    <svg viewBox="0 0 64 48" width="64" height="48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 8c22-8 44 2 50 28"/><path d="M42 30l12 8 4-14"/>
+    </svg>
   </div>
 
-  <p class="thanks">Бажаючі подякувати можуть нижче</p>
+  <div class="qr-wrap">
+    <img id="qr-img" alt="QR-код додатка" loading="lazy"
+         src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=https://tereschky.vercel.app/">
+    <span class="qr-label">tereschky.vercel.app</span>
+  </div>
 
-  <!-- Замінити YOUR_LINK на посилання для донату -->
-  <a class="btn-tea" href="https://send.monobank.ua/YOUR_LINK" target="_blank" rel="noopener">НА ЧАЙ :)</a>
+  <a class="btn-tg" href="https://t.me/tereshky_otg" target="_blank" rel="noopener" aria-label="Telegram канал">
+    <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3c.3-1.2-.4-1.7-1.4-1.3L2.4 10c-1.2.5-1.2 1.2-.2 1.5l4.6 1.4 1.8 5.6c.2.6.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.5.2 1.7-.8L21.9 4.3zM8.3 13.1l9.3-5.9c.4-.3.8-.1.5.2l-7.6 6.9-.3 3.2-1.9-4.4z"/></svg>
+  </a>
 
   <div class="bottom-bar">
     <button class="btn-reload" id="reload-btn" type="button">ОНОВИТИ</button>
@@ -77,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {   // після то
     if (navigator.share) { navigator.share({ title: 'Розклад маршруток', url: location.origin }).catch(function () {}); }
     else if (navigator.clipboard) {
       navigator.clipboard.writeText(location.origin);
-      btn.textContent = '✓'; setTimeout(function () { btn.textContent = '⬆️'; }, 1500);
+      var old = btn.innerHTML; btn.textContent = '✓'; setTimeout(function () { btn.innerHTML = old; }, 1500);
     }
   });
 });
