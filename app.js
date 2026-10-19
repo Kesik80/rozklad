@@ -27,12 +27,29 @@
   var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
   function getSaved() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
-  function setSaved(v) { try { localStorage.setItem('theme', v); } catch (e) {} }
+  function setSaved(v) { try { if (v === 'auto') localStorage.removeItem('theme'); else localStorage.setItem('theme', v); } catch (e) {} }
+  function sys() { return mq && mq.matches ? 'dark' : 'light'; }
+  // режим вибору: light | dark | auto (за системою)
+  function mode() { var s = getSaved(); return s === 'light' || s === 'dark' ? s : 'auto'; }
+
+  var ICON_ATTR = 'viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+  var THEME_ICONS = {
+    light: '<svg ' + ICON_ATTR + '><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>',
+    dark: '<svg ' + ICON_ATTR + '><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2Z"/></svg>',
+    auto: '<svg ' + ICON_ATTR + '><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 1 0-17Z" fill="currentColor" stroke="none"/></svg>'
+  };
+  var THEME_NAMES = { light: 'Світла', dark: 'Темна', auto: 'Авто (як у системі)' };
+
+  function paintThemeBtn() {
+    var btn = $('#theme-toggle'); if (!btn) return;
+    var m = mode();
+    btn.innerHTML = THEME_ICONS[m];
+    btn.setAttribute('aria-label', 'Тема: ' + THEME_NAMES[m] + '. Натисніть, щоб змінити');
+  }
 
   function applyTheme(t) {
     root.setAttribute('data-theme', t);
-    var btn = $('#theme-toggle');
-    if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+    paintThemeBtn();
     var meta = $('#themeColorMeta');
     if (meta) {
       var bg = getComputedStyle(root).getPropertyValue('--bg-0').trim();
@@ -42,16 +59,18 @@
   }
 
   function initTheme() {
-    function sys() { return mq && mq.matches ? 'dark' : 'light'; }
-    applyTheme(getSaved() || sys());
+    var m0 = mode();
+    applyTheme(m0 === 'auto' ? sys() : m0);
     if (mq && mq.addEventListener) {
-      mq.addEventListener('change', function () { if (!getSaved()) applyTheme(sys()); });
+      mq.addEventListener('change', function () { if (mode() === 'auto') applyTheme(sys()); });
     }
     var btn = $('#theme-toggle');
     if (btn) btn.addEventListener('click', function () {
-      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      applyTheme(next);
+      // одна кнопка: світла → темна → авто → світла …
+      var next = { light: 'dark', dark: 'auto', auto: 'light' }[mode()];
       setSaved(next);
+      applyTheme(next === 'auto' ? sys() : next);
+      exitToast('Тема: ' + THEME_NAMES[next]);
     });
   }
 
