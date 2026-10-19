@@ -255,18 +255,11 @@
 
   /* ============================================================
      «ЖИВЕ» РОЗКЛАДАННЯ
-     • за 5 хв до відправлення час плавно йде від зеленого до червоного;
-     • найближчий рейс кожної групи — жирний акцентний колір;
+     • найближчий рейс кожної групи — синя заливка клітинки;
+     • за 5 хв до відправлення — бурштинова, за 2 хв — червона, що пульсує;
      • день тижня береться з SCHEDULE.days (субота = будні тощо).
      ============================================================ */
-  var WINDOW_SEC = 5 * 60;
-
-  function rgb(hex) {
-    hex = (hex || '').trim().replace('#', '');
-    if (hex.length === 3) hex = hex.replace(/./g, '$&$&');
-    var n = parseInt(hex, 16);
-    return isNaN(n) ? [0, 0, 0] : [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  }
+  var SOON_SEC = 5 * 60, NOW_SEC = 2 * 60;
 
   function dayActive(day, dow) {
     var list = D.days && D.days[day];
@@ -277,8 +270,6 @@
     var now = new Date();
     var dow = now.getDay();
     var nowSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-    var cs = getComputedStyle(root);
-    var from = rgb(cs.getPropertyValue('--ok')), to = rgb(cs.getPropertyValue('--red'));
 
     var cells = document.querySelectorAll('[data-time]');
     var next = {};   // група → { diff, el }
@@ -294,18 +285,11 @@
     });
 
     cells.forEach(function (td, i) {
-      var diff = info[i], color = '', bold = '', isNext = false;
-      if (diff !== null) {
-        isNext = next[td.dataset.group || '_'] && next[td.dataset.group || '_'].el === td;
-        if (diff > 0 && diff <= WINDOW_SEC) {
-          var t = 1 - diff / WINDOW_SEC;
-          color = 'rgb(' + from.map(function (c, k) { return Math.round(c + (to[k] - c) * t); }).join(',') + ')';
-          bold = '800';
-        }
-      }
-      td.classList.toggle('next-dep', !!isNext);
-      if (td.style.color !== color) td.style.color = color;
-      if (td.style.fontWeight !== bold) td.style.fontWeight = bold;
+      var diff = info[i], isNext = false;
+      if (diff !== null) isNext = next[td.dataset.group || '_'] && next[td.dataset.group || '_'].el === td;
+      td.classList.toggle('next-dep', !!isNext);                                          // найближчий рейс: синя заливка
+      td.classList.toggle('dep-soon', !!isNext && diff <= SOON_SEC);                      // ≤ 5 хв: бурштинова
+      td.classList.toggle('dep-now',  !!isNext && diff <= NOW_SEC);                       // ≤ 2 хв: червона, пульсує
     });
   }
 
@@ -369,7 +353,7 @@
   function snapMarkup(withVer) {
     var app = $('#app').cloneNode(true), hdr = $('.hdr').cloneNode(true);
     [].forEach.call(app.querySelectorAll('button, .toggle-wrap'), function (n) { n.remove(); });
-    [].forEach.call(app.querySelectorAll('.next-dep'), function (n) { n.classList.remove('next-dep'); });
+    [].forEach.call(app.querySelectorAll('.next-dep'), function (n) { n.classList.remove('next-dep', 'dep-soon', 'dep-now'); });
     [].forEach.call(app.querySelectorAll('td'), function (n) { n.style.removeProperty('color'); n.style.removeProperty('font-weight'); });
     var sec = app.querySelector('.ver-section');
     if (sec) {   // два вигляди сторінки: з блоком «Верхоли» (рейси «Верх» переходять у нього) і без нього
