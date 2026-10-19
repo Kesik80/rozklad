@@ -115,7 +115,7 @@ td {
 tr:first-child + tr td { border-top: none; }
 table.plain td { padding-right: 2px; font-size: 16px; }   /* таблиці без маркерів (електрички) */
 td.loc { text-align: left; padding: 6px 2px 6px 8px; color: var(--label); }
-td.loc .loc-hint { color: var(--hint); font-weight: 500; font-size: .85em; }
+td.loc .loc-hint { color: var(--hint); font-weight: 500; font-size: .95em; }
 td.key { color: var(--th); }
 td.mf { color: var(--red); }   /* рейс лише Пн–Пт (~ у даних) */
 
