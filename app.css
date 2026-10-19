@@ -144,7 +144,7 @@ td .tm .marker { position: absolute; left: 100%; margin-left: 3px; }
 .menu { width: 60%; min-width: 220px; margin: 14px auto 24px; background: var(--bg-1); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0, 0, 0, .12); }
 .row {
   display: flex; align-items: center; justify-content: center;
-  padding: 15px 16px; font-size: 17px; font-weight: 600; color: var(--label);
+  padding: 16px 16px; font-size: 20px; font-weight: 600; color: var(--label);
   text-decoration: none; border-bottom: 1px solid var(--separator);
   -webkit-tap-highlight-color: transparent;
 }
