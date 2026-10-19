@@ -21,7 +21,7 @@
   --th: #b25a00;        /* акцент: ключові зупинки, ціни */
   --hint: #66666b;
   --red: #d70015;       /* вихідні, застереження */
-  --wd: #0b7a75;        /* рейси лише Пн–Пт (~ у даних) */
+  --wd: #00807a;        /* рейси лише Пн–Пт (~ у даних) */
   --ok: #1f7a35;        /* до рейсу ще є час (початок градієнта) */
   --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
 }
@@ -128,6 +128,8 @@ td .tm .marker { position: absolute; left: 100%; margin-left: 3px; }
 /* ---------- ПІДСВІТКА ТЕКСТУ ---------- */
 .marker   { color: var(--label-3); font-weight: 700; letter-spacing: .3px; }
 .weekend, .text-red { color: var(--red); font-weight: 700; }
+.text-wd { color: var(--wd); font-weight: 700; }
+.text-gray { color: var(--label-2); font-weight: 500; }
 .text-light { color: var(--label); font-weight: 700; }
 .text-blue  { color: var(--next); font-weight: 700; }
 .text-green { color: var(--ok); font-weight: 700; }
