@@ -139,7 +139,7 @@ td .tm .marker { position: absolute; left: 100%; margin-left: 3px; }
 [data-time].next-dep .tm::before, [data-time].dep-soon .tm::before, [data-time].dep-now .tm::before {
   content: ''; position: absolute; z-index: -1;
   top: -1px; bottom: -1px; left: -11px; right: calc(-11px - var(--mw, 0px));
-  border-radius: 10px;
+  border-radius: 6px;
   background: color-mix(in srgb, var(--c) 12%, var(--bg-2));
   box-shadow: inset 2px 0 0 var(--c);
   transition: background-color .25s ease;
