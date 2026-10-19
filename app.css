@@ -82,7 +82,7 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
   font: 600 26px/1 var(--font); text-decoration: none; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-#theme-toggle { font-size: 20px; }
+#theme-toggle, #save-img, #share-btn { font-size: 20px; }
 .btn-icon:active { transform: scale(.94); }
 .hdr-side { display: block; width: 44px; }
 

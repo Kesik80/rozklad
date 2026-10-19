@@ -247,7 +247,7 @@
       '<div class="hdr-mid"><div class="hdr-title">' + P.title + '</div>' +
       (P.sub ? '<div class="hdr-sub">' + P.sub + '</div>' : '') + '</div>' +
       (P.right === 'share'
-        ? '<button id="share-btn" class="btn-icon" type="button" aria-label="Поділитися">⬆️</button>'
+        ? '<button id="share-btn" class="btn-icon" type="button" aria-label="Поділитися"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.2M8.3 13.2l7.4 4.6"/></svg></button>'
         : P.type === 'menu'
           ? '<button id="theme-toggle" class="btn-icon" type="button" aria-label="Змінити тему"></button>'
           : '<button id="save-img" class="btn-icon" type="button" aria-label="Зберегти картинкою"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10"/><path d="M7.5 10 12 14.5 16.5 10"/><path d="M5 19h14"/></svg></button>');
