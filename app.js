@@ -290,6 +290,7 @@
       td.classList.toggle('next-dep', !!isNext);                                          // найближчий рейс: синя заливка
       td.classList.toggle('dep-soon', !!isNext && diff <= SOON_SEC);                      // ≤ 5 хв: бурштинова
       td.classList.toggle('dep-now',  !!isNext && diff <= NOW_SEC);                       // ≤ 2 хв: червона, пульсує
+      if (isNext) { var mk = td.querySelector('.marker'); td.style.setProperty('--mw', mk ? (mk.offsetWidth + 3) + 'px' : '0px'); }
     });
   }
 
