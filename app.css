@@ -176,7 +176,7 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 15p
 .info-red  { color: var(--red); font-weight: 700; line-height: 1.5; margin: 0 6px 14px; }
 .info-bold { font-weight: 700; color: var(--label); line-height: 1.6; margin: 0 6px 14px; }
 .qr-wrap { display: flex; flex-direction: column; align-items: center; margin: 16px 0; gap: 12px; }
-.qr-wrap img { width: 230px; height: 230px; }   /* у самої картинки вже є біла рамка з тінню */
+.qr-wrap img { width: 180px; height: 180px; }   /* у самої картинки вже є біла рамка з тінню */
 .qr-label { font-size: 14px; color: var(--label-2); text-align: center; }
 .thanks { text-align: center; font-weight: 700; color: var(--label); margin: 20px 0 10px; }
 .btn-tea, .btn-reload {
@@ -189,7 +189,7 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 15p
   position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg-0); border-top: 1px solid var(--separator);
   padding: 10px 16px max(10px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 6px; z-index: 100;
 }
-.btn-reload { width: 100%; max-width: 616px; margin: 0 auto; padding: 12px; border-radius: 14px; letter-spacing: .5px; }
+.btn-reload { width: 62%; max-width: 260px; margin: 0 auto; padding: 12px; border-radius: 14px; letter-spacing: .5px; }
 .bottom-meta { display: flex; justify-content: space-between; max-width: 616px; width: 100%; margin: 0 auto; font-size: 13px; font-weight: 600; color: var(--label-2); }
 .bottom-meta .author { color: var(--red); }
 
@@ -241,7 +241,7 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 15p
 .exit-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* Info: підказка «Поділитися» зі стрілкою до QR, кнопка Telegram */
-.share-hint { display: flex; align-items: flex-start; justify-content: center; gap: 4px; margin: 4px 6px 0; font-weight: 700; color: var(--label); }
+.share-hint { display: flex; align-items: flex-start; justify-content: flex-start; gap: 4px; margin: 4px 6px 0; font-weight: 700; color: var(--label); }
 .share-hint svg { color: var(--accent); margin-top: 6px; }
 .btn-tg {
   display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; margin: 6px auto 0;
