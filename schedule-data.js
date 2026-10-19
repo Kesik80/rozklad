@@ -212,7 +212,7 @@ window.SCHEDULE = {
     elektrychky: {
       title: 'ЕЛЕКТРИЧКИ', type: 'routes',
       notes: [
-        "<span class='warn-text'>У розкладі поїздів можливі поточні зміни.</span><br>Перевіряйте інформацію на сайті:<br><a href='https://swrailway.gov.ua/timetable/eltrain3-5/?rid=219' target='_blank' rel='noopener'>Полтава-Південна - Кременчук</a><br><a href='https://swrailway.gov.ua/timetable/eltrain3-5/?rid=509&amp;count=4' target='_blank' rel='noopener'>Полтава-Південна - Карлівка</a><br>Довідкове бюро: <a href='tel:+380532512000'>+38 0532 51 20 00</a> цілодобово."
+        "<span class='warn-text'>У розкладі поїздів можливі поточні зміни.</span><br>Перевіряйте інформацію на сайті:<br><a href='https://swrailway.gov.ua/timetable/eltrain3-5/?rid=219' target='_blank' rel='noopener'>Напрямок Кременчук</a><br><a href='https://swrailway.gov.ua/timetable/eltrain3-5/?rid=509&amp;count=4' target='_blank' rel='noopener'>Напрямок Карлівка</a><br>Довідкове бюро: <a href='tel:+380532512000'>+38 0532 51 20 00</a> цілодобово."
       ],
       // рядок: [станція, "час, час, …", ключова_зупинка?]
       routes: [
