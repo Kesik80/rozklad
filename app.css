@@ -133,10 +133,10 @@ td .tm .marker { position: absolute; left: 100%; margin-left: 3px; }
 
 /* ---------- «ЖИВЕ» РОЗКЛАДАННЯ ---------- */
 [data-time] { transition: color 1s ease, background-color .25s ease; }
-[data-time].next-dep { font-weight: 800; color: var(--next); background: color-mix(in srgb, var(--next) 16%, var(--bg-2)); }
-[data-time].dep-soon { color: var(--th);  background: color-mix(in srgb, var(--th) 22%, var(--bg-2)); }
-[data-time].dep-now  { color: var(--red); background: color-mix(in srgb, var(--red) 20%, var(--bg-2)); animation: depPulse 1.6s ease-in-out infinite; }
-@keyframes depPulse { 50% { background: color-mix(in srgb, var(--red) 36%, var(--bg-2)); } }
+[data-time].next-dep { font-weight: 800; color: var(--next); background: color-mix(in srgb, var(--next) 12%, var(--bg-2)); }
+[data-time].dep-soon { color: var(--th);  background: color-mix(in srgb, var(--th) 15%, var(--bg-2)); }
+[data-time].dep-now  { color: var(--red); background: color-mix(in srgb, var(--red) 14%, var(--bg-2)); animation: depPulse 1.6s ease-in-out infinite; }
+@keyframes depPulse { 50% { background: color-mix(in srgb, var(--red) 24%, var(--bg-2)); } }
 
 /* ---------- ПРИМІТКИ ---------- */
 .note { padding: 4px 14px 12px; font-size: 15px; color: var(--label-2); line-height: 1.45; font-weight: 500; }
