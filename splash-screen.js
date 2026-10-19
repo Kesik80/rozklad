@@ -1,67 +1,35 @@
 /* ============================================================
    splash-screen.js
-   Анимированная заставка запуска в 3 фазы:
-   1. Две панели спускаются сверху и сходятся по центру, закрывая
-      весь экран (CSS-анимация, запускается сама при появлении
-      разметки — JS тут не нужен).
-   2. Как только панели сомкнулись — на них плавно проявляется
-      иконка + название приложения. Показывается минимум
-      `minDuration` мс (даже если страница уже загрузилась раньше) —
-      чтобы заставка не "мигала" на быстром интернете.
-   3. Иконка гаснет, панели разъезжаются в стороны (влево/вправо),
-      открывая приложение, после чего заставка удаляется из DOM.
-
-   HTML должен быть первым элементом в <body>:
+   Проста заставка запуску: екран кольору теми з іконкою й назвою.
+   Показується одразу (розмітка — перший елемент <body>), тримається
+   щонайменше `minDuration` мс, потім плавно розчиняється (.3 с) і
+   видаляється з DOM. Анімації й стилі лежать у app.css.
 
      <div id="app-splash">
-       <div class="curtain curtain-left"></div>
-       <div class="curtain curtain-right"></div>
        <div class="splash-content">
          <img src="/icons/icon-192x192.png" class="splash-icon" alt="">
-         <div class="splash-title">Розклад</div>
+         <div class="splash-title">РАСПИСЮЛЬКА</div>
        </div>
      </div>
 
-   CSS-анимации (curtainDown/curtainLeftOut/curtainRightOut) и их
-   длительности лежат в самой странице — см. готовый пример в любом
-   из файлов проекта. Длительности ниже (closeDuration/partDuration)
-   должны совпадать с длительностями в CSS.
-
-   Использование:
+   Використання:
      <script src="splash-screen.js"></script>
-     <script>SplashScreen.init({ minDuration: 700 });</script>
+     <script>SplashScreen.init({ minDuration: 450 });</script>
    ============================================================ */
 (function () {
   function init(opts) {
     opts = opts || {};
-    // сколько мс держим иконку на экране (после смыкания панелей),
-    // даже если страница загрузилась быстрее
-    const minDuration = opts.minDuration != null ? opts.minDuration : 700;
-    // должны совпадать с длительностями CSS-анимаций на странице
-    const closeDuration = opts.closeDuration != null ? opts.closeDuration : 500;
-    const partDuration = opts.partDuration != null ? opts.partDuration : 550;
-
-    const el = document.getElementById('app-splash');
+    var minDuration = opts.minDuration != null ? opts.minDuration : 450;  // мінімум на екрані, мс
+    var fadeDuration = opts.fadeDuration != null ? opts.fadeDuration : 300; // = transition в app.css
+    var el = document.getElementById('app-splash');
     if (!el) return;
-    const left = el.querySelector('.curtain-left');
-    const right = el.querySelector('.curtain-right');
-    const content = el.querySelector('.splash-content');
-
-    const start = Date.now();
-
-    // иконка появляется только после того, как панели сомкнулись
-    setTimeout(() => { if (content) content.classList.add('show'); }, closeDuration);
+    var start = Date.now();
 
     function reveal() {
-      const elapsed = Date.now() - start;
-      const wait = Math.max(0, closeDuration + minDuration - elapsed);
-      setTimeout(() => {
-        if (content) content.classList.remove('show');
-        setTimeout(() => {
-          if (left) left.classList.add('part');
-          if (right) right.classList.add('part');
-          setTimeout(() => el.remove(), partDuration);
-        }, 220); // время затухания иконки перед тем, как панели разъедутся
+      var wait = Math.max(0, minDuration - (Date.now() - start));
+      setTimeout(function () {
+        el.classList.add('out');
+        setTimeout(function () { el.remove(); }, fadeDuration + 50);
       }, wait);
     }
 
@@ -69,6 +37,5 @@
     else window.addEventListener('load', reveal);
   }
 
-  window.SplashScreen = { init };
+  window.SplashScreen = { init: init };
 })();
-

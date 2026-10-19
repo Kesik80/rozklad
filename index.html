@@ -23,11 +23,9 @@
 </head>
 <body data-page="index" data-install="banner">
 <div id="app-splash">
-  <div class="curtain curtain-left"></div>
-  <div class="curtain curtain-right"></div>
   <div class="splash-content">
     <img src="/icons/icon-192x192.png" class="splash-icon" alt="">
-    <div class="splash-title">Розклад</div>
+    <div class="splash-title">РАСПИСЮЛЬКА</div>
   </div>
 </div>
 <script>
@@ -43,8 +41,6 @@
   var el = document.getElementById('app-splash');
   if (window.__showSplash) {
     try { sessionStorage.setItem('splashShown', '1'); } catch (e) {}
-    el.querySelector('.curtain-left').classList.add('run');
-    el.querySelector('.curtain-right').classList.add('run');
   } else if (el) {
     el.remove();
   }
