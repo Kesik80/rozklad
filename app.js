@@ -290,8 +290,22 @@
       td.classList.toggle('next-dep', !!isNext);                                          // найближчий рейс: синя заливка
       td.classList.toggle('dep-soon', !!isNext && diff <= SOON_SEC);                      // ≤ 5 хв: бурштинова
       td.classList.toggle('dep-now',  !!isNext && diff <= NOW_SEC);                       // ≤ 2 хв: червона, пульсує
-      if (isNext) { var mk = td.querySelector('.marker'); td.style.setProperty('--mw', mk ? (mk.offsetWidth + 3) + 'px' : '0px'); }
+      if (isNext) fitPlate(td);
     });
+  }
+
+  /* плашка найближчого рейсу не має вилазити за ячейку: відступи від тексту — до 11px,
+     але не більше, ніж є вільного місця зліва/справа (у вузьких колонках — менше) */
+  function fitPlate(td) {
+    var tm = td.querySelector('.tm');
+    if (!tm || !td.offsetWidth) return;
+    var mk = td.querySelector('.marker'), mw = mk ? mk.offsetWidth + 3 : 0;
+    var a = td.getBoundingClientRect(), b = tm.getBoundingClientRect();
+    var pl = Math.max(1, Math.min(11, Math.floor(b.left - a.left) - 1));
+    var pr = Math.max(1, Math.min(11, Math.floor(a.right - b.right - mw) - 1));
+    td.style.setProperty('--mw', mw + 'px');
+    td.style.setProperty('--pl', pl + 'px');
+    td.style.setProperty('--pr', pr + 'px');
   }
 
   function startLive() {
