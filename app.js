@@ -58,6 +58,13 @@
     if (liveTimer) updateLive();   // кольори градієнта залежать від теми
   }
 
+  // тонка лінія під шапкою, коли сторінку прокрутили
+  function initHeaderShadow() {
+    var h = $('.hdr'); if (!h) return;
+    function f() { h.classList.toggle('scrolled', (window.scrollY || document.documentElement.scrollTop) > 2); }
+    window.addEventListener('scroll', f, { passive: true }); f();
+  }
+
   function initTheme() {
     var m0 = mode();
     applyTheme(m0 === 'auto' ? sys() : m0);
@@ -514,6 +521,7 @@
 
     if (P.type === 'menu') equalize('.menu .label');
     initTheme();
+    initHeaderShadow();
     var si = $('#save-img');
     if (si) si.addEventListener('click', function () {
       exitToast('Створюю картинку…');

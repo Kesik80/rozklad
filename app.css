@@ -65,15 +65,23 @@ body {
   background: var(--bg-0); color: var(--label);
   font: 600 17px/1.3 var(--font);
   max-width: 640px; margin: 0 auto;
-  padding: max(10px, env(safe-area-inset-top)) 8px max(16px, env(safe-area-inset-bottom));
+  --gx: 8px; --gy: max(10px, env(safe-area-inset-top));
+  padding: var(--gy) var(--gx) max(16px, env(safe-area-inset-bottom));
 }
-@media (min-width: 600px) { body { padding-left: 32px; padding-right: 32px; } }
+@media (min-width: 600px) { body { --gx: 32px; } }
 
 /* плавна зміна теми — тільки на ключових елементах, не на всьому */
 body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s ease, color .25s ease; }
 
 /* ---------- ШАПКА ---------- */
-.hdr { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 6px; padding: 4px 0 8px; }
+/* шапка (назад · назва · кнопка) завжди вгорі, таблиця прокручується під нею */
+.hdr {
+  display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 6px;
+  position: sticky; top: 0; z-index: 60; background: var(--bg-0);
+  margin: calc(-1 * var(--gy)) calc(-1 * var(--gx)) 0;
+  padding: calc(var(--gy) + 4px) var(--gx) 8px;
+}
+.hdr.scrolled { box-shadow: 0 1px 0 var(--separator); }
 .hdr-mid { text-align: center; min-width: 0; }
 .hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
