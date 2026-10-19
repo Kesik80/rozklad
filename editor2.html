@@ -807,6 +807,8 @@ details.lost pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 12.
   $('#blocks').addEventListener('click', function (e) {
     var h = e.target.closest('.blk-h');
     if (h) { openBlock(h.parentNode.dataset.key); return; }
+    var mb = e.target.closest('.modes button');
+    if (mb) { setMode(mb.closest('.blk').dataset.key, mb.dataset.mode); return; }
     var b = e.target.closest('[data-act="revert"]');
     if (b) {
       var key = b.closest('.blk').dataset.key, p = findPart(key), ta = $('.code-view textarea', b.closest('.blk'));
