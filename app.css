@@ -249,3 +249,31 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 15p
   -webkit-tap-highlight-color: transparent;
 }
 .btn-tg:active { transform: scale(.94); }
+
+/* Info: кнопка до інструкції; сторінка «Встановлення» */
+.btn-guide {
+  display: block; width: fit-content; margin: 4px auto 14px; padding: 11px 24px; border-radius: 14px; text-align: center; text-decoration: none;
+  background: var(--accent); color: var(--accent-text); font: 700 16px var(--font); -webkit-tap-highlight-color: transparent;
+}
+.btn-guide:active { transform: scale(.97); }
+.btn-guide.back-info { background: transparent; color: var(--accent); border: 2px solid var(--accent); margin-top: 18px; }
+.seg { display: flex; gap: 4px; padding: 4px; margin: 4px 0 16px; background: var(--bg-1); border: 1px solid var(--separator); border-radius: 14px; }
+.seg button { flex: 1; padding: 11px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--label); font: 700 16px var(--font); cursor: pointer; }
+.seg button.on { background: var(--accent); color: var(--accent-text); }
+.ins-panel { display: none; }
+.ins-panel.on { display: block; }
+.ins-head { font-size: 17px; font-weight: 800; margin: 2px 4px 10px; }
+.step { display: flex; gap: 12px; align-items: flex-start; padding: 14px; margin-bottom: 10px; background: var(--bg-1); border: 1px solid var(--hair); border-radius: 16px; }
+.step .n { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--accent-text); font-weight: 800; }
+.step .t { font-weight: 700; margin-bottom: 4px; }
+.step .d { color: var(--label-2); font-weight: 500; font-size: 15px; line-height: 1.5; }
+.step .d b { color: var(--label); }
+.ico { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; vertical-align: middle; margin: 0 2px; border-radius: 8px;
+       background: var(--bg-0); border: 1px solid var(--separator); color: var(--accent); }
+.ins-tip, .ins-warn { margin: 12px 0; padding: 12px 14px; border-radius: 12px; font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--label); }
+.ins-tip { background: var(--bg-1); border-left: 4px solid var(--accent); }
+.ins-warn { background: var(--bg-1); border-left: 4px solid var(--red); margin-top: 0; }
+.ins-block { margin-top: 22px; }
+.ins-list { padding: 0 6px 0 22px; color: var(--label-2); font-weight: 500; line-height: 1.55; }
+.ins-list li { margin-bottom: 8px; }
+.ins-list b { color: var(--label); }

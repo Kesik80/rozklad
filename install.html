@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Встановлення — Розклад</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Розклад">
+<meta id="themeColorMeta" name="theme-color" content="#f2f2f7">
+<meta property="og:title" content="Розклад — як встановити">
+<meta property="og:type" content="website">
+<link rel="manifest" href="/icons/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="icon" href="/icons/favicon.ico" sizes="32x32">
+<meta name="msapplication-config" content="/browserconfig.xml">
+<link rel="stylesheet" href="app.css">
+<!-- тема ставиться ДО малювання сторінки, щоб не було світлого «спалаху» -->
+<script>try{var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);document.getElementById('themeColorMeta').setAttribute('content',t==='dark'?'#000000':'#f2f2f7')}catch(e){}</script>
+</head>
+<body data-page="install">
+<header class="hdr"></header>
+<main id="app">
+  <p class="info-text">Додаток встановлюється прямо з браузера — без магазинів застосунків. Після цього він відкривається з іконки на екрані, на весь екран і працює навіть без інтернету.</p>
+
+  <div class="seg" role="tablist">
+    <button type="button" id="tab-and" data-tab="and" class="on">Android</button>
+    <button type="button" id="tab-ios" data-tab="ios">iPhone</button>
+  </div>
+
+  <section class="ins-panel on" id="panel-and">
+    <div class="ins-head">Android · браузер Chrome</div>
+    <div class="step"><div class="n">1</div><div><div class="t">Відкрийте сайт у Chrome</div><div class="d">Введіть <b>tereschky.vercel.app</b> в адресному рядку або скануйте QR-код зі сторінки Info.</div></div></div>
+    <div class="step"><div class="n">2</div><div><div class="t">Відкрийте меню браузера</div><div class="d">Натисніть <span class="ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></span> (три крапки) у верхньому правому куті.</div></div></div>
+    <div class="step"><div class="n">3</div><div><div class="t">Оберіть «Встановити застосунок»</div><div class="d">Якщо такого пункту немає — оберіть <b>«Додати на головний екран»</b>, а потім <b>«Встановити»</b>.</div></div></div>
+    <div class="step"><div class="n">4</div><div><div class="t">Підтвердіть</div><div class="d">Натисніть <b>«Встановити»</b>. За кілька секунд іконка <b>«Розклад»</b> з’явиться на головному екрані.</div></div></div>
+    <div class="step"><div class="n">5</div><div><div class="t">Запускайте з іконки</div><div class="d">Додаток відкриється на весь екран, без адресного рядка.</div></div></div>
+
+    <div class="ins-tip"><b>Підказка.</b> На головній сторінці може з’явитися плашка <b>«Встановити «Розклад»»</b> — тоді достатньо натиснути кнопку на ній. Якщо плашки немає, додаток, найімовірніше, вже встановлено.</div>
+    <div class="ins-tip">У Samsung Internet і Firefox: меню → <b>«Додати на головний екран»</b> (або <b>«Встановити»</b>).</div>
+  </section>
+
+  <section class="ins-panel" id="panel-ios">
+    <div class="ins-head">iPhone · браузер Safari</div>
+    <div class="ins-warn"><b>Важливо!</b> На iPhone встановити додаток можна <b>тільки через Safari</b>. У Chrome, Telegram чи Viber потрібного пункту немає — відкрийте посилання в Safari.</div>
+    <div class="step"><div class="n">1</div><div><div class="t">Відкрийте сайт у Safari</div><div class="d">Введіть <b>tereschky.vercel.app</b> в адресному рядку або скануйте QR-код камерою.</div></div></div>
+    <div class="step"><div class="n">2</div><div><div class="t">Натисніть «Поділитися»</div><div class="d">Кнопка <span class="ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span> (квадрат зі стрілкою вгору) внизу екрана. На iPad — угорі.</div></div></div>
+    <div class="step"><div class="n">3</div><div><div class="t">Оберіть «На екран «Додому»»</div><div class="d">Прокрутіть меню вниз — пункт із значком <span class="ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg></span> та підписом <b>«На екран «Додому»»</b> (Add to Home Screen).</div></div></div>
+    <div class="step"><div class="n">4</div><div><div class="t">Натисніть «Додати»</div><div class="d">Кнопка у верхньому правому куті. Назву <b>«Розклад»</b> можна залишити як є.</div></div></div>
+    <div class="step"><div class="n">5</div><div><div class="t">Запускайте з іконки</div><div class="d">Іконка з’явиться на головному екрані — відкривайте додаток звідти, а не з Safari.</div></div></div>
+
+    <div class="ins-tip"><b>Підказка.</b> Якщо внизу не видно кнопки «Поділитися», торкніться нижнього краю екрана — Safari покаже панель.</div>
+  </section>
+
+  <div class="ins-block">
+    <div class="ins-head">Після встановлення</div>
+    <ul class="ins-list">
+      <li>Розклад оновлюється сам. Коли він зміниться, зверху з’явиться синя плашка <b>«Розклад оновлено»</b> — торкніться її.</li>
+      <li>Щось «застрягло» чи видно стару версію? Відкрийте <b>Info → ОНОВИТИ</b>.</li>
+      <li>Видалити додаток: утримуйте іконку на екрані й оберіть «Видалити».</li>
+    </ul>
+  </div>
+
+  <a class="btn-guide back-info" href="info.html">← До Info</a>
+</main>
+
+<script src="schedule-data.js"></script>
+<script src="pwa-install.js"></script>
+<script src="app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var tabs = document.querySelectorAll('.seg button');
+  function show(id) {
+    [].forEach.call(tabs, function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === id); });
+    document.getElementById('panel-and').classList.toggle('on', id === 'and');
+    document.getElementById('panel-ios').classList.toggle('on', id === 'ios');
+  }
+  [].forEach.call(tabs, function (b) { b.addEventListener('click', function () { show(b.getAttribute('data-tab')); }); });
+  // одразу показуємо інструкцію для того пристрою, з якого відкрили
+  var ua = navigator.userAgent;
+  if (/iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) show('ios');
+});
+</script>
+<script src="console.js"></script>
+</body>
+</html>

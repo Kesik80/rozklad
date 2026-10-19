@@ -207,6 +207,7 @@ window.SCHEDULE = {
     },
 
     info: { title: 'INFO', type: 'static', right: 'share' },
+    install: { title: 'ВСТАНОВЛЕННЯ', type: 'static', right: 'none' },
 
     elektrychky: {
       title: 'ЕЛЕКТРИЧКИ', type: 'routes',
