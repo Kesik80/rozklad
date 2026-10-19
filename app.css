@@ -141,7 +141,7 @@ td .tm .marker { position: absolute; left: 100%; margin-left: 3px; }
   top: -1px; bottom: -1px; left: -11px; right: calc(-11px - var(--mw, 0px));
   border-radius: 6px;
   background: color-mix(in srgb, var(--c) 12%, var(--bg-2));
-  box-shadow: inset 1px 0 0 var(--c);
+  box-shadow: inset 1.5px 0 0 var(--c);
   transition: background-color .25s ease;
 }
 [data-time].next-dep { --c: var(--next); font-weight: 800; color: var(--next); }
