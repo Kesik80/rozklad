@@ -24,6 +24,7 @@
   --wd: #00807a;        /* рейси лише Пн–Пт (~ у даних) */
   --ok: #1f7a35;        /* до рейсу ще є час (початок градієнта) */
   --th-bg: #ffffff;     /* заливка шапки таблиць */
+  --key: #8d5524;       /* ключова зупинка (Терешки / Копили) на сторінці електричок */
   --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
@@ -46,6 +47,7 @@
   --wd: #4fd1c5;
   --ok: #30d158;
   --th-bg: #1c1c1e;
+  --key: #d9a66f;
 }
 
 /* Якщо JS ще не встиг (або вимкнений) — слухаємось системної теми */
@@ -56,7 +58,7 @@
     --label: #ffffff; --label-2: #a2a2a7; --label-3: #e5e5ea;
     --separator: #6c6c70; --hair: rgba(255, 255, 255, .09);
     --accent: #0a84ff; --next: #5eaaff; --th: #ff9f0a;
-    --hint: #d0d0d5; --red: #ff6961; --wd: #4fd1c5; --ok: #30d158; --th-bg: #1c1c1e;
+    --hint: #d0d0d5; --red: #ff6961; --wd: #4fd1c5; --ok: #30d158; --th-bg: #1c1c1e; --key: #d9a66f;
   }
 }
 
@@ -116,7 +118,7 @@ th {
 }
 th.red { color: var(--red); }
 th.tbl-title { padding: 10px 6px; font-size: 17px; white-space: nowrap; overflow: hidden; }
-.tbl-title .from { color: var(--th); }
+.tbl-title .from { color: var(--key); }
 
 td {
   background: var(--bg-2); color: var(--label-2);
@@ -129,7 +131,7 @@ tr:first-child + tr td { border-top: none; }
 table.plain td { padding-right: 2px; font-size: 16px; }   /* таблиці без маркерів (електрички) */
 td.loc { text-align: left; padding: 6px 2px 6px 8px; color: var(--label); }
 td.loc .loc-hint { color: var(--hint); font-weight: 500; font-size: .95em; }
-td.key { color: var(--th); }
+td.key { color: var(--key); font-weight: 800; }
 td.mf { color: var(--wd); }   /* рейс лише Пн–Пт (~ у даних) */
 
 /* час + маркер: цифри часу завжди рівно по центру, маркер «висить» праворуч */
