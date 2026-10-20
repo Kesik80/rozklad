@@ -113,7 +113,7 @@ table {
 }
 th {
   background: var(--th-bg); color: var(--label); padding: 10px 10px 10px 2px;
-  font-size: 17px; font-weight: 800; letter-spacing: .2px; line-height: 1.15;
+  font-size: 18px; font-weight: 800; letter-spacing: .2px; line-height: 1.15;
   border-bottom: 1px solid var(--separator); white-space: normal;
 }
 th.red { color: var(--red); }
@@ -245,7 +245,7 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 16p
 /* ---------- ВУЗЬКІ ЕКРАНИ ---------- */
 @media (max-width: 380px) {
   body { font-size: 15px; }
-  th { font-size: 15px; padding: 8px 8px 8px 1px; }
+  th { font-size: 16px; padding: 8px 8px 8px 1px; }
   th.tbl-title { font-size: 15px; padding: 8px 4px; }
   td { font-size: 15px; }
   table.plain td { font-size: 14px; }

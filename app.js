@@ -172,6 +172,7 @@
       return _cv.measureText(txt).width;
     } catch (e) { return txt.length * 9; }
   }
+  function thPx() { return (document.documentElement.clientWidth || 360) <= 380 ? 16 : 18; }   /* = font-size th у CSS */
   function headShift(toks, th, cellW) {
     var n = 0, withMk = 0, mw = 0;
     toks.forEach(function (t) {
@@ -182,7 +183,7 @@
     });
     if (!n || withMk < n * 0.75) return 0;
     var want = Math.round(mw + 5);                               // 2 + 2·((маркер + 3px зазору) / 2)
-    var spare = Math.floor(cellW - 10 - textW(th.replace(/<[^>]*>/g, ''), 700) - 4);
+    var spare = Math.floor(cellW - 10 - textW(th.replace(/<[^>]*>/g, ''), 800) * thPx() / 17 - 4);
     return Math.max(2, Math.min(want, spare));
   }
 
@@ -201,7 +202,13 @@
     var tw = Math.min(document.documentElement.clientWidth || 360, 640) - 16;
     cols.forEach(function (c, ci) {
       var pl = c.spec.loc ? 0 : headShift(c.toks, c.spec.th, tw * widths[ci] / 100);
-      h += '<th' + (c.spec.red ? ' class="red"' : '') + (pl ? ' style="padding-left:' + pl + 'px"' : '') + '>' + c.spec.th + '</th>';
+      var cw = tw * widths[ci] / 100, st = pl ? 'padding-left:' + pl + 'px;' : '';
+      if (!c.spec.loc) {                       /* занадто широкий заголовок — трохи менший шрифт, щоб не липнув до рамки */
+        var base = thPx();
+        var need = textW(c.spec.th.replace(/<[^>]*>/g, ''), 800) * base / 17, avail = cw - 12 - pl;
+        if (need > avail) st += 'font-size:' + Math.max(12, Math.floor(base * avail / need * 2) / 2) + 'px;' + (pl ? '' : 'padding-left:6px;padding-right:6px;');
+      }
+      h += '<th' + (c.spec.red ? ' class="red"' : '') + (st ? ' style="' + st + '"' : '') + '>' + c.spec.th + '</th>';
     });
     h += '</tr>';
     for (var i = 0; i < rows; i++) {

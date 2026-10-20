@@ -87,6 +87,7 @@ window.SCHEDULE = {
 
     pereizd: {
       title: 'ПЕРЕЇЗД', type: 'grid',
+      widths: [24, 24, 16, 16, 20],
       cols: [
         { th: 'Терешки', t: 'ter_wd',  day: 'wd',  group: 'ter1' },
         { th: 'Терешки', t: 'ter_sun', day: 'sun', group: 'ter2', red: true },
