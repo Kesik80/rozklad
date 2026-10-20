@@ -161,6 +161,31 @@
              : '<td class="loc">' + name + '</td>';
   }
 
+  /* Заголовок колонки з «важкими» маркерами (Пн, Верх Пн — майже в кожному рядку):
+     цифри лишаються рівно одна під одною, а заголовок центрується над цифрами І маркером разом,
+     інакше він здається зсунутим уліво. Повертає лівий відступ <th> (0 = нічого не міняти). */
+  var _cv = null;
+  function textW(txt, w) {
+    try {
+      _cv = _cv || document.createElement('canvas').getContext('2d');
+      _cv.font = w + ' 17px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif');
+      return _cv.measureText(txt).width;
+    } catch (e) { return txt.length * 9; }
+  }
+  function headShift(toks, th, cellW) {
+    var n = 0, withMk = 0, mw = 0;
+    toks.forEach(function (t) {
+      var m = /^~?\s*\d{1,2}:\d{2}\s*(.*)$/.exec(String(t).trim());
+      if (!m) return;
+      n++;
+      if (m[1]) { withMk++; mw = Math.max(mw, textW(m[1], 700) + m[1].length * 0.3); }
+    });
+    if (!n || withMk < n * 0.75) return 0;
+    var want = Math.round(mw + 5);                               // 2 + 2·((маркер + 3px зазору) / 2)
+    var spare = Math.floor(cellW - 10 - textW(th.replace(/<[^>]*>/g, ''), 700) - 4);
+    return Math.max(2, Math.min(want, spare));
+  }
+
   function renderGrid(P, pageName, id, hideVerRows) {
     var cols = P.cols.map(function (c) {
       var toks = c.loc ? parse(P.loc) : parse(timesOf(c.t));
@@ -173,7 +198,11 @@
 
     var h = '<table' + (id ? ' id="' + id + '"' : '') + (P.align === 'left' ? ' class="left"' : '') + '><colgroup>' +
       widths.map(function (w) { return '<col style="width:' + w + '%">'; }).join('') + '</colgroup><tr>';
-    cols.forEach(function (c) { h += '<th' + (c.spec.red ? ' class="red"' : '') + '>' + c.spec.th + '</th>'; });
+    var tw = Math.min(document.documentElement.clientWidth || 360, 640) - 16;
+    cols.forEach(function (c, ci) {
+      var pl = c.spec.loc ? 0 : headShift(c.toks, c.spec.th, tw * widths[ci] / 100);
+      h += '<th' + (c.spec.red ? ' class="red"' : '') + (pl ? ' style="padding-left:' + pl + 'px"' : '') + '>' + c.spec.th + '</th>';
+    });
     h += '</tr>';
     for (var i = 0; i < rows; i++) {
       var ver = hideVerRows && cols.some(function (c) { return VERH_RE.test(c.toks[i] || ''); });
@@ -191,7 +220,7 @@
   function renderToggle(P, pageName) {
     var T = P.toggle;
     return '<div class="toggle-wrap"><button id="ver-toggle" class="toggle-ver" type="button">▼ ' + T.label + '</button></div>' +
-      '<div id="ver-section" class="ver-section"><div class="gr-label">' + T.label + '</div>' +
+      '<div id="ver-section" class="ver-section">' +
       renderGrid(T.grid, pageName + ' / ' + T.label, 'ver-grid') + '</div>';
   }
 
