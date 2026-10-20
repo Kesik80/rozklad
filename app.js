@@ -279,7 +279,8 @@
   /* Заголовок маршруту: помаранчевим виділяється той кінець, що збігається з ключовою зупинкою
      (Терешки / Копили) — незалежно від напрямку; якщо збігу немає, виділяється початок. */
   function routeTitle(r, rows) {
-    var keys = rows.filter(function (x) { return x.key; }).map(function (x) { return String(x.loc).toUpperCase(); });
+    /* r.mark — явно який кінець підсвічувати (коли виділений рядок — не кінцева зупинка, напр. «3-й км») */
+    var keys = r.mark ? [String(r.mark).toUpperCase()] : rows.filter(function (x) { return x.key; }).map(function (x) { return String(x.loc).toUpperCase(); });
     var fromKey = keys.indexOf(String(r.from).toUpperCase()) >= 0, toKey = keys.indexOf(String(r.to).toUpperCase()) >= 0;
     return (toKey && !fromKey)
       ? r.from + ' — <span class="from">' + r.to + '</span>'
