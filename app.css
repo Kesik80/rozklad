@@ -128,6 +128,12 @@ td {
   font-variant-numeric: tabular-nums;
 }
 tr:first-child + tr td { border-top: none; }
+/* без маркерів: симетричні відступи; крайні колонки — подалі від рамки таблиці (плашка не липне до краю) */
+td.nm, th.nm { padding-left: 6px; padding-right: 6px; }
+th:first-child { padding-left: 6px; }
+td:first-child { padding-left: 9px; }
+td:last-child { padding-right: 20px; }
+td.nm:last-child { padding-right: 9px; }
 table.plain td { padding-right: 2px; font-size: 16px; }   /* таблиці без маркерів (електрички) */
 td.loc { text-align: left; padding: 6px 2px 6px 8px; color: var(--label); }
 td.loc .loc-hint { color: var(--hint); font-weight: 500; font-size: .95em; }
@@ -192,7 +198,7 @@ a.row:active { background: var(--bg-2); }
 .label { display: inline-block; text-align: left; }   /* ширину всім підписам задає app.js */
 
 /* ---------- ТАБЛИЦІ З ВИРІВНЯНИМ ВЛІВО (Вовківка, Верхоли, Головач) ---------- */
-table.left td { text-align: left; padding-left: 14px; padding-right: 2px; }
+table.left td { text-align: left; padding-left: 14px; padding-right: 10px; }
 table.left td .tm .marker { position: static; margin-left: 4px; }
 
 /* ---------- ПЕРЕМИКАЧ «ВЕРХОЛИ» (Вовківка) ---------- */

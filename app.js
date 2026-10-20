@@ -173,7 +173,7 @@
     } catch (e) { return txt.length * 9; }
   }
   function thPx() { return 18; }   /* = font-size th у CSS */
-  function headShift(toks, th, cellW) {
+  function headShift(toks, th, cellW, padL, padR) {
     var n = 0, withMk = 0, mw = 0;
     toks.forEach(function (t) {
       var m = /^~?\s*\d{1,2}:\d{2}\s*(.*)$/.exec(String(t).trim());
@@ -183,21 +183,28 @@
     });
     if (!n || withMk < n * 0.75) return 0;
     var want = Math.round(mw + 5);                               // 2 + 2·((маркер + 3px зазору) / 2)
-    var spare = Math.floor(cellW - 10 - textW(th.replace(/<[^>]*>/g, ''), 800) * thPx() / 17 - 4);
-    return Math.max(2, Math.min(want, spare));
+    var spare = Math.floor(cellW - padR - textW(th.replace(/<[^>]*>/g, ''), 800) * thPx() / 17 - 4);
+    return Math.max(padL, Math.min(want, spare));
   }
 
   function renderGrid(P, pageName, id, hideVerRows) {
     var cols = P.cols.map(function (c) {
       var toks = c.loc ? parse(P.loc) : parse(timesOf(c.t));
       if (!c.loc) validate(pageName + ' / ' + c.th + ' (' + (typeof c.t === 'string' && c.t.length < 20 ? c.t : 'колонка') + ')', toks, P.unordered);
-      return { spec: c, toks: toks };
+      /* колонка без маркерів (К, П, Ф, Пн, Верх…) — вміст по центру без резерву під маркер (клас nm) */
+      var nm = !c.loc && !(P.align === 'left') && !parse(c.loc ? '' : timesOf(c.t)).some(function (t) { return /\d:\d{2}\s*(Верх|Пн|[КПБФ])/.test(t); });
+      return { spec: c, toks: toks, nm: nm };
     });
     var n = cols.length;
+    /* відступи заголовка колонки (мають збігатися з CSS) */
+    cols.forEach(function (c, ci) {
+      c.padL = ci === 0 || c.nm ? 6 : 2;        // це відступи ЗАГОЛОВКА (у комірок крайніх колонок — більші, див. CSS)
+      c.padR = c.nm ? 6 : 10;
+    });
     var tw = Math.min(document.documentElement.clientWidth || 360, 640) - 16;
     var widths = P.widths || cols.map(function () { return 100 / n; });
     if (!P.widths) {                    /* заголовки завжди 18px: якщо якийсь не влазить у рівну колонку — додаємо йому місця за рахунок решти */
-      var need = cols.map(function (c) { return c.spec.loc ? 0 : Math.ceil(textW(c.spec.th.replace(/<[^>]*>/g, ''), 800) * thPx() / 17) + 12; });
+      var need = cols.map(function (c) { return c.spec.loc ? 0 : Math.ceil(textW(c.spec.th.replace(/<[^>]*>/g, ''), 800) * thPx() / 17) + c.padL + c.padR + 2; });
       var sum = need.reduce(function (a, b) { return a + b; }, 0);
       if (need.some(function (x) { return x > tw / n; }) && sum < tw) {
         var extra = (tw - sum) / n;
@@ -206,12 +213,25 @@
     }
     var rows = Math.max.apply(null, cols.map(function (c) { return c.toks.length; }));
 
+    /* довгий маркер («Верх Пн») не має впиратися в сусідню колонку: цифри лишаються по центру,
+       тому резерв справа (padding-right комірок) рахуємо на всю колонку, а не на окремий рядок */
+    var tdPx = (document.documentElement.clientWidth || 360) <= 380 ? 15 : 17, wd = textW('00:00', 600) * tdPx / 17;
+    cols.forEach(function (c, ci) {
+      c.tdPadR = 0;
+      if (c.spec.loc || c.nm || P.align === 'left') return;
+      var mk = 0;
+      c.toks.forEach(function (t) { var m = /\d:\d{2}\s*((?:Верх|Пн|[КПБФ])(?:\s+(?:Верх|Пн))*)/.exec(t); if (m) mk = Math.max(mk, textW(m[1], 700) * tdPx / 17); });
+      var cw = tw * widths[ci] / 100, padL = ci === 0 ? 9 : 2;
+      var want = Math.ceil(wd + 2 * mk + 22 + padL - cw);              // маркер закінчується ≥ 8px до краю комірки
+      if (mk && want > (ci === n - 1 ? 20 : 10)) c.tdPadR = want;
+    });
+
     var h = '<table' + (id ? ' id="' + id + '"' : '') + (P.align === 'left' ? ' class="left"' : '') + '><colgroup>' +
       widths.map(function (w) { return '<col style="width:' + w + '%">'; }).join('') + '</colgroup><tr>';
     cols.forEach(function (c, ci) {
-      var pl = c.spec.loc ? 0 : headShift(c.toks, c.spec.th, tw * widths[ci] / 100);
+      var pl = c.spec.loc ? 0 : headShift(c.toks, c.spec.th, tw * widths[ci] / 100, c.padL, c.padR);
       var st = pl ? 'padding-left:' + pl + 'px;' : '';
-      h += '<th' + (c.spec.red ? ' class="red"' : '') + (st ? ' style="' + st + '"' : '') + '>' + c.spec.th + '</th>';
+      h += '<th' + (c.spec.red || c.nm ? ' class="' + (c.spec.red ? 'red' : '') + (c.nm ? ' nm' : '') + '"' : '') + (st ? ' style="' + st + '"' : '') + '>' + c.spec.th + '</th>';
     });
     h += '</tr>';
     for (var i = 0; i < rows; i++) {
@@ -219,7 +239,9 @@
       h += '<tr' + (ver ? ' class="ver-row"' : '') + '>';
       cols.forEach(function (c) {
         var tok = c.toks[i] || '';
-        h += c.spec.loc ? locHtml(tok) : cellHtml(tok, c.spec.day || 'all', c.spec.group || ('c' + cols.indexOf(c)), '', P.splitMf);
+        var cell = c.spec.loc ? locHtml(tok) : cellHtml(tok, c.spec.day || 'all', c.spec.group || ('c' + cols.indexOf(c)), c.nm ? 'nm' : '', P.splitMf);
+        if (c.tdPadR) cell = cell.replace('<td', '<td style="padding-right:' + c.tdPadR + 'px"');
+        h += cell;
       });
       h += '</tr>';
     }
@@ -362,10 +384,10 @@
     cells.forEach(function (td, i) {
       var diff = info[i], isNext = false;
       if (diff !== null) isNext = next[td.dataset.group || '_'] && next[td.dataset.group || '_'].el === td;
-      td.classList.add('next-dep'); /*ТЕСТ*/                                          // найближчий рейс: синя заливка
+      td.classList.toggle('next-dep', !!isNext);                                          // найближчий рейс: синя заливка
       td.classList.toggle('dep-soon', !!isNext && diff <= SOON_SEC);                      // ≤ 5 хв: бурштинова
       td.classList.toggle('dep-now',  !!isNext && diff <= NOW_SEC);                       // ≤ 2 хв: червона, пульсує
-      fitPlate(td); /*ТЕСТ*/
+      if (isNext) fitPlate(td);
     });
   }
 
@@ -376,8 +398,9 @@
     if (!tm || !td.offsetWidth) return;
     var mk = td.querySelector('.marker'), mw = mk ? mk.offsetWidth + 3 : 0;
     var a = td.getBoundingClientRect(), b = tm.getBoundingClientRect();
-    var pl = Math.max(1, Math.min(11, Math.floor(b.left - a.left) - 1));
-    var pr = Math.max(1, Math.min(11, Math.floor(a.right - b.right - mw) - 1));
+    var T = td.closest('table').getBoundingClientRect(), EDGE = 7;      // від рамки таблиці плашка — не ближче 7px
+    var pl = Math.max(1, Math.min(11, Math.floor(b.left - a.left) - 1, Math.floor(b.left - T.left) - EDGE));
+    var pr = Math.max(1, Math.min(11, Math.floor(a.right - b.right - mw) - 1, Math.floor(T.right - b.right - mw) - EDGE));
     td.style.setProperty('--mw', mw + 'px');
     td.style.setProperty('--pl', pl + 'px');
     td.style.setProperty('--pr', pr + 'px');
