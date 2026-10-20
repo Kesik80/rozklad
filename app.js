@@ -172,7 +172,7 @@
       return _cv.measureText(txt).width;
     } catch (e) { return txt.length * 9; }
   }
-  function thPx() { return (document.documentElement.clientWidth || 360) <= 380 ? 16 : 18; }   /* = font-size th у CSS */
+  function thPx() { return 18; }   /* = font-size th у CSS */
   function headShift(toks, th, cellW) {
     var n = 0, withMk = 0, mw = 0;
     toks.forEach(function (t) {
@@ -194,20 +194,23 @@
       return { spec: c, toks: toks };
     });
     var n = cols.length;
+    var tw = Math.min(document.documentElement.clientWidth || 360, 640) - 16;
     var widths = P.widths || cols.map(function () { return 100 / n; });
+    if (!P.widths) {                    /* заголовки завжди 18px: якщо якийсь не влазить у рівну колонку — додаємо йому місця за рахунок решти */
+      var need = cols.map(function (c) { return c.spec.loc ? 0 : Math.ceil(textW(c.spec.th.replace(/<[^>]*>/g, ''), 800) * thPx() / 17) + 12; });
+      var sum = need.reduce(function (a, b) { return a + b; }, 0);
+      if (need.some(function (x) { return x > tw / n; }) && sum < tw) {
+        var extra = (tw - sum) / n;
+        widths = need.map(function (x) { return (x + extra) / tw * 100; });
+      }
+    }
     var rows = Math.max.apply(null, cols.map(function (c) { return c.toks.length; }));
 
     var h = '<table' + (id ? ' id="' + id + '"' : '') + (P.align === 'left' ? ' class="left"' : '') + '><colgroup>' +
       widths.map(function (w) { return '<col style="width:' + w + '%">'; }).join('') + '</colgroup><tr>';
-    var tw = Math.min(document.documentElement.clientWidth || 360, 640) - 16;
     cols.forEach(function (c, ci) {
       var pl = c.spec.loc ? 0 : headShift(c.toks, c.spec.th, tw * widths[ci] / 100);
-      var cw = tw * widths[ci] / 100, st = pl ? 'padding-left:' + pl + 'px;' : '';
-      if (!c.spec.loc) {                       /* занадто широкий заголовок — трохи менший шрифт, щоб не липнув до рамки */
-        var base = thPx();
-        var need = textW(c.spec.th.replace(/<[^>]*>/g, ''), 800) * base / 17, avail = cw - 12 - pl;
-        if (need > avail) st += 'font-size:' + Math.max(12, Math.floor(base * avail / need * 2) / 2) + 'px;' + (pl ? '' : 'padding-left:6px;padding-right:6px;');
-      }
+      var st = pl ? 'padding-left:' + pl + 'px;' : '';
       h += '<th' + (c.spec.red ? ' class="red"' : '') + (st ? ' style="' + st + '"' : '') + '>' + c.spec.th + '</th>';
     });
     h += '</tr>';
