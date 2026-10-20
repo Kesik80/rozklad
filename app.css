@@ -119,6 +119,8 @@ th {
 th.red { color: var(--red); }
 th.tbl-title { padding: 10px 6px; font-size: 17px; white-space: nowrap; overflow: hidden; }
 .tbl-title .from { color: var(--key); }
+a[href^='tel:'] { white-space: nowrap; }   /* номер телефону не рвати між рядками */
+tr.key-row td:not(.loc) { color: var(--key); font-weight: 700; }   /* виділений рядок: лише часи, назва зупинки — звичайна */
 
 td {
   background: var(--bg-2); color: var(--label-2);
