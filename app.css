@@ -23,6 +23,7 @@
   --red: #d70015;       /* вихідні, застереження */
   --wd: #00807a;        /* рейси лише Пн–Пт (~ у даних) */
   --ok: #1f7a35;        /* до рейсу ще є час (початок градієнта) */
+  --th-bg: #ecf1f5;     /* заливка шапки таблиць */
   --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
@@ -44,6 +45,7 @@
   --red: #ff6961;
   --wd: #4fd1c5;
   --ok: #30d158;
+  --th-bg: #2b3440;
 }
 
 /* Якщо JS ще не встиг (або вимкнений) — слухаємось системної теми */
@@ -54,7 +56,7 @@
     --label: #ffffff; --label-2: #a2a2a7; --label-3: #e5e5ea;
     --separator: #6c6c70; --hair: rgba(255, 255, 255, .09);
     --accent: #0a84ff; --next: #5eaaff; --th: #ff9f0a;
-    --hint: #d0d0d5; --red: #ff6961; --wd: #4fd1c5; --ok: #30d158;
+    --hint: #d0d0d5; --red: #ff6961; --wd: #4fd1c5; --ok: #30d158; --th-bg: #2b3440;
   }
 }
 
@@ -107,8 +109,8 @@ table {
   border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0, 0, 0, .12);
 }
 th {
-  background: var(--bg-1); color: var(--label); padding: 10px 10px 10px 2px;
-  font-size: 17px; font-weight: 700; letter-spacing: .2px; line-height: 1.15;
+  background: var(--th-bg); color: var(--label); padding: 10px 10px 10px 2px;
+  font-size: 17px; font-weight: 800; letter-spacing: .2px; line-height: 1.15;
   border-bottom: 1px solid var(--separator); white-space: normal;
 }
 th.red { color: var(--red); }
