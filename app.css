@@ -222,6 +222,8 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 16p
 .info-bold { font-weight: 700; color: var(--label); line-height: 1.6; margin: 0 6px 14px; }
 .qr-wrap { display: flex; flex-direction: column; align-items: center; margin: 0 0 6px; gap: 12px; }
 .qr-wrap img { width: 180px; height: 180px; margin-top: -12px; }   /* у самої картинки вже є біла рамка з тінню */
+.qr-link { display: block; line-height: 0; -webkit-tap-highlight-color: transparent; }
+.qr-link:active img { opacity: .8; }
 .qr-label { font-size: 14px; color: var(--label-2); text-align: center; }
 .thanks { text-align: center; font-weight: 700; color: var(--label); margin: 20px 0 10px; }
 .btn-tea, .btn-reload {
