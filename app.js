@@ -297,7 +297,7 @@
       for (var k = 0; k < n; k++) h += '<col style="width:calc((100% - 11ch) / ' + n + ')">';
       h += '</colgroup><tr><th class="tbl-title" colspan="' + (n + 1) + '">' + routeTitle(r, rows) + '</th></tr>';
       rows.forEach(function (x) {
-        h += '<tr><td class="loc' + (x.key ? ' key' : '') + '">' + x.loc + '</td>';
+        h += '<tr' + (x.key ? ' class="key-row"' : '') + '><td class="loc' + (x.key ? ' key' : '') + '">' + x.loc + '</td>';
         for (var j = 0; j < n; j++) h += cellHtml(x.toks[j] || '', 'all', r.group);
         h += '</tr>';
       });
