@@ -384,10 +384,10 @@
     cells.forEach(function (td, i) {
       var diff = info[i], isNext = false;
       if (diff !== null) isNext = next[td.dataset.group || '_'] && next[td.dataset.group || '_'].el === td;
-      td.classList.toggle('next-dep', !!isNext);                                          // найближчий рейс: синя заливка
+      td.classList.add('next-dep'); /*ТЕСТ*/                                          // найближчий рейс: синя заливка
       td.classList.toggle('dep-soon', !!isNext && diff <= SOON_SEC);                      // ≤ 5 хв: бурштинова
       td.classList.toggle('dep-now',  !!isNext && diff <= NOW_SEC);                       // ≤ 2 хв: червона, пульсує
-      if (isNext) fitPlate(td);
+      fitPlate(td); /*ТЕСТ*/
     });
   }
 
