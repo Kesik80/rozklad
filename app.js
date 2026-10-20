@@ -244,6 +244,16 @@
     apply();
   }
 
+  /* Заголовок маршруту: помаранчевим виділяється той кінець, що збігається з ключовою зупинкою
+     (Терешки / Копили) — незалежно від напрямку; якщо збігу немає, виділяється початок. */
+  function routeTitle(r, rows) {
+    var keys = rows.filter(function (x) { return x.key; }).map(function (x) { return String(x.loc).toUpperCase(); });
+    var fromKey = keys.indexOf(String(r.from).toUpperCase()) >= 0, toKey = keys.indexOf(String(r.to).toUpperCase()) >= 0;
+    return (toKey && !fromKey)
+      ? r.from + ' — <span class="from">' + r.to + '</span>'
+      : '<span class="from">' + r.from + '</span> — ' + r.to;
+  }
+
   function renderRoutes(P, pageName) {
     return P.routes.map(function (r) {
       var rows = r.rows.map(function (row) { return { loc: row[0], toks: parse(row[1]), key: !!row[2] }; });
@@ -253,7 +263,7 @@
       }
       var h = '<table class="plain"><colgroup><col style="width:11ch">';
       for (var k = 0; k < n; k++) h += '<col style="width:calc((100% - 11ch) / ' + n + ')">';
-      h += '</colgroup><tr><th class="tbl-title" colspan="' + (n + 1) + '"><span class="from">' + r.from + '</span> — ' + r.to + '</th></tr>';
+      h += '</colgroup><tr><th class="tbl-title" colspan="' + (n + 1) + '">' + routeTitle(r, rows) + '</th></tr>';
       rows.forEach(function (x) {
         h += '<tr><td class="loc' + (x.key ? ' key' : '') + '">' + x.loc + '</td>';
         for (var j = 0; j < n; j++) h += cellHtml(x.toks[j] || '', 'all', r.group);
