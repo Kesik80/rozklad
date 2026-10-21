@@ -1,6 +1,7 @@
 /* ЕФЕКТ НА ЕКРАНІ: листя або сніг (легкий canvas поверх сторінки, натискання проходять крізь нього).
    Налаштування — на сторінці Info: «Вкл/Викл» і «Листя/Сніг». Зберігаються на телефоні (localStorage).
    Зупиняється, коли додаток згорнуто; вимкнений за замовчуванням, якщо в системі ввімкнено «зменшити анімацію».
+   Дощ: краплі-штрихи з глибиною, нахил від вітру, бризки внизу.
    Листя: клен, дуб, береза, осика, верба — різні кольори, перекидаються в польоті.
    Сніг: м'які крупинки з глибиною (дальні дрібніші й повільніші) + справжні шестипроменеві сніжинки; обидва — під поривами вітру. */
 (function () {
@@ -9,10 +10,11 @@
   var reduce = false;
   try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
+  var KINDS = ['leaves', 'snow', 'rain'], splashes = [];
   var state = { on: !reduce, kind: 'leaves' };
   try {
     var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (saved) { state.on = !!saved.on; state.kind = saved.kind === 'snow' ? 'snow' : 'leaves'; }
+    if (saved) { state.on = !!saved.on; state.kind = KINDS.indexOf(saved.kind) >= 0 ? saved.kind : 'leaves'; }
   } catch (e) {}
 
   var cv = null, ctx = null, W = 0, H = 0, dpr = 1, parts = [], raf = 0, last = 0, clock = 0;
@@ -138,7 +140,8 @@
 
   /* ---------- ЧАСТИНКИ ---------- */
   function make(initial) {
-    var leaf = state.kind === 'leaves', z = rnd(0.45, 1);          // z — «близькість»: більше = ближче, більше, швидше
+    var leaf = state.kind === 'leaves', z = rnd(0.45, 1);
+    if (state.kind === 'rain') return { z: z, x: rnd(-40, W + 40), y: initial ? rnd(-60, H) : rnd(-120, -10), vy: rnd(620, 900) * (0.55 + z * 0.6), len: rnd(11, 22) * (0.6 + z * 0.6), a: 0.4 + z * 0.45, w: 0.7 + z * 0.8 };          // z — «близькість»: більше = ближче, більше, швидше
     var p = { z: z, x: rnd(-10, W + 10), y: initial ? rnd(-30, H) : rnd(-60, -10), ph: rnd(0, 6.28), flip: rnd(0, 6.28) };
     if (leaf) {
       p.shape = shapes()[(Math.random() * 5) | 0];
@@ -163,6 +166,8 @@
   function fill() {
     var n = Math.max(8, Math.min(17, Math.round(W * H / 32000)));
     if (state.kind === 'snow') n = Math.round(n * 1.6);
+    if (state.kind === 'rain') n = Math.round(n * 5);
+    splashes = [];
     parts = [];
     for (var i = 0; i < n; i++) parts.push(make(true));
   }
@@ -179,12 +184,34 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
+  function rain(dt, isDark, wd) {               // краплі-штрихи під нахилом вітру + маленькі бризки внизу
+    var i, p, slope = 0.16 + wd * 0.006, rgb = isDark ? '190,215,255' : '70,100,150', sp;
+    ctx.lineCap = 'round';
+    for (i = 0; i < parts.length; i++) {
+      p = parts[i];
+      p.y += p.vy * dt; p.x += p.vy * slope * dt;
+      if (p.y > H) {
+        if (p.z > 0.7 && splashes.length < 14) splashes.push({ x: p.x, y: H - rnd(2, 40 * p.z), t: 0, r: 2 + p.z * 3 });
+        parts[i] = p = make(false);
+      }
+      ctx.strokeStyle = 'rgba(' + rgb + ',' + p.a + ')'; ctx.lineWidth = p.w;
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.len * slope * 1.0, p.y - p.len); ctx.stroke();
+    }
+    for (i = splashes.length - 1; i >= 0; i--) {
+      sp = splashes[i]; sp.t += dt;
+      if (sp.t > 0.4) { splashes.splice(i, 1); continue; }
+      ctx.strokeStyle = 'rgba(' + rgb + ',' + (0.4 * (1 - sp.t / 0.4)) + ')'; ctx.lineWidth = 0.9;
+      ctx.beginPath(); ctx.ellipse(sp.x, sp.y, sp.r * (0.4 + sp.t * 3), sp.r * (0.4 + sp.t * 3) * 0.35, 0, 0, 6.2832); ctx.stroke();
+    }
+  }
+
   function frame(t) {
     raf = 0;
     if (!state.on || document.hidden) return;
     var dt = Math.min(0.05, (t - last) / 1000 || 0.016); last = t; clock += dt;
     ctx.clearRect(0, 0, W, H);
     var leaf = state.kind === 'leaves', isDark = dark(), wd = wind(), i, p, spr = leaf ? null : dotSprite(isDark);
+    if (state.kind === 'rain') { rain(dt, isDark, wd); raf = requestAnimationFrame(frame); return; }
     for (i = 0; i < parts.length; i++) {
       p = parts[i];
       p.ph += p.swaySpd * dt;
@@ -234,7 +261,7 @@
   window.FX = {
     get: function () { return { on: state.on, kind: state.kind }; },
     set: function (o) {
-      if (o.kind) state.kind = o.kind === 'snow' ? 'snow' : 'leaves';
+      if (o.kind) state.kind = KINDS.indexOf(o.kind) >= 0 ? o.kind : 'leaves';
       if (typeof o.on === 'boolean') state.on = o.on;
       save();
       parts = [];                       // перемалювати з новим видом
