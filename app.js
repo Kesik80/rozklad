@@ -618,3 +618,37 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
+/* ---------- ЗАМІР ШВИДКОСТІ ПЕРЕХОДУ (виводиться в console.js) ----------
+   Клік по посиланню запам'ятовується; на новій сторінці в консоль іде один рядок:
+   ⏱ pereizd: клік→показано 420мс | старт 35 · відповідь 12 · DOM 150 · load 210 · перша картинка 300 | SW: так, з кешу
+   (старт = від кліку до початку завантаження; відповідь = перший байт; перша картинка = FCP) */
+(function () {
+  try {
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href]');
+      if (!a || a.target === '_blank') return;
+      try { sessionStorage.setItem('nav-t0', JSON.stringify({ t: Date.now(), from: location.pathname })); } catch (x) {}
+    }, true);
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        try {
+          var raw = sessionStorage.getItem('nav-t0'); sessionStorage.removeItem('nav-t0');
+          var n = (performance.getEntriesByType('navigation') || [])[0], fcp = (performance.getEntriesByType('paint') || []).filter(function (p) { return p.name === 'first-contentful-paint'; })[0];
+          var t0 = raw ? JSON.parse(raw) : null, r = function (v) { return Math.round(v); };
+          var page = (location.pathname.split('/').pop() || 'index').replace('.html', '');
+          var parts = [];
+          if (t0) parts.push('клік→показано ' + r(Date.now() - t0.t) + 'мс');
+          var d = [];
+          if (t0) d.push('старт ' + r(performance.timeOrigin - t0.t));
+          if (n) { d.push('відповідь ' + r(n.responseStart)); d.push('DOM ' + r(n.domContentLoadedEventEnd)); d.push('load ' + r(n.loadEventEnd)); }
+          if (fcp) d.push('перша картинка ' + r(fcp.startTime));
+          var fx = window.FX ? window.FX.get() : null;
+          console.log('⏱ ' + page + ': ' + (parts.join(' ') || 'пряме відкриття') + (d.length ? ' | ' + d.join(' · ') : '') +
+            ' | SW: ' + (navigator.serviceWorker && navigator.serviceWorker.controller ? 'так' : 'ні') +
+            (n && n.transferSize === 0 ? ', з кешу' : ', з мережі') + ' | ефект: ' + (fx ? (fx.on ? fx.kind : 'викл') : 'немає'));
+        } catch (x) {}
+      }, 50);
+    });
+  } catch (e) {}
+})();
