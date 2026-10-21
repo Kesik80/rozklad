@@ -35,14 +35,32 @@
   var SHAPES = null;
   function shapes() {
     if (SHAPES) return SHAPES;
-    var maple = new Path2D(), half = [[0, -1], [0.17, -0.6], [0.5, -0.72], [0.38, -0.3], [0.88, -0.4], [0.6, 0], [0.98, 0.2], [0.46, 0.3], [0.52, 0.64], [0.1, 0.52], [0, 0.82]], i;
-    maple.moveTo(0, -1);
-    for (i = 1; i < half.length; i++) maple.lineTo(half[i][0], half[i][1]);
-    for (i = half.length - 2; i >= 0; i--) maple.lineTo(-half[i][0], half[i][1]);
+    var maple = new Path2D(), mv = [], i, j;
+    /* клен: 5 загострених часток (кут від «вгору», радіус), між ними виїмки; краї з дрібними зубцями */
+    var key = [[0, 1], [24, 0.46], [52, 0.92], [78, 0.5], [104, 0.7], [128, 0.34], [158, 0.3]], poly = [], pt, k0, k1, t, th, r, rr;
+    function P(a, r) { var th = a * Math.PI / 180; return [r * Math.sin(th), -r * Math.cos(th) + 0.12]; }
+    for (i = 0; i < key.length - 1; i++) {
+      k0 = key[i]; k1 = key[i + 1];
+      for (j = 0; j < 4; j++) {
+        t = j / 4; th = k0[0] + (k1[0] - k0[0]) * t; r = k0[1] + (k1[1] - k0[1]) * t;
+        rr = (j % 2) ? r * 0.9 : r;                                       // зубці
+        poly.push(P(th, rr));
+      }
+    }
+    poly.push(P(158, 0.3));
+    maple.moveTo(0, 0.12 - 1);
+    for (i = 1; i < poly.length; i++) maple.lineTo(poly[i][0], poly[i][1]);
+    maple.lineTo(0, 0.55);
+    for (i = poly.length - 1; i >= 1; i--) maple.lineTo(-poly[i][0], poly[i][1]);
     maple.closePath();
+    [0, 52, 104].forEach(function (a, n) { var q = P(a, [0.95, 0.85, 0.62][n]); mv.push([0, 0.55, q[0], q[1]]); if (a) mv.push([0, 0.55, -q[0], q[1]]); });
+    var oak = bodyPath(function (u) {                                         // дуб: округлі частки з глибокими виїмками
+      var env = 0.62 * Math.pow(sq(u), 0.75) * (1 + 0.22 * u * -1 + 0.0), lobe = Math.abs(Math.sin((u + 1) * 3.4 * Math.PI / 2 + 0.5));
+      return env * (0.42 + 0.58 * Math.pow(lobe, 0.6));
+    }, 120);
     SHAPES = [
-      { path: maple, veins: [[0, 0.7, 0, -0.95], [0, 0.5, 0.78, -0.3], [0, 0.5, -0.78, -0.3], [0, 0.5, 0.9, 0.2], [0, 0.5, -0.9, 0.2]] },
-      { path: bodyPath(function (u) { return 0.5 * sq(u) * (1 + 0.32 * Math.sin((u + 1) * 7.5)); }, 40), veins: 'pinnate' },   // дуб
+      { path: maple, veins: mv },
+      { path: oak, veins: 'pinnate' },   // дуб
       { path: bodyPath(function (u) { return 0.62 * sq(u) * (1 - 0.28 * u) * (1 + 0.05 * Math.sin(u * 38)); }, 48), veins: 'pinnate' }, // береза
       { path: bodyPath(function (u) { return 0.92 * Math.pow(sq(u), 0.9) * (1 - 0.15 * u); }, 36), veins: 'pinnate' },                // осика
       { path: bodyPath(function (u) { return 0.26 * sq(u); }, 30), veins: 'mid' }                                                    // верба
