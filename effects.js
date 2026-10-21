@@ -215,12 +215,18 @@
         for (j = 1; j < g.tr.length; j++) ctx.lineTo(g.tr[j][0], g.tr[j][1]);
         ctx.stroke();
       }
-      ctx.save(); ctx.translate(g.x, g.y); ctx.scale(1, g.run ? 1.25 : 1.08);   // крапля
-      ctx.beginPath(); ctx.arc(0, 0, g.r, 0, 6.2832);
+      g.k = (g.k || 0.35) + ((g.run ? 1 : 0.35) - (g.k || 0.35)) * Math.min(1, dt * 4);     // стікаюча витягується в краплю
+      var rr = g.r, h = rr * (1.15 + 1.0 * g.k);
+      ctx.save(); ctx.translate(g.x, g.y);
+      ctx.beginPath(); ctx.moveTo(0, -h);                                    // каплевидна форма: гострий верх, круглий низ
+      ctx.bezierCurveTo(rr * 0.12, -h * 0.55, rr, -rr * 0.45, rr, rr * 0.2);
+      ctx.arc(0, rr * 0.2, rr, 0, Math.PI, false);
+      ctx.bezierCurveTo(-rr, -rr * 0.45, -rr * 0.12, -h * 0.55, 0, -h);
+      ctx.closePath();
       ctx.fillStyle = isDark ? 'rgba(190,215,255,' + (0.12 * a) + ')' : 'rgba(110,140,200,' + (0.24 * a) + ')'; ctx.fill();
       ctx.lineWidth = 0.8;
       ctx.strokeStyle = isDark ? 'rgba(210,230,255,' + (0.55 * a) + ')' : 'rgba(50,80,140,' + (0.8 * a) + ')'; ctx.stroke();
-      ctx.beginPath(); ctx.arc(-g.r * 0.35, -g.r * 0.4, Math.max(0.5, g.r * 0.28), 0, 6.2832);   // відблиск
+      ctx.beginPath(); ctx.arc(-rr * 0.38, rr * 0.05, Math.max(0.5, rr * 0.26), 0, 6.2832);   // відблиск
       ctx.fillStyle = 'rgba(255,255,255,' + (0.85 * a) + ')'; ctx.fill();
       ctx.restore();
     }
