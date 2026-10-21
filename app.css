@@ -222,6 +222,11 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 16p
 .info-bold { font-weight: 700; color: var(--label); line-height: 1.6; margin: 0 6px 14px; }
 .qr-wrap { display: flex; flex-direction: column; align-items: center; margin: 0 0 6px; gap: 12px; }
 .qr-wrap img { width: 180px; height: 180px; margin-top: -12px; }   /* у самої картинки вже є біла рамка з тінню */
+.fx-box { margin: 18px 0 4px; }
+.fx-title { font-size: 15px; font-weight: 700; margin: 0 4px 4px; color: var(--label-2); }
+.fx-box .seg { margin: 4px 0 8px; }
+.fx-box .seg button { padding: 9px 8px; font-size: 15px; }
+.seg.dim { opacity: .45; }
 .qr-link { display: block; line-height: 0; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }   /* кнопка «Поділитися» у вигляді QR */
 .qr-link:active img { opacity: .8; }
 .qr-label { font-size: 14px; color: var(--label-2); text-align: center; }

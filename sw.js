@@ -8,14 +8,14 @@
 //    показує «Розклад оновлено — торкніться».
 // /api/* ніколи не кешуємо.
 
-const CACHE = 'rozklad-v4';   // змінюй число, щоб примусово скинути старий кеш у всіх
+const CACHE = 'rozklad-v5';   // змінюй число, щоб примусово скинути старий кеш у всіх
 const NET_TIMEOUT = 2500;     // мс очікування мережі, потім — кеш
 
 const PRECACHE = [
   './', 'index.html', 'pereizd.html', 'tereschky.html', 'otg.html',
   'mykilske.html', 'elektrychky.html', 'mynivka.html', 'kashubivka.html', 'vovkivka.html',
   'verkholy.html', 'golovach.html', 'info.html', 'install.html',
-  'app.css', 'app.js', 'schedule-data.js', 'pwa-install.js', 'console.js',
+  'app.css', 'app.js', 'schedule-data.js', 'pwa-install.js', 'effects.js', 'console.js',
   'icons/manifest.json', 'icons/qr-app.png', 'icons/icon-192x192.png', 'icons/favicon.ico'
 ];
 
