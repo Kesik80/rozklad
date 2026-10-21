@@ -83,7 +83,7 @@ window.SCHEDULE = {
   /* ---------- СТОРІНКИ ---------- */
   pages: {
 
-    index: { title: 'РАСПИСЮЛЬКА', back: false, type: 'menu' },
+    index: { title: 'РАСПІСЮЛЬКА :)', back: false, type: 'menu' },
 
     pereizd: {
       title: 'ПЕРЕЇЗД', type: 'grid',

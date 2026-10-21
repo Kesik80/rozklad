@@ -88,6 +88,7 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 .hdr.scrolled { box-shadow: 0 1px 0 var(--separator); }
 .hdr-mid { text-align: center; min-width: 0; }
 .hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; }
+body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
 .btn-icon {
   width: 44px; height: 44px; border-radius: 50%;
@@ -264,6 +265,7 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 16p
   td { font-size: 15px; }
   table.plain td { font-size: 14px; }
   .hdr-title { font-size: 17px; }
+  body[data-page="index"] .hdr-title { font-size: 22px; }
 }
 
 /* ---------- МЕНШЕ РУХУ ---------- */

@@ -652,3 +652,14 @@
     });
   } catch (e) {}
 })();
+
+/* ---------- ВІБРОВІДГУК: коротка вібрація при натисканні на кнопки й посилання ---------- */
+(function () {
+  try {
+    if (!navigator.vibrate) return;
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest && e.target.closest('a[href], button, [role="button"], .seg, .menu a, label');
+      if (t && !t.disabled) { try { navigator.vibrate(12); } catch (x) {} }
+    }, true);
+  } catch (e) {}
+})();
