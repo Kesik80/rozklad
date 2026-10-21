@@ -1,7 +1,7 @@
 /* ЕФЕКТ НА ЕКРАНІ: листя або сніг (легкий canvas поверх сторінки, натискання проходять крізь нього).
    Налаштування — на сторінці Info: «Вкл/Викл» і «Листя/Сніг». Зберігаються на телефоні (localStorage).
    Зупиняється, коли додаток згорнуто; вимкнений за замовчуванням, якщо в системі ввімкнено «зменшити анімацію».
-   Дощ: краплі-штрихи з глибиною, нахил від вітру, бризки внизу.
+   Дощ: краплі-штрихи з глибиною, нахил від вітру, бризки внизу, краплі на склі зі стіканням.
    Листя: клен, дуб, береза, осика, верба — різні кольори, перекидаються в польоті.
    Сніг: м'які крупинки з глибиною (дальні дрібніші й повільніші) + справжні шестипроменеві сніжинки; обидва — під поривами вітру. */
 (function () {
@@ -10,7 +10,7 @@
   var reduce = false;
   try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
-  var KINDS = ['leaves', 'snow', 'rain'], splashes = [];
+  var KINDS = ['leaves', 'snow', 'rain'], splashes = [], glass = [], gNext = 0;
   var state = { on: !reduce, kind: 'leaves' };
   try {
     var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
@@ -167,7 +167,7 @@
     var n = Math.max(8, Math.min(17, Math.round(W * H / 32000)));
     if (state.kind === 'snow') n = Math.round(n * 1.6);
     if (state.kind === 'rain') n = Math.round(n * 5);
-    splashes = [];
+    splashes = []; glass = []; gNext = 0;
     parts = [];
     for (var i = 0; i < n; i++) parts.push(make(true));
   }
@@ -184,6 +184,48 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
+  /* краплі на «склі»: з'являються, ростуть, великі зриваються й стікають зі слідом */
+  function glassDrops(dt, isDark) {
+    var i, j, g, tr, a;
+    gNext -= dt;
+    if (gNext <= 0 && glass.length < 16) {
+      gNext = rnd(0.25, 0.9);
+      glass.push({ x: rnd(8, W - 8), y: rnd(60, H - 20), r: 0.6, rMax: rnd(2.2, 5.2), age: 0, run: false, vy: 0, wob: rnd(0, 6.28), tr: [], fade: 1, stop: 0 });
+    }
+    for (i = glass.length - 1; i >= 0; i--) {
+      g = glass[i]; g.age += dt;
+      if (!g.run) {
+        if (g.r < g.rMax) g.r += dt * 0.55;                                  // росте
+        else if (g.rMax > 3.6 && Math.random() < dt * 0.5) { g.run = true; g.vy = rnd(20, 40); g.stop = rnd(60, 220); g.y0 = g.y; }
+        else if (g.age > 9) g.fade -= dt * 0.5;                              // дрібна випаровується
+      } else {
+        g.vy = Math.min(g.vy + (Math.random() < 0.08 ? rnd(40, 90) : -18 * dt), 150); if (g.vy < 12) g.vy = 12;
+        g.y += g.vy * dt; g.wob += dt * 3; g.x += Math.sin(g.wob) * 3 * dt;
+        g.r = Math.max(1.5, g.r - dt * 0.22);
+        if (!g.tr.length || g.y - g.tr[g.tr.length - 1][1] > 3) g.tr.push([g.x, g.y]);
+        if (g.y - g.y0 > g.stop || g.y > H + 10) { g.run = false; g.rMax = g.r; g.age = 5; }
+      }
+      if (g.fade < 1 || (!g.run && g.tr.length && g.age > 6)) g.fade -= dt * 0.35;
+      if (g.fade <= 0) { glass.splice(i, 1); continue; }
+      a = Math.min(1, g.fade);
+      if (g.tr.length > 1) {                                                  // слід
+        ctx.strokeStyle = isDark ? 'rgba(200,225,255,' + (0.16 * a) + ')' : 'rgba(70,100,160,' + (0.3 * a) + ')';
+        ctx.lineWidth = Math.max(1, g.r * 0.55); ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(g.tr[0][0], g.tr[0][1]);
+        for (j = 1; j < g.tr.length; j++) ctx.lineTo(g.tr[j][0], g.tr[j][1]);
+        ctx.stroke();
+      }
+      ctx.save(); ctx.translate(g.x, g.y); ctx.scale(1, g.run ? 1.25 : 1.08);   // крапля
+      ctx.beginPath(); ctx.arc(0, 0, g.r, 0, 6.2832);
+      ctx.fillStyle = isDark ? 'rgba(190,215,255,' + (0.12 * a) + ')' : 'rgba(110,140,200,' + (0.24 * a) + ')'; ctx.fill();
+      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = isDark ? 'rgba(210,230,255,' + (0.55 * a) + ')' : 'rgba(50,80,140,' + (0.8 * a) + ')'; ctx.stroke();
+      ctx.beginPath(); ctx.arc(-g.r * 0.35, -g.r * 0.4, Math.max(0.5, g.r * 0.28), 0, 6.2832);   // відблиск
+      ctx.fillStyle = 'rgba(255,255,255,' + (0.85 * a) + ')'; ctx.fill();
+      ctx.restore();
+    }
+  }
+
   function rain(dt, isDark, wd) {               // краплі-штрихи під нахилом вітру + маленькі бризки внизу
     var i, p, slope = 0.16 + wd * 0.006, rgb = isDark ? '190,215,255' : '70,100,150', sp;
     ctx.lineCap = 'round';
@@ -197,6 +239,7 @@
       ctx.strokeStyle = 'rgba(' + rgb + ',' + p.a + ')'; ctx.lineWidth = p.w;
       ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.len * slope * 1.0, p.y - p.len); ctx.stroke();
     }
+    glassDrops(dt, isDark);
     for (i = splashes.length - 1; i >= 0; i--) {
       sp = splashes[i]; sp.t += dt;
       if (sp.t > 0.4) { splashes.splice(i, 1); continue; }
