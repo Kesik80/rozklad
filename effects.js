@@ -1,6 +1,8 @@
 /* ЕФЕКТ НА ЕКРАНІ: листя або сніг (легкий canvas поверх сторінки, натискання проходять крізь нього).
    Налаштування — на сторінці Info: «Вкл/Викл» і «Листя/Сніг». Зберігаються на телефоні (localStorage).
-   Зупиняється, коли додаток згорнуто; вимкнений за замовчуванням, якщо в системі ввімкнено «зменшити анімацію». */
+   Зупиняється, коли додаток згорнуто; вимкнений за замовчуванням, якщо в системі ввімкнено «зменшити анімацію».
+   Листя: клен, дуб, береза, осика, верба — різні кольори, перекидаються в польоті.
+   Сніг: м'які крупинки з глибиною (дальні дрібніші й повільніші) + справжні шестипроменеві сніжинки; обидва — під поривами вітру. */
 (function () {
   'use strict';
   var KEY = 'fx-v1';
@@ -13,29 +15,139 @@
     if (saved) { state.on = !!saved.on; state.kind = saved.kind === 'snow' ? 'snow' : 'leaves'; }
   } catch (e) {}
 
-  var cv = null, ctx = null, W = 0, H = 0, dpr = 1, parts = [], raf = 0, last = 0;
-  var LEAF_COLORS = ['#d9822b', '#c0392b', '#e0a526', '#a8531c', '#b5651d', '#cf6a2a'];
+  var cv = null, ctx = null, W = 0, H = 0, dpr = 1, parts = [], raf = 0, last = 0, clock = 0;
 
   function rnd(a, b) { return a + Math.random() * (b - a); }
   function dark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
 
+  /* ---------- ЛИСТЯ: контури одиничного розміру (кінчик угорі, черешок унизу) ---------- */
+  function bodyPath(width, n) {                 // симетричний листок: ширина як функція висоти u∈[-1;1]
+    var p = new Path2D(), i, u, pts = [];
+    for (i = 0; i <= n; i++) { u = -1 + 2 * i / n; pts.push([width(u), u]); }
+    p.moveTo(pts[0][0], pts[0][1]);
+    for (i = 1; i < pts.length; i++) p.lineTo(pts[i][0], pts[i][1]);
+    for (i = pts.length - 1; i >= 0; i--) p.lineTo(-pts[i][0], pts[i][1]);
+    p.closePath();
+    return p;
+  }
+  function sq(u) { return Math.sqrt(Math.max(0, 1 - u * u)); }
+
+  var SHAPES = null;
+  function shapes() {
+    if (SHAPES) return SHAPES;
+    var maple = new Path2D(), half = [[0, -1], [0.17, -0.6], [0.5, -0.72], [0.38, -0.3], [0.88, -0.4], [0.6, 0], [0.98, 0.2], [0.46, 0.3], [0.52, 0.64], [0.1, 0.52], [0, 0.82]], i;
+    maple.moveTo(0, -1);
+    for (i = 1; i < half.length; i++) maple.lineTo(half[i][0], half[i][1]);
+    for (i = half.length - 2; i >= 0; i--) maple.lineTo(-half[i][0], half[i][1]);
+    maple.closePath();
+    SHAPES = [
+      { path: maple, veins: [[0, 0.7, 0, -0.95], [0, 0.5, 0.78, -0.3], [0, 0.5, -0.78, -0.3], [0, 0.5, 0.9, 0.2], [0, 0.5, -0.9, 0.2]] },
+      { path: bodyPath(function (u) { return 0.5 * sq(u) * (1 + 0.32 * Math.sin((u + 1) * 7.5)); }, 40), veins: 'pinnate' },   // дуб
+      { path: bodyPath(function (u) { return 0.62 * sq(u) * (1 - 0.28 * u) * (1 + 0.05 * Math.sin(u * 38)); }, 48), veins: 'pinnate' }, // береза
+      { path: bodyPath(function (u) { return 0.92 * Math.pow(sq(u), 0.9) * (1 - 0.15 * u); }, 36), veins: 'pinnate' },                // осика
+      { path: bodyPath(function (u) { return 0.26 * sq(u); }, 30), veins: 'mid' }                                                    // верба
+    ];
+    return SHAPES;
+  }
+
+  var LEAF_COLORS = [
+    ['#d9822b', '#9c4f12'], ['#c0392b', '#7d1f16'], ['#e0a526', '#a06f0a'], ['#b5651d', '#6f3a0c'],
+    ['#8c5a2b', '#55331a'], ['#9aa63a', '#5f6a18'], ['#cf6a2a', '#8a3a0d'], ['#a62d22', '#661710']
+  ];
+
+  function drawLeaf(p) {
+    var sh = p.shape, s = p.s;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.scale(s * (0.3 + 0.7 * Math.abs(Math.cos(p.flip))), s);       // перекидається в польоті
+    ctx.globalAlpha = p.a;
+    ctx.fillStyle = p.col[0];
+    ctx.fill(sh.path);
+    ctx.globalAlpha = p.a * 0.55;
+    ctx.strokeStyle = p.col[1];
+    ctx.lineWidth = 0.09;
+    ctx.lineCap = 'round';
+    ctx.stroke(sh.path);
+    ctx.beginPath();
+    if (sh.veins === 'pinnate') {
+      ctx.moveTo(0, 1.12); ctx.lineTo(0, -0.9);
+      for (var k = 0; k < 4; k++) { var u = 0.5 - k * 0.38, w = 0.35 * sq(u); ctx.moveTo(0, u + 0.1); ctx.lineTo(w, u - 0.22); ctx.moveTo(0, u + 0.1); ctx.lineTo(-w, u - 0.22); }
+    } else if (sh.veins === 'mid') {
+      ctx.moveTo(0, 1.12); ctx.lineTo(0, -0.9);
+    } else {
+      ctx.moveTo(0, 1.15);
+      for (var j = 0; j < sh.veins.length; j++) { var v = sh.veins[j]; ctx.moveTo(v[0], v[1]); ctx.lineTo(v[2], v[3]); }
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---------- СНІГ ---------- */
+  var sprite = { dark: null, light: null };
+  function dotSprite(isDark) {                  // м'яка крупинка з розмитим краєм (малюється раз)
+    var key = isDark ? 'dark' : 'light';
+    if (sprite[key]) return sprite[key];
+    var c = document.createElement('canvas'); c.width = c.height = 48;
+    var g = c.getContext('2d'), gr = g.createRadialGradient(24, 24, 0, 24, 24, 24), rgb = isDark ? '255,255,255' : '120,148,186';
+    gr.addColorStop(0, 'rgba(' + rgb + ',1)'); gr.addColorStop(0.45, 'rgba(' + rgb + ',.75)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 48, 48);
+    return (sprite[key] = c);
+  }
+
+  function drawCrystal(p, isDark) {
+    var r = p.s, k;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.globalAlpha = p.a;
+    ctx.strokeStyle = isDark ? '#ffffff' : '#6d8db6';
+    ctx.lineWidth = Math.max(0.8, r * 0.16);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (k = 0; k < 6; k++) {
+      ctx.rotate(Math.PI / 3);
+      ctx.moveTo(0, 0); ctx.lineTo(r, 0);
+      ctx.moveTo(r * 0.55, 0); ctx.lineTo(r * 0.82, r * 0.28);
+      ctx.moveTo(r * 0.55, 0); ctx.lineTo(r * 0.82, -r * 0.28);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---------- ЧАСТИНКИ ---------- */
   function make(initial) {
-    var leaf = state.kind === 'leaves';
-    return {
-      x: rnd(0, W), y: initial ? rnd(-20, H) : rnd(-40, -10),
-      vy: leaf ? rnd(28, 55) : rnd(22, 46),
-      sway: rnd(14, 38), swaySpd: rnd(0.5, 1.3), ph: rnd(0, 6.28),
-      s: leaf ? rnd(6, 10) : rnd(1.6, 3.6),
-      rot: rnd(0, 6.28), vr: rnd(-1.4, 1.4), flip: rnd(0, 6.28), flipSpd: rnd(1.2, 2.6),
-      col: LEAF_COLORS[(Math.random() * LEAF_COLORS.length) | 0],
-      a: leaf ? rnd(0.7, 0.9) : rnd(0.55, 0.9), base: 0
-    };
+    var leaf = state.kind === 'leaves', z = rnd(0.45, 1);          // z — «близькість»: більше = ближче, більше, швидше
+    var p = { z: z, x: rnd(-10, W + 10), y: initial ? rnd(-30, H) : rnd(-60, -10), ph: rnd(0, 6.28), flip: rnd(0, 6.28) };
+    if (leaf) {
+      p.shape = shapes()[(Math.random() * 5) | 0];
+      p.col = LEAF_COLORS[(Math.random() * LEAF_COLORS.length) | 0];
+      p.s = (p.shape === SHAPES[4] ? 11 : 8.5) * (0.7 + z * 0.75);
+      p.vy = rnd(30, 52) * (0.7 + z * 0.5);
+      p.swayV = rnd(18, 42); p.swaySpd = rnd(0.7, 1.5);
+      p.rot0 = rnd(0, 6.28); p.rotAmp = rnd(0.5, 1.1); p.spin = rnd(-0.5, 0.5);
+      p.flipSpd = rnd(1.4, 3.0); p.a = 0.62 + z * 0.3;
+      p.rot = p.rot0;
+    } else {
+      p.crystal = Math.random() < 0.28;
+      p.s = p.crystal ? rnd(4.5, 8) * (0.65 + z * 0.55) : rnd(1.6, 4.2) * (0.5 + z * 0.9);
+      p.vy = rnd(24, 46) * (0.55 + z * 0.65);
+      p.swayV = rnd(8, 22); p.swaySpd = rnd(0.5, 1.2);
+      p.rot = rnd(0, 6.28); p.spin = rnd(-0.6, 0.6);
+      p.a = p.crystal ? 0.55 + z * 0.35 : 0.45 + z * 0.5;
+    }
+    return p;
   }
 
   function fill() {
-    var n = Math.max(14, Math.min(32, Math.round(W * H / 18000)));
+    var n = Math.max(16, Math.min(34, Math.round(W * H / 16000)));
+    if (state.kind === 'snow') n = Math.round(n * 1.6);
     parts = [];
-    for (var i = 0; i < n; i++) { var p = make(true); p.base = p.x; parts.push(p); }
+    for (var i = 0; i < n; i++) parts.push(make(true));
+  }
+
+  function wind() {                              // загальний вітер: повільна хвиля + пориви, px/с
+    return 14 * Math.sin(clock * 0.23) + 9 * Math.sin(clock * 0.61 + 1.3) + 12 * Math.max(0, Math.sin(clock * 0.11 + 0.5)) ** 3;
   }
 
   function resize() {
@@ -46,46 +158,33 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  function drawLeaf(p) {
-    var s = p.s;
-    ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.rotate(p.rot);
-    ctx.scale(0.35 + 0.65 * Math.abs(Math.cos(p.flip)), 1);   // перекидається в польоті
-    ctx.globalAlpha = p.a;
-    ctx.fillStyle = p.col;
-    ctx.beginPath();
-    ctx.moveTo(0, -s);
-    ctx.quadraticCurveTo(s * 0.95, -s * 0.15, 0, s);
-    ctx.quadraticCurveTo(-s * 0.95, -s * 0.15, 0, -s);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(60,30,10,.35)';
-    ctx.lineWidth = 0.8;
-    ctx.beginPath(); ctx.moveTo(0, -s * 0.8); ctx.lineTo(0, s * 1.15); ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawFlake(p, rgb) {
-    ctx.globalAlpha = p.a;
-    ctx.fillStyle = rgb;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.2832); ctx.fill();
-  }
-
   function frame(t) {
     raf = 0;
     if (!state.on || document.hidden) return;
-    var dt = Math.min(0.05, (t - last) / 1000 || 0.016); last = t;
+    var dt = Math.min(0.05, (t - last) / 1000 || 0.016); last = t; clock += dt;
     ctx.clearRect(0, 0, W, H);
-    var leaf = state.kind === 'leaves', rgb = dark() ? '#ffffff' : '#7f9cc0';
-    for (var i = 0; i < parts.length; i++) {
-      var p = parts[i];
-      p.y += p.vy * dt;
+    var leaf = state.kind === 'leaves', isDark = dark(), wd = wind(), i, p, spr = leaf ? null : dotSprite(isDark);
+    for (i = 0; i < parts.length; i++) {
+      p = parts[i];
       p.ph += p.swaySpd * dt;
-      p.x = p.base + Math.sin(p.ph) * p.sway;
-      if (leaf) { p.rot += p.vr * dt; p.flip += p.flipSpd * dt; }
-      if (p.y > H + 20) { var q = make(false); q.base = q.x; parts[i] = p = q; }
-      if (leaf) drawLeaf(p); else drawFlake(p, rgb);
+      p.y += p.vy * dt;
+      p.x += (Math.sin(p.ph) * p.swayV + wd * (leaf ? 1.1 : 0.7) * p.z) * dt;
+      if (leaf) {
+        p.flip += p.flipSpd * dt;
+        p.rot0 += p.spin * dt;
+        p.rot = p.rot0 + Math.sin(p.ph) * p.rotAmp;                // гойдається, як маятник
+      } else if (p.crystal) {
+        p.rot += p.spin * dt;
+      }
+      if (p.y > H + 24 || p.x < -40 || p.x > W + 40) {
+        if (p.y > H + 24) { parts[i] = p = make(false); }
+        else p.x = p.x < 0 ? W + 30 : -30;
+      }
+      if (leaf) drawLeaf(p);
+      else if (p.crystal) drawCrystal(p, isDark);
+      else { ctx.globalAlpha = p.a; ctx.drawImage(spr, p.x - p.s * 1.6, p.y - p.s * 1.6, p.s * 3.2, p.s * 3.2); }
     }
+    ctx.globalAlpha = 1;
     raf = requestAnimationFrame(frame);
   }
 
