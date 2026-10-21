@@ -75,6 +75,25 @@ textarea {
 details.lost { margin-top: 8px; }
 details.lost pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 12.5px/1.4 ui-monospace, Menlo, monospace; background: var(--bg-2); padding: 8px; border-radius: 8px; margin: 6px 0; }
 
+
+.modes { display: flex; gap: 6px; margin: 2px 0 10px; }
+.modes button { flex: 1; min-height: 38px; border-radius: 10px; border: 1.5px solid var(--separator); background: var(--bg-2); color: var(--label-2); font: 700 14px var(--font); cursor: pointer; }
+.modes button.on { border-color: var(--accent); background: var(--accent); color: var(--accent-text); }
+.q-help { margin-bottom: 10px; }
+.qc { margin: 10px 0 14px; }
+.qc-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.qc-h b { font-size: 16px; }
+.qc-h .day { color: var(--label-2); font-size: 13px; }
+.qc-h .cnt { margin-left: auto; font-size: 13px; color: var(--label-2); font-weight: 600; }
+.qc-h .cnt.bad { color: var(--red); }
+.qc-n { font-size: 12.5px; color: var(--label-2); margin-bottom: 4px; line-height: 1.35; }
+.qc-w { font-size: 13px; color: var(--th); line-height: 1.4; margin-top: 4px; }
+.qw { display: flex; border: 1px solid var(--separator); border-radius: 10px; background: var(--bg-2); overflow: hidden; }
+.qw:focus-within { border-color: var(--accent); }
+.gut { flex: 0 0 34px; margin: 0; padding: 11px 6px 11px 0; text-align: right; color: var(--label-2); opacity: .7; font: 400 12px/22px ui-monospace, Menlo, Consolas, monospace; user-select: none; border-right: 1px solid var(--separator); white-space: pre; }
+.qw textarea { flex: 1; min-width: 0; border: 0; border-radius: 0; background: transparent; padding: 11px 10px; min-height: 0; font: 500 16px/22px ui-monospace, Menlo, Consolas, monospace; white-space: pre; overflow: hidden; }
+.code-view[hidden], .q-view[hidden] { display: none; }
+
 /* нижня панель */
 .bar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
@@ -170,13 +189,14 @@ details.lost pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 12.
 
   /* ---------- утиліти ---------- */
   var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* приватний режим */ } }
   function lsDel(k) { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } }
 
   var LS_TOKEN = 'sched-ed-token', LS_DRAFT = 'sched-ed-draft';
-  var state = { token: lsGet(LS_TOKEN) || '', sha: '', parts: [], meta: null, open: null, warnConfirmed: false, ta: null, busy: false };
+  var state = { token: lsGet(LS_TOKEN) || '', sha: '', parts: [], meta: null, open: null, warnConfirmed: false, ta: null, busy: false, q: {}, mode: {} };
 
   /* ---------- API ---------- */
   function api(body, auth) {
@@ -393,6 +413,210 @@ details.lost pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 12.
   }
   function autosize(ta) { ta.style.height = 'auto'; ta.style.height = Math.max(120, ta.scrollHeight + 2) + 'px'; }
 
+  /* ============================================================
+     РЕЖИМ «ПРОСТО»: колонки часу окремими полями.
+     Вписуєш/вставляєш час через пробіл, кому або з нового рядка — формат
+     (лапки, коми, 05:45) редактор робить сам. Порожній рядок = у цьому рядку рейсу немає.
+     Працює поверх тих самих блоків: правка одразу потрапляє в текст блоку.
+     ============================================================ */
+  var DAYS = { wd: 'будні', sun: 'неділя', mf: 'Пн–Пт', mon: 'Пн', all: 'щодня' };
+  function strEnd(src, i) { var q = src[i], n = src.length; i++; while (i < n && src[i] !== q) { if (src[i] === '\\') i++; i++; } return i + 1; }
+  function valueEnd(src, vs) {
+    var c = src[vs], n = src.length;
+    if (c === '"' || c === "'") return { end: strEnd(src, vs), kind: 'str' };
+    if (c === '[') {
+      var d = 0, i = vs;
+      while (i < n) {
+        var ch = src[i];
+        if (ch === '"' || ch === "'") { i = strEnd(src, i); continue; }
+        if (ch === '/' && src[i + 1] === '/') { var e = src.indexOf('\n', i); i = e < 0 ? n : e + 1; continue; }
+        if (ch === '[') d++;
+        else if (ch === ']') { d--; if (d === 0) return { end: i + 1, kind: 'arr' }; }
+        i++;
+      }
+    }
+    return { end: vs, kind: 'other' };
+  }
+  // усі властивості «ключ: значення» тексту блоку (з позиціями значення); рядки й коментарі пропускаються
+  function scanProps(src) {
+    var out = [], i = 0, n = src.length, depth = 0, prev = '';
+    while (i < n) {
+      var c = src[i], d = src[i + 1];
+      if (c === '/' && d === '/') { var e = src.indexOf('\n', i); i = e < 0 ? n : e + 1; continue; }
+      if (c === '/' && d === '*') { var e2 = src.indexOf('*/', i + 2); i = e2 < 0 ? n : e2 + 2; continue; }
+      if (/\s/.test(c)) { i++; continue; }
+      if (c === '"' || c === "'" || c === '`') { i = strEnd(src, i); prev = '"'; continue; }
+      if (c === '{' || c === '[' || c === '(') { depth++; prev = c; i++; continue; }
+      if (c === '}' || c === ']' || c === ')') { depth--; prev = c; i++; continue; }
+      if (/[A-Za-z_$]/.test(c) && (prev === '' || prev === '{' || prev === ',')) {
+        var m = /^([A-Za-z_$][\w$]*)\s*:/.exec(src.slice(i, i + 80));
+        if (m) {
+          var vs = i + m[0].length; while (vs < n && /\s/.test(src[vs])) vs++;
+          var ve = valueEnd(src, vs);
+          out.push({ key: m[1], depth: depth, vs: vs, ve: ve.end, kind: ve.kind });
+          prev = ':'; i = vs; continue;
+        }
+      }
+      prev = c; i++;
+    }
+    return out;
+  }
+  function evalPart(p) { try { return (new Function('return ({' + p.text + '\n})'))(); } catch (e) { return null; } }
+  function slotsFromValue(v) { return (Array.isArray(v) ? v : String(v).split(',')).map(function (s) { return String(s).trim(); }); }
+  function sameSlots(a, b) { return a.length === b.length && a.every(function (x, i) { return x === b[i]; }); }
+  function pad2(s) { return s.length < 2 ? '0' + s : s; }
+  var TIME_RE = /(~?)\s*(\d{1,2})\s*[:.]\s*(\d{2})/g;
+  // вільний текст → рядки (слоти): новий рядок / кома / крапка з комою розділяють, кілька часів в одному шматку теж
+  function parseSlots(text) {
+    text = String(text).replace(/\r/g, '');
+    var hasNL = text.indexOf('\n') >= 0, slots = [];
+    text.split('\n').forEach(function (line) {
+      line.split(/[,;]/).forEach(function (piece) {
+        var s = piece.trim();
+        if (!s) { slots.push(''); return; }
+        var re = new RegExp(TIME_RE.source, 'g'), m, found = [];
+        while ((m = re.exec(s))) found.push({ i: m.index, e: re.lastIndex, tilde: m[1], h: m[2], mi: m[3] });
+        if (!found.length) { slots.push(s); return; }
+        found.forEach(function (f, k) {
+          var raw = s.slice(f.e, k + 1 < found.length ? found[k + 1].i : s.length);
+          var suf = raw.trim();
+          slots.push(f.tilde + pad2(f.h) + ':' + f.mi + (suf ? (/^\s/.test(raw) ? ' ' : '') + suf : ''));
+        });
+      });
+    });
+    if (hasNL) { if (text.slice(-1) === '\n') slots.pop(); }          // один кінцевий перенос — не рядок
+    else { while (slots.length && slots[slots.length - 1] === '') slots.pop(); }
+    return slots;
+  }
+  function slotsToText(slots) { return slots.join('\n') + '\n'; }
+  function slotBad(s) {
+    if (s === '' || s === '-') return false;
+    var m = TOKEN_RE.exec(s.replace(/^~/, ''));
+    return !m || +m[1] > 23 || +m[2] > 59;
+  }
+  function litEsc(s, q) { return s.replace(/\\/g, '\\\\').split(q).join('\\' + q); }
+
+  // які колонки редагуються на сторінці/в блоці
+  function quickCards(p) {
+    var timesP = findPart('times'), T = (timesP && evalPart(timesP) || {}).times || {}, cards = [], users = {};
+    state.parts.forEach(function (pp) {   // хто використовує спільні рядки
+      if (!pp.key || pp.key.indexOf('pages.') !== 0) return;
+      var o = evalPart(pp); o = o && o[pp.key.slice(6)]; if (!o) return;
+      (o.cols || []).concat((o.toggle && o.toggle.grid && o.toggle.grid.cols) || []).forEach(function (c) {
+        if (typeof c.t === 'string' && has(T, c.t)) (users[c.t] = users[c.t] || []).push({ pkey: pp.key, text: (o.title || pp.key.slice(6)) + ' (' + c.th + ')' });
+      });
+    });
+    function others(key, self) { return (users[key] || []).filter(function (u) { return u.pkey !== self; }).map(function (u) { return u.text; }); }
+    if (p.key === 'times') {
+      var o0 = evalPart(p); if (!o0 || !o0.times) return null;
+      Object.keys(o0.times).forEach(function (k) {
+        cards.push({ partKey: 'times', kind: 'key', key: k, title: k, sub: 'спільний ряд', value: o0.times[k], note: (users[k] || []).length ? 'Використовується: ' + users[k].map(function (u) { return u.text; }).join(', ') : 'Ніде не використовується' });
+      });
+      return cards;
+    }
+    if (p.key.indexOf('pages.') !== 0) return null;
+    var o = evalPart(p); o = o && o[p.key.slice(6)];
+    if (!o || !Array.isArray(o.cols)) return null;
+    var cols = o.cols.concat((o.toggle && o.toggle.grid && o.toggle.grid.cols) || []).filter(function (c) { return has(c, 't'); });
+    var props = scanProps(p.text).filter(function (x) { return x.key === 't'; });
+    if (props.length !== cols.length) return null;
+    cols.forEach(function (c, i) {
+      var shared = typeof c.t === 'string' && has(T, c.t);
+      var val = shared ? T[c.t] : c.t;
+      if (typeof val !== 'string' && !Array.isArray(val)) return;
+      var card = { title: c.th || '—', sub: DAYS[c.day] || '', group: c.group || '', day: c.day || '', value: val };
+      if (shared) {
+        card.partKey = 'times'; card.kind = 'key'; card.key = c.t;
+        var oth = others(c.t, p.key);
+        card.note = 'Спільний ряд «' + c.t + '»' + (oth.length ? ' — зміниться й тут: ' + oth.join(', ') : '');
+      } else { card.partKey = p.key; card.kind = 'idx'; card.idx = i; }
+      cards.push(card);
+    });
+    return cards.length ? cards : null;
+  }
+
+  // записати рядки в потрібний літерал у тексті блоку
+  function applySlots(card, slots) {
+    var p = findPart(card.partKey); if (!p) return false;
+    var props = scanProps(p.text), pr;
+    if (card.kind === 'key') pr = props.filter(function (x) { return x.depth === 1 && x.key === card.key && x.kind !== 'other'; })[0];
+    else pr = props.filter(function (x) { return x.key === 't'; })[card.idx];
+    if (!pr || pr.kind === 'other') return false;
+    var lit = p.text.slice(pr.vs, pr.ve), cur;
+    try { cur = slotsFromValue((new Function('return ' + lit))()); } catch (e) { return false; }
+    if (sameSlots(cur, slots)) return true;
+    var nl;
+    if (pr.kind === 'arr') { var q1 = /^\[\s*"/.test(lit) ? '"' : "'"; nl = '[' + slots.map(function (s) { return q1 + litEsc(s, q1) + q1; }).join(', ') + ']'; }
+    else { var q = lit[0]; nl = q + slots.map(function (s) { return s === '' ? ' ' : litEsc(s, q); }).join(', ') + q; }
+    p.text = p.text.slice(0, pr.vs) + nl + p.text.slice(pr.ve);
+    updateBlockMark(p);
+    var el = blkEl(p.key);
+    if (el) { var cta = $('.code-view textarea', el); if (cta) cta.value = p.text; el.dataset.stale = '1'; }
+    return true;
+  }
+
+  function renderQuick(key) {
+    var el = blkEl(key), p = findPart(key), box = $('.q-view', el);
+    var cards = quickCards(p);
+    el.dataset.stale = '';
+    if (!cards) { box.innerHTML = '<div class="hint">Для цього блоку простий режим недоступний — користуйся кодом.</div>'; state.q[key] = null; return; }
+    state.q[key] = cards;
+    box.innerHTML = '<div class="hint q-help">Вписуй або вставляй час: через <b>пробіл</b>, <b>кому</b> чи з <b>нового рядка</b>. Порожній рядок = у цьому рядку рейсу немає. Номери зліва — рядки (рейси); у колонок поруч їх має бути порівну.</div>' +
+      cards.map(function (c, i) {
+        return '<div class="qc" data-ci="' + i + '"><div class="qc-h"><b>' + esc(c.title) + '</b>' + (c.sub ? '<span class="day">' + esc(c.sub) + '</span>' : '') + '<span class="cnt"></span></div>' +
+          (c.note ? '<div class="qc-n">' + esc(c.note) + '</div>' : '') +
+          '<div class="qw"><pre class="gut"></pre><textarea wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" inputmode="text"></textarea></div><div class="qc-w"></div></div>';
+      }).join('');
+    cards.forEach(function (c, i) {
+      var qc = $('.qc[data-ci="' + i + '"]', box), ta = $('textarea', qc);
+      c.slots = slotsFromValue(c.value);
+      ta.value = slotsToText(c.slots);
+      c.ta = ta; c.qc = qc;
+      ta.addEventListener('input', function () {
+        c.slots = parseSlots(ta.value);
+        if (applySlots(c, c.slots)) { updateBadge(); saveDraftSoon(); resetSaveBtn(); state.warnConfirmed = false; }
+        updateQuickInfo(key);
+      });
+      ta.addEventListener('blur', function () { ta.value = slotsToText(c.slots); sizeQuick(c); });   // нормалізація: один час на рядок
+      bindTools(ta);
+    });
+    updateQuickInfo(key);
+  }
+  function sizeQuick(c) {
+    var n = Math.max(c.slots.length + 1, 4);
+    c.ta.style.height = (n * 22 + 22) + 'px';
+    var g = []; for (var k = 1; k <= Math.max(c.slots.length, 3); k++) g.push(k);
+    c.qc.querySelector('.gut').textContent = g.join('\n');
+  }
+  function updateQuickInfo(key) {
+    var cards = state.q[key]; if (!cards) return;
+    cards.forEach(function (c) {
+      sizeQuick(c);
+      var cnt = $('.cnt', c.qc), bad = c.slots.filter(slotBad);
+      var peers = cards.filter(function (o) { return o !== c && ((c.group && o.group === c.group) || (/^(wd|sun|mf)$/.test(c.day) && /^(wd|sun|mf)$/.test(o.day))); });
+      var mismatch = peers.some(function (o) { return o.slots.length !== c.slots.length; });
+      cnt.textContent = c.slots.length + ' ряд.';
+      cnt.classList.toggle('bad', mismatch);
+      cnt.title = mismatch ? 'У колонок поруч інша кількість рядків' : '';
+      var w = [];
+      if (mismatch) w.push('Рядків ' + c.slots.length + ', а в колонок поруч — ' + peers.map(function (o) { return o.slots.length; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(' / ') + '. Колонки мають бути однакової довжини.');
+      if (bad.length) w.push('Не схоже на час: ' + bad.slice(0, 4).map(function (s) { return '«' + esc(s) + '»'; }).join(', ') + (bad.length > 4 ? '…' : ''));
+      $('.qc-w', c.qc).innerHTML = w.map(function (x) { return '<div>⚠ ' + x + '</div>'; }).join('');
+    });
+  }
+
+  function bindTools(ta) {
+    ta.addEventListener('focus', function () { state.ta = ta; $('#tools').classList.add('show'); });
+    ta.addEventListener('blur', function () { setTimeout(function () { if (document.activeElement !== state.ta && !document.activeElement.closest('#tools')) $('#tools').classList.remove('show'); }, 150); });
+  }
+  function setMode(key, mode) {
+    var el = blkEl(key), p = findPart(key);
+    state.mode[key] = mode;
+    var qv = $('.q-view', el), cv = $('.code-view', el);
+    $$('.modes button', el).forEach(function (b) { b.classList.toggle('on', b.dataset.mode === mode); });
+    if (mode === 'q') { cv.hidden = true; qv.hidden = false; renderQuick(key); }
+    else { qv.hidden = true; cv.hidden = false; var ta = $('textarea', cv); ta.value = p.text; autosize(ta); }
+  }
   function openBlock(key, keep) {
     var cur = $('.blk.open');
     if (cur && !keep) { cur.classList.remove('open'); }
@@ -401,18 +625,23 @@ details.lost pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 12.
     state.open = key;
     el.classList.add('open');
     var body = $('.blk-b', el), p = findPart(key);
-    if (!$('textarea', body)) {
-      body.innerHTML = '<textarea spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="soft"></textarea>' +
+    if (!$('.code-view', body)) {
+      var quickable = !!quickCards(p);
+      body.innerHTML = (quickable ? '<div class="modes"><button type="button" data-mode="q">Просто</button><button type="button" data-mode="code">Код</button></div><div class="q-view"></div>' : '') +
+        '<div class="code-view"><textarea spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="soft"></textarea></div>' +
         '<div class="blk-f"><button class="btn small ghost" type="button" data-act="revert">Відкотити блок</button><span class="hint" data-cnt></span></div>';
-      var ta = $('textarea', body);
+      var ta = $('.code-view textarea', body);
       ta.value = p.text;
-      autosize(ta);
       ta.addEventListener('input', function () {
         p.text = ta.value; autosize(ta); state.warnConfirmed = false;
         updateBlockMark(p); updateBadge(); saveDraftSoon(); resetSaveBtn();
       });
-      ta.addEventListener('focus', function () { state.ta = ta; $('#tools').classList.add('show'); });
-      ta.addEventListener('blur', function () { setTimeout(function () { if (document.activeElement !== state.ta && !document.activeElement.closest('#tools')) $('#tools').classList.remove('show'); }, 150); });
+      bindTools(ta);
+      if (quickable) setMode(key, state.mode[key] || 'q');
+      else { autosize(ta); }
+    } else {
+      if (el.dataset.stale) { var t2 = $('.code-view textarea', body); t2.value = p.text; el.dataset.stale = ''; if ($('.q-view', body) && state.mode[key] !== 'code') renderQuick(key); }
+      if (state.mode[key] === 'code' || !$('.q-view', body)) autosize($('.code-view textarea', body));
     }
   }
 
@@ -578,10 +807,13 @@ details.lost pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 12.
   $('#blocks').addEventListener('click', function (e) {
     var h = e.target.closest('.blk-h');
     if (h) { openBlock(h.parentNode.dataset.key); return; }
+    var mb = e.target.closest('.modes button');
+    if (mb) { setMode(mb.closest('.blk').dataset.key, mb.dataset.mode); return; }
     var b = e.target.closest('[data-act="revert"]');
     if (b) {
-      var key = b.closest('.blk').dataset.key, p = findPart(key), ta = $('textarea', b.closest('.blk'));
-      p.text = p.orig; ta.value = p.orig; autosize(ta); updateBlockMark(p); updateBadge(); saveDraftSoon(); state.warnConfirmed = false; resetSaveBtn();
+      var key = b.closest('.blk').dataset.key, p = findPart(key), ta = $('.code-view textarea', b.closest('.blk'));
+      p.text = p.orig; ta.value = p.orig; updateBlockMark(p); updateBadge(); saveDraftSoon(); state.warnConfirmed = false; resetSaveBtn();
+      if (state.mode[key] !== 'code' && $('.q-view', b.closest('.blk'))) renderQuick(key); else autosize(ta);
     }
   });
   $('#result').addEventListener('click', function (e) {
