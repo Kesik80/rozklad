@@ -333,3 +333,49 @@ html[data-theme="dark"] body::before {
 html[data-theme="dark"] body[data-page="index"]::before {
   background-image: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url(bg.jpg);
 }
+
+/* ---------- СКЛО: прозорі кнопки й фони поверх шпалер (експеримент) ---------- */
+body {
+  --glass: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.08));
+  --glass-brd: rgba(0, 20, 60, .85);
+  --glass-txt: #ffffff;
+  --glass-sh: 0 1px 3px rgba(0, 20, 60, .65);
+}
+html[data-theme="dark"] body {
+  --glass: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.04));
+  --glass-brd: rgba(255, 255, 255, .38);
+  --glass-sh: 0 1px 3px rgba(0, 0, 0, .8);
+}
+html:not([data-theme="dark"]) body { --label-2: #14256b; --hint: #1c2d6e; --th-bg: transparent; }
+
+/* меню: окремі скляні кнопки */
+.menu { background: transparent; border: 0; box-shadow: none; overflow: visible; border-radius: 0; }
+.row {
+  margin: 0 0 9px; padding: 12px 16px; border: 1.5px solid var(--glass-brd); border-radius: 16px;
+  background: var(--glass); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  color: var(--glass-txt); text-transform: uppercase; font-weight: 800; letter-spacing: .3px; text-shadow: var(--glass-sh);
+  box-shadow: 0 2px 6px rgba(0, 20, 60, .25);
+}
+.row:last-child { border-bottom: 1.5px solid var(--glass-brd); margin-bottom: 0; }
+a.row:active { background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.2)); }
+.row.soon { color: var(--glass-txt); opacity: .6; }
+
+/* шапка й круглі кнопки */
+.hdr { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.hdr.scrolled { background: rgba(255,255,255,.12); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 1px 0 var(--glass-brd); }
+.btn-icon { background: var(--glass); border: 1.5px solid var(--glass-brd); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.hdr-title { text-shadow: 0 1px 2px rgba(255,255,255,.55); }
+html[data-theme="dark"] .hdr-title { text-shadow: 0 1px 3px rgba(0,0,0,.7); }
+
+/* таблиці: без заливки, текст прямо по шпалерах */
+table { background: transparent; border: 0; box-shadow: none; border-radius: 0; overflow: visible; }
+th { background: var(--glass); border: 1.5px solid var(--glass-brd); border-radius: 12px; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+th + th { border-left-width: 1.5px; }
+td { background: transparent; border-top: 0; }
+th.tbl-title { border-radius: 12px; }
+html:not([data-theme="dark"]) td { font-weight: 700; }
+
+/* перемикачі й кнопки */
+.seg { background: var(--glass); border: 1.5px solid var(--glass-brd); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.toggle-ver { background: var(--glass); border: 1.5px solid var(--glass-brd); color: var(--glass-txt); text-shadow: var(--glass-sh); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.toggle-ver.active { background: var(--accent); }
