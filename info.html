@@ -35,12 +35,6 @@
 
   <a class="btn-guide" href="install.html">Як встановити додаток</a>
 
-  <div class="fx-box">
-    <div class="fx-title">Ефект на екрані</div>
-    <div class="seg" id="fx-on"><button type="button" data-v="1">Вкл</button><button type="button" data-v="0">Викл</button></div>
-    <div class="seg" id="fx-kind"><button type="button" data-v="leaves">🍂 Листя</button><button type="button" data-v="snow">❄ Сніг</button><button type="button" data-v="rain">🌧 Дощ</button></div>
-  </div>
-
   <div class="share-hint">
     <span>Поділитися додатком</span>
     <svg viewBox="0 0 64 48" width="64" height="48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -93,23 +87,8 @@ document.addEventListener('DOMContentLoaded', function () {   // після то
   }
   shareBtn.addEventListener('click', shareApp);
   document.getElementById('qr-share').addEventListener('click', shareApp);
-
-  // Ефект на екрані: Вкл/Викл і Листя/Сніг (effects.js)
-  (function () {
-    var onBox = document.getElementById('fx-on'), kindBox = document.getElementById('fx-kind');
-    function paint() {
-      var st = window.FX ? window.FX.get() : { on: false, kind: 'leaves' };
-      [].forEach.call(onBox.children, function (b) { b.classList.toggle('on', (b.getAttribute('data-v') === '1') === st.on); });
-      [].forEach.call(kindBox.children, function (b) { b.classList.toggle('on', b.getAttribute('data-v') === st.kind); });
-      kindBox.classList.toggle('dim', !st.on);
-    }
-    onBox.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b && window.FX) { window.FX.set({ on: b.getAttribute('data-v') === '1' }); paint(); } });
-    kindBox.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b && window.FX) { window.FX.set({ kind: b.getAttribute('data-v'), on: true }); paint(); } });
-    paint();
-  })();
 });
 </script>
-<script src="effects.js"></script>
 <script src="console.js"></script>
 </body>
 </html>
