@@ -68,6 +68,7 @@
     return SHAPES;
   }
 
+  var SIZE = [1.35, 1.25, 0.72, 0.85, 1.0];   // клен, дуб — великі; береза — дрібна; осика, верба — середні
   var LEAF_COLORS = [
     ['#d9822b', '#9c4f12'], ['#c0392b', '#7d1f16'], ['#e0a526', '#a06f0a'], ['#b5651d', '#6f3a0c'],
     ['#8c5a2b', '#55331a'], ['#9aa63a', '#5f6a18'], ['#cf6a2a', '#8a3a0d'], ['#a62d22', '#661710']
@@ -108,7 +109,7 @@
     if (sprite[key]) return sprite[key];
     var c = document.createElement('canvas'); c.width = c.height = 48;
     var g = c.getContext('2d'), gr = g.createRadialGradient(24, 24, 0, 24, 24, 24), rgb = isDark ? '255,255,255' : '120,148,186';
-    gr.addColorStop(0, 'rgba(' + rgb + ',1)'); gr.addColorStop(0.45, 'rgba(' + rgb + ',.75)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+    gr.addColorStop(0, 'rgba(' + rgb + ',1)'); gr.addColorStop(0.7, 'rgba(' + rgb + ',.9)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)');
     g.fillStyle = gr; g.fillRect(0, 0, 48, 48);
     return (sprite[key] = c);
   }
@@ -126,8 +127,10 @@
     for (k = 0; k < 6; k++) {
       ctx.rotate(Math.PI / 3);
       ctx.moveTo(0, 0); ctx.lineTo(r, 0);
-      ctx.moveTo(r * 0.55, 0); ctx.lineTo(r * 0.82, r * 0.28);
-      ctx.moveTo(r * 0.55, 0); ctx.lineTo(r * 0.82, -r * 0.28);
+      ctx.moveTo(r * 0.38, 0); ctx.lineTo(r * 0.58, r * 0.2);
+      ctx.moveTo(r * 0.38, 0); ctx.lineTo(r * 0.58, -r * 0.2);
+      ctx.moveTo(r * 0.68, 0); ctx.lineTo(r * 0.92, r * 0.26);
+      ctx.moveTo(r * 0.68, 0); ctx.lineTo(r * 0.92, -r * 0.26);
     }
     ctx.stroke();
     ctx.restore();
@@ -140,19 +143,19 @@
     if (leaf) {
       p.shape = shapes()[(Math.random() * 5) | 0];
       p.col = LEAF_COLORS[(Math.random() * LEAF_COLORS.length) | 0];
-      p.s = (p.shape === SHAPES[4] ? 11 : 8.5) * (0.7 + z * 0.75);
+      p.s = 8.5 * SIZE[SHAPES.indexOf(p.shape)] * rnd(0.9, 1.1) * (0.7 + z * 0.75);
       p.vy = rnd(30, 52) * (0.7 + z * 0.5);
       p.swayV = rnd(18, 42); p.swaySpd = rnd(0.7, 1.5);
       p.rot0 = rnd(0, 6.28); p.rotAmp = rnd(0.5, 1.1); p.spin = rnd(-0.5, 0.5);
       p.flipSpd = rnd(1.4, 3.0); p.a = 0.62 + z * 0.3;
       p.rot = p.rot0;
     } else {
-      p.crystal = Math.random() < 0.28;
-      p.s = p.crystal ? rnd(4.5, 8) * (0.65 + z * 0.55) : rnd(1.6, 4.2) * (0.5 + z * 0.9);
+      p.crystal = Math.random() < 0.5;
+      p.s = p.crystal ? rnd(6, 10.5) * (0.7 + z * 0.5) : rnd(1.1, 2.4) * (0.6 + z * 0.8);
       p.vy = rnd(24, 46) * (0.55 + z * 0.65);
       p.swayV = rnd(8, 22); p.swaySpd = rnd(0.5, 1.2);
       p.rot = rnd(0, 6.28); p.spin = rnd(-0.6, 0.6);
-      p.a = p.crystal ? 0.55 + z * 0.35 : 0.45 + z * 0.5;
+      p.a = p.crystal ? 0.7 + z * 0.3 : 0.5 + z * 0.45;
     }
     return p;
   }
