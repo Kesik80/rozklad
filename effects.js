@@ -161,7 +161,7 @@
   }
 
   function fill() {
-    var n = Math.max(16, Math.min(34, Math.round(W * H / 16000)));
+    var n = Math.max(8, Math.min(17, Math.round(W * H / 32000)));
     if (state.kind === 'snow') n = Math.round(n * 1.6);
     parts = [];
     for (var i = 0; i < n; i++) parts.push(make(true));
