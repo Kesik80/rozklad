@@ -31,14 +31,14 @@
 /* ---------- ТЕМНА ТЕМА ---------- */
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg-0: #000000;
-  --bg-1: #1c1c1e;
-  --bg-2: #252528;
-  --label: #ffffff;
-  --label-2: #a2a2a7;
-  --label-3: #e5e5ea;
-  --separator: #6c6c70;
-  --hair: rgba(255, 255, 255, .09);
+  --bg-0: #121212;     /* як у темній темі Fahrzeit */
+  --bg-1: #1e1e1e;
+  --bg-2: #1e1e1e;
+  --label: #e1e1e1;
+  --label-2: #a8a8ad;
+  --label-3: #d0d0d5;
+  --separator: #333333;
+  --hair: rgba(255, 255, 255, .07);
   --accent: #0a84ff;
   --next: #5eaaff;
   --th: #ff9f0a;
@@ -46,7 +46,7 @@
   --red: #ff6961;
   --wd: #4fd1c5;
   --ok: #30d158;
-  --th-bg: #1e2631;
+  --th-bg: #262626;
   --key: #ff9a9a;
 }
 
@@ -54,11 +54,11 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --bg-0: #000000; --bg-1: #1c1c1e; --bg-2: #252528;
-    --label: #ffffff; --label-2: #a2a2a7; --label-3: #e5e5ea;
-    --separator: #6c6c70; --hair: rgba(255, 255, 255, .09);
+    --bg-0: #121212; --bg-1: #1e1e1e; --bg-2: #1e1e1e;
+    --label: #e1e1e1; --label-2: #a8a8ad; --label-3: #d0d0d5;
+    --separator: #333333; --hair: rgba(255, 255, 255, .07);
     --accent: #0a84ff; --next: #5eaaff; --th: #ff9f0a;
-    --hint: #d0d0d5; --red: #ff6961; --wd: #4fd1c5; --ok: #30d158; --th-bg: #1e2631; --key: #ff9a9a;
+    --hint: #d0d0d5; --red: #ff6961; --wd: #4fd1c5; --ok: #30d158; --th-bg: #262626; --key: #ff9a9a;
   }
 }
 
@@ -88,7 +88,7 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 .hdr.scrolled { box-shadow: 0 1px 0 var(--separator); }
 .hdr-mid { text-align: center; min-width: 0; }
 .hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--key); }   /* бордовий заголовок у світлій темі */
-[data-theme="dark"] .hdr-title { color: var(--label); }   /* у темній — білий (бордовий на чорному не гармонує) */
+[data-theme="dark"] .hdr-title { color: var(--label); }   /* у темній — звичайний світлий (бордовий на темному не гармонує) */
 body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
 .btn-icon {
