@@ -47,7 +47,7 @@
   --wd: #4fd1c5;
   --ok: #30d158;
   --th-bg: #262626;
-  --key: #ff9a9a;
+  --key: #ff6961;
 }
 
 /* Якщо JS ще не встиг (або вимкнений) — слухаємось системної теми */
@@ -58,7 +58,7 @@
     --label: #e1e1e1; --label-2: #a8a8ad; --label-3: #d0d0d5;
     --separator: #333333; --hair: rgba(255, 255, 255, .07);
     --accent: #0a84ff; --next: #5eaaff; --th: #ff9f0a;
-    --hint: #d0d0d5; --red: #ff6961; --wd: #4fd1c5; --ok: #30d158; --th-bg: #262626; --key: #ff9a9a;
+    --hint: #d0d0d5; --red: #ff6961; --wd: #4fd1c5; --ok: #30d158; --th-bg: #262626; --key: #ff6961;
   }
 }
 
