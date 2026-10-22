@@ -89,6 +89,8 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 .hdr-mid { text-align: center; min-width: 0; }
 .hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--key); }   /* заголовок: бордовий (світла) / коралловий (темна) — колір --key */
 body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
+/* Електрички в темній темі — теплий коричневий замість кораллового (лише ця сторінка) */
+[data-theme="dark"] body[data-page="elektrychky"] { --key: #c8895a; }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
 .btn-icon {
   width: 44px; height: 44px; border-radius: 50%;
