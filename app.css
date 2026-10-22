@@ -87,7 +87,8 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 }
 .hdr.scrolled { box-shadow: 0 1px 0 var(--separator); }
 .hdr-mid { text-align: center; min-width: 0; }
-.hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--key); }   /* бордовий заголовок (у темній темі світліший) */
+.hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--key); }   /* бордовий заголовок у світлій темі */
+[data-theme="dark"] .hdr-title { color: var(--label); }   /* у темній — білий (бордовий на чорному не гармонує) */
 body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
 .btn-icon {
