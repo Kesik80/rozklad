@@ -31,34 +31,33 @@
 /* ---------- ТЕМНА ТЕМА ---------- */
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg-0: #121212;     /* як у темній темі Fahrzeit */
-  --bg-1: #1e1e1e;
-  --bg-2: #1e1e1e;
-  --label: #e1e1e1;
-  --label-2: #a8a8ad;
-  --label-3: #d0d0d5;
-  --separator: #333333;
-  --hair: rgba(255, 255, 255, .07);
-  --accent: #0a84ff;
-  --next: #5eaaff;
-  --th: #ff9f0a;
-  --hint: #d0d0d5;
-  --red: #ff6961;
-  --wd: #4fd1c5;
-  --ok: #30d158;
+  --bg-0: #121212;     /* фон страницы */
+  --bg-1: #1d1d1f;
+  --bg-2: #1d1d1f;
+  --label: #e9e9ea;    /* основной текст — почти белый, но не кислотный */
+  --label-2: #b4b4b9;  /* вторичный текст — светлее, чем было (#a8a8ad) */
+  --label-3: #c9c9ce;
+  --separator: #303032; /* мягче, чем #333 */
+  --hair: rgba(255, 255, 255, .06);
+  --accent: #4d9fff;   /* мягче, чем #0a84ff */
+  --next: #7ab5ff;
+  --th: #f5a83d;       /* приглушённый янтарь вместо ярко-оранжевого */
+  --hint: #c9c9ce;
+  --red: #e8706a;      /* меньше яркости, чем #ff6961 */
+  --wd: #5ec8bd;
+  --ok: #56c271;       /* вместо неонового #30d158 */
   --th-bg: #262626;
-  --key: #ff6961;
+  --key: #e8706a;
 }
 
-/* Якщо JS ще не встиг (або вимкнений) — слухаємось системної теми */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --bg-0: #121212; --bg-1: #1e1e1e; --bg-2: #1e1e1e;
-    --label: #e1e1e1; --label-2: #a8a8ad; --label-3: #d0d0d5;
-    --separator: #333333; --hair: rgba(255, 255, 255, .07);
-    --accent: #0a84ff; --next: #5eaaff; --th: #ff9f0a;
-    --hint: #d0d0d5; --red: #ff6961; --wd: #4fd1c5; --ok: #30d158; --th-bg: #262626; --key: #ff6961;
+    --bg-0: #121212; --bg-1: #1d1d1f; --bg-2: #1d1d1f;
+    --label: #e9e9ea; --label-2: #b4b4b9; --label-3: #c9c9ce;
+    --separator: #303032; --hair: rgba(255, 255, 255, .06);
+    --accent: #4d9fff; --next: #7ab5ff; --th: #f5a83d;
+    --hint: #c9c9ce; --red: #e8706a; --wd: #5ec8bd; --ok: #56c271; --th-bg: #262626; --key: #e8706a;
   }
 }
 
