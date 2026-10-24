@@ -7,60 +7,60 @@
 /* ---------- СВІТЛА ТЕМА (за замовчуванням) ---------- */
 :root {
   color-scheme: light;
-  /* дизайн «Bus»: теплий світлий + помаранчевий акцент */
-  --bg-0: #f6f3ef;
-  --bg-1: #ffffff;
-  --bg-2: #ffffff;
-  --label: #1b2230;
-  --label-2: #5b6577;
-  --label-3: #2c3547;
-  --separator: #e4ddd4;
-  --hair: rgba(27, 34, 48, .07);
-  --accent: #e8590c;
+  /* палітра в стилі iOS (системні кольори; для тексту на білому трохи темніші, щоб читалось) */
+  --bg-0: #f2f2f7;     /* systemGroupedBackground */
+  --bg-1: #ffffff;     /* картки, шапка таблиці */
+  --bg-2: #ffffff;     /* ячейки */
+  --label: #000000;    /* label */
+  --label-2: #6c6c70;  /* secondaryLabel */
+  --label-3: #3c3c43;  /* маркери К П Б Ф */
+  --separator: #c6c6c8; /* opaqueSeparator */
+  --hair: rgba(60, 60, 67, .12);
+  --accent: #007aff;   /* systemBlue */
   --accent-text: #ffffff;
-  --next: #c2410c;
-  --th: #b45309;
-  --hint: #5b6577;
-  --red: #d63031;
-  --wd: #0f8a6a;
-  --ok: #1f8a4c;
-  --th-bg: #fdeee3;
-  --key: #c2410c;
+  --next: #007aff;     /* найближчий рейс */
+  --th: #c76e00;       /* systemOrange (темніший для тексту) */
+  --hint: #6c6c70;
+  --red: #e0281e;       /* systemRed (трохи темніший) */
+  --wd: #0f8fa6;       /* systemTeal (темніший) */
+  --ok: #248a3d;       /* systemGreen (accessible) */
+  --th-bg: #e5e5ea;    /* systemGray5 */
+  --key: #8f1d2c;      /* ключова зупинка: бордовий */
   --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
 /* ---------- ТЕМНА ТЕМА ---------- */
 [data-theme="dark"] {
   color-scheme: dark;
-  /* дизайн «Bus»: глибокий синьо-чорний + помаранчевий акцент */
-  --bg-0: #0b0f17;
-  --bg-1: #131a26;
-  --bg-2: #131a26;
-  --label: #eef2f8;
-  --label-2: #aab4c5;
-  --label-3: #dbe2ee;
-  --separator: #263042;
-  --hair: rgba(255, 255, 255, .06);
-  --accent: #ff7a1a;
-  --next: #ff9a4d;
-  --th: #ff8a3d;
-  --hint: #aab4c5;
-  --red: #ff6b6b;
-  --wd: #2dd4a0;
-  --ok: #2dd4a0;
-  --th-bg: #1a2332;
-  --key: #ff8a3d;
+  /* палітра в стилі iOS (dark system colors) */
+  --bg-0: #000000;     /* systemGroupedBackground */
+  --bg-1: #1c1c1e;    /* secondarySystemGroupedBackground */
+  --bg-2: #1c1c1e;
+  --label: #ffffff;
+  --label-2: #ababb0;  /* secondaryLabel */
+  --label-3: #e5e5ea;
+  --separator: #38383a; /* opaqueSeparator */
+  --hair: rgba(84, 84, 88, .45);
+  --accent: #0a84ff;   /* systemBlue */
+  --next: #0a84ff;
+  --th: #ff9f0a;       /* systemOrange */
+  --hint: #ababb0;
+  --red: #ff453a;      /* systemRed */
+  --wd: #40c8e0;       /* systemTeal */
+  --ok: #30d158;       /* systemGreen */
+  --th-bg: #2c2c2e;    /* tertiarySystemBackground */
+  --key: #ff453a;
 }
 
 /* Якщо JS ще не встиг (або вимкнений) — слухаємось системної теми */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --bg-0: #0b0f17; --bg-1: #131a26; --bg-2: #131a26;
-    --label: #eef2f8; --label-2: #aab4c5; --label-3: #dbe2ee;
-    --separator: #263042; --hair: rgba(255, 255, 255, .06);
-    --accent: #ff7a1a; --next: #ff9a4d; --th: #ff8a3d;
-    --hint: #aab4c5; --red: #ff6b6b; --wd: #2dd4a0; --ok: #2dd4a0; --th-bg: #1a2332; --key: #ff8a3d;
+    --bg-0: #000000; --bg-1: #1c1c1e; --bg-2: #1c1c1e;
+    --label: #ffffff; --label-2: #ababb0; --label-3: #e5e5ea;
+    --separator: #38383a; --hair: rgba(84, 84, 88, .45);
+    --accent: #0a84ff; --next: #0a84ff; --th: #ff9f0a;
+    --hint: #ababb0; --red: #ff453a; --wd: #40c8e0; --ok: #30d158; --th-bg: #2c2c2e; --key: #ff453a;
   }
 }
 
@@ -91,6 +91,8 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 .hdr-mid { text-align: center; min-width: 0; }
 .hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--key); }   /* заголовок: бордовий (світла) / коралловий (темна) — колір --key */
 body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
+/* Електрички в темній темі — заголовок блакитний (лише слово в шапці) */
+[data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: #ff9f0a; }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
 .btn-icon {
   width: 44px; height: 44px; border-radius: 50%;
@@ -321,22 +323,3 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 16p
 .ins-list { padding: 0 6px 0 22px; color: var(--label-2); font-weight: 500; line-height: 1.55; }
 .ins-list li { margin-bottom: 8px; }
 .ins-list b { color: var(--label); }
-
-/* ---------- ДИЗАЙН «BUS»: закруглені картки, тонкі рамки, помаранчевий акцент ---------- */
-.btn-icon { border-radius: 14px; background: var(--bg-1); border: 1px solid var(--separator); }
-.hdr-title { letter-spacing: .02em; }
-.menu { background: transparent; border: 0; box-shadow: none; overflow: visible; width: 100%; max-width: 420px; margin: 10px auto 24px; }
-.row {
-  justify-content: flex-start; margin: 0 0 9px; padding: 15px 18px; border: 1px solid var(--separator); border-radius: 14px;
-  background: var(--bg-1); font-size: 19px; font-weight: 700;
-  box-shadow: 0 1px 0 rgba(255,255,255,.03) inset;
-}
-.row::before { content: ''; width: 4px; align-self: stretch; margin: -4px 14px -4px -6px; border-radius: 4px; background: var(--accent); }
-.row:last-child { border-bottom: 1px solid var(--separator); margin-bottom: 0; }
-a.row:active { background: var(--th-bg); border-color: var(--accent); }
-.row .label { width: auto !important; }
-table { border-radius: 14px; box-shadow: none; }
-th { background: var(--th-bg); }
-.seg { border-radius: 14px; }
-.seg button.on, .btn-guide { background: linear-gradient(180deg, #ff8a3d, #ff6a00); color: #fff; }
-.toggle-ver { border-radius: 14px; }
