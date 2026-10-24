@@ -31,33 +31,35 @@
 /* ---------- ТЕМНА ТЕМА ---------- */
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg-0: #121212;     /* фон страницы */
-  --bg-1: #1d1d1f;
-  --bg-2: #1d1d1f;
-  --label: #e9e9ea;    /* основной текст — почти белый, но не кислотный */
-  --label-2: #b4b4b9;  /* вторичный текст — светлее, чем было (#a8a8ad) */
-  --label-3: #c9c9ce;
-  --separator: #303032; /* мягче, чем #333 */
+  /* кольори — Radix Colors (dark): slate (нейтральні), blue, tomato, orange, teal, green */
+  --bg-0: #111113;     /* slate-1 */
+  --bg-1: #18191b;     /* slate-2 */
+  --bg-2: #18191b;     /* slate-2 */
+  --label: #edeef0;    /* slate-12 */
+  --label-2: #b0b4ba;  /* slate-11 */
+  --label-3: #edeef0;  /* slate-12 */
+  --separator: #363a3f; /* slate-6 */
   --hair: rgba(255, 255, 255, .06);
-  --accent: #4d9fff;   /* мягче, чем #0a84ff */
-  --next: #7ab5ff;
-  --th: #f5a83d;       /* приглушённый янтарь вместо ярко-оранжевого */
-  --hint: #c9c9ce;
-  --red: #e8706a;      /* меньше яркости, чем #ff6961 */
-  --wd: #5ec8bd;
-  --ok: #56c271;       /* вместо неонового #30d158 */
-  --th-bg: #262626;
-  --key: #e8706a;
+  --accent: #0090ff;   /* blue-9 */
+  --next: #70b8ff;     /* blue-11 */
+  --th: #ffa057;       /* orange-11 */
+  --hint: #b0b4ba;     /* slate-11 */
+  --red: #ff977d;      /* tomato-11 */
+  --wd: #0bd8b6;       /* teal-11 */
+  --ok: #3dd68c;       /* green-11 */
+  --th-bg: #212225;    /* slate-3 */
+  --key: #ff977d;      /* tomato-11 */
 }
 
+/* Якщо JS ще не встиг (або вимкнений) — слухаємось системної теми */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --bg-0: #121212; --bg-1: #1d1d1f; --bg-2: #1d1d1f;
-    --label: #e9e9ea; --label-2: #b4b4b9; --label-3: #c9c9ce;
-    --separator: #303032; --hair: rgba(255, 255, 255, .06);
-    --accent: #4d9fff; --next: #7ab5ff; --th: #f5a83d;
-    --hint: #c9c9ce; --red: #e8706a; --wd: #5ec8bd; --ok: #56c271; --th-bg: #262626; --key: #e8706a;
+    --bg-0: #111113; --bg-1: #18191b; --bg-2: #18191b;
+    --label: #edeef0; --label-2: #b0b4ba; --label-3: #edeef0;
+    --separator: #363a3f; --hair: rgba(255, 255, 255, .06);
+    --accent: #0090ff; --next: #70b8ff; --th: #ffa057;
+    --hint: #b0b4ba; --red: #ff977d; --wd: #0bd8b6; --ok: #3dd68c; --th-bg: #212225; --key: #ff977d;
   }
 }
 
@@ -89,7 +91,7 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 .hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--key); }   /* заголовок: бордовий (світла) / коралловий (темна) — колір --key */
 body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
 /* Електрички в темній темі — заголовок блакитний (лише слово в шапці) */
-[data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: #FF8C00; }
+[data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: #ffa057; }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
 .btn-icon {
   width: 44px; height: 44px; border-radius: 50%;
