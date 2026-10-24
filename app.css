@@ -7,59 +7,60 @@
 /* ---------- СВІТЛА ТЕМА (за замовчуванням) ---------- */
 :root {
   color-scheme: light;
-  --bg-0: #f2f2f7;      /* фон сторінки */
-  --bg-1: #ffffff;      /* картки, шапка таблиці */
-  --bg-2: #fafafa;      /* ячейки */
-  --label: #000000;     /* основний текст */
-  --label-2: #55555a;   /* час у ячейках, другорядний текст */
-  --label-3: #3a3a3c;   /* маркери К П Б Ф */
-  --separator: #c6c6c8;
-  --hair: rgba(0, 0, 0, .07);
-  --accent: #0066d6;    /* кнопки */
+  /* палітра в стилі iOS (системні кольори; для тексту на білому трохи темніші, щоб читалось) */
+  --bg-0: #f2f2f7;     /* systemGroupedBackground */
+  --bg-1: #ffffff;     /* картки, шапка таблиці */
+  --bg-2: #ffffff;     /* ячейки */
+  --label: #000000;    /* label */
+  --label-2: #6c6c70;  /* secondaryLabel */
+  --label-3: #3c3c43;  /* маркери К П Б Ф */
+  --separator: #c6c6c8; /* opaqueSeparator */
+  --hair: rgba(60, 60, 67, .12);
+  --accent: #007aff;   /* systemBlue */
   --accent-text: #ffffff;
-  --next: #0057c2;      /* найближчий рейс */
-  --th: #b25a00;        /* акцент: ключові зупинки, ціни */
-  --hint: #66666b;
-  --red: #d70015;       /* вихідні, застереження */
-  --wd: #00807a;        /* рейси лише Пн–Пт (~ у даних) */
-  --ok: #1f7a35;        /* до рейсу ще є час (початок градієнта) */
-  --th-bg: #e8eff7;     /* заливка шапки таблиць */
-  --key: #8f1d2c;       /* ключова зупинка (Терешки / Копили), бордовий на сторінці електричок */
+  --next: #007aff;     /* найближчий рейс */
+  --th: #c76e00;       /* systemOrange (темніший для тексту) */
+  --hint: #6c6c70;
+  --red: #e0281e;       /* systemRed (трохи темніший) */
+  --wd: #0f8fa6;       /* systemTeal (темніший) */
+  --ok: #248a3d;       /* systemGreen (accessible) */
+  --th-bg: #e5e5ea;    /* systemGray5 */
+  --key: #8f1d2c;      /* ключова зупинка: бордовий */
   --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
 /* ---------- ТЕМНА ТЕМА ---------- */
 [data-theme="dark"] {
   color-scheme: dark;
-  /* кольори — Radix Colors (dark): slate (нейтральні), blue, tomato, orange, teal, green */
-  --bg-0: #111113;     /* slate-1 */
-  --bg-1: #18191b;     /* slate-2 */
-  --bg-2: #18191b;     /* slate-2 */
-  --label: #edeef0;    /* slate-12 */
-  --label-2: #b0b4ba;  /* slate-11 */
-  --label-3: #edeef0;  /* slate-12 */
-  --separator: #363a3f; /* slate-6 */
-  --hair: rgba(255, 255, 255, .06);
-  --accent: #0090ff;   /* blue-9 */
-  --next: #70b8ff;     /* blue-11 */
-  --th: #ffa057;       /* orange-11 */
-  --hint: #b0b4ba;     /* slate-11 */
-  --red: #ff977d;      /* tomato-11 */
-  --wd: #0bd8b6;       /* teal-11 */
-  --ok: #3dd68c;       /* green-11 */
-  --th-bg: #212225;    /* slate-3 */
-  --key: #ff977d;      /* tomato-11 */
+  /* палітра в стилі iOS (dark system colors) */
+  --bg-0: #000000;     /* systemGroupedBackground */
+  --bg-1: #1c1c1e;    /* secondarySystemGroupedBackground */
+  --bg-2: #1c1c1e;
+  --label: #ffffff;
+  --label-2: #ababb0;  /* secondaryLabel */
+  --label-3: #e5e5ea;
+  --separator: #38383a; /* opaqueSeparator */
+  --hair: rgba(84, 84, 88, .45);
+  --accent: #0a84ff;   /* systemBlue */
+  --next: #0a84ff;
+  --th: #ff9f0a;       /* systemOrange */
+  --hint: #ababb0;
+  --red: #ff453a;      /* systemRed */
+  --wd: #40c8e0;       /* systemTeal */
+  --ok: #30d158;       /* systemGreen */
+  --th-bg: #2c2c2e;    /* tertiarySystemBackground */
+  --key: #ff453a;
 }
 
 /* Якщо JS ще не встиг (або вимкнений) — слухаємось системної теми */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --bg-0: #111113; --bg-1: #18191b; --bg-2: #18191b;
-    --label: #edeef0; --label-2: #b0b4ba; --label-3: #edeef0;
-    --separator: #363a3f; --hair: rgba(255, 255, 255, .06);
-    --accent: #0090ff; --next: #70b8ff; --th: #ffa057;
-    --hint: #b0b4ba; --red: #ff977d; --wd: #0bd8b6; --ok: #3dd68c; --th-bg: #212225; --key: #ff977d;
+    --bg-0: #000000; --bg-1: #1c1c1e; --bg-2: #1c1c1e;
+    --label: #ffffff; --label-2: #ababb0; --label-3: #e5e5ea;
+    --separator: #38383a; --hair: rgba(84, 84, 88, .45);
+    --accent: #0a84ff; --next: #0a84ff; --th: #ff9f0a;
+    --hint: #ababb0; --red: #ff453a; --wd: #40c8e0; --ok: #30d158; --th-bg: #2c2c2e; --key: #ff453a;
   }
 }
 
@@ -91,7 +92,7 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 .hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--key); }   /* заголовок: бордовий (світла) / коралловий (темна) — колір --key */
 body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
 /* Електрички в темній темі — заголовок блакитний (лише слово в шапці) */
-[data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: #ffa057; }
+[data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: #ff9f0a; }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
 .btn-icon {
   width: 44px; height: 44px; border-radius: 50%;
