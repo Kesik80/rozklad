@@ -37,9 +37,9 @@
 
 
   <button class="btn-guide" id="clToggle" type="button" style="margin-top:10px;width:100%"></button>
-  <script>(function(){var b=document.getElementById('clToggle');function r(){b.textContent='Підбір кольору: '+(window.ColorLab&&ColorLab.enabled()?'увімкнено':'вимкнено');}
+  <script>(function(){var b=document.getElementById('clToggle');function r(){b.textContent='Подбор цвета: '+(window.ColorLab&&ColorLab.enabled()?'включён':'выключен');}
   b.addEventListener('click',function(){var on=localStorage.getItem('colorlab')==='1';localStorage.setItem('colorlab',on?'0':'1');location.reload();});
-  b.textContent='Підбір кольору: '+(localStorage.getItem('colorlab')==='1'?'увімкнено':'вимкнено');})();</script>
+  b.textContent='Подбор цвета: '+(localStorage.getItem('colorlab')==='1'?'включён':'выключен');})();</script>
 
   <div class="share-hint">
     <span>Поділитися додатком</span>
