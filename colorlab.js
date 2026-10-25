@@ -112,7 +112,7 @@
   ui.fab = el('button', { id: 'cl-fab', type: 'button', 'aria-label': 'Підбір кольору' }, '🎨');
   ui.panel = el('div', { id: 'cl-panel' });
   ui.panel.innerHTML =
-    '<div class="r"><div class="sw" id="cl-sw"></div><div class="t"><b id="cl-name">Торкнись слова або фону</b><div class="sm" id="cl-info"></div></div></div>' +
+    '<div class="r"><div class="sw" id="cl-sw"></div><div class="t"><b id="cl-name">Торкнись слова або фону</b><div class="sm" id="cl-info"></div></div><button id="cl-theme" type="button" style="flex:none;font-size:20px;padding:8px 12px" aria-label="Тема">🌓</button></div>' +
     '<div class="r"><button id="cl-tt" class="on" type="button">Текст</button><button id="cl-tb" type="button">Фон</button>' +
     '<input id="cl-hex" type="text" maxlength="7" value="#" aria-label="HEX"><span id="cl-ratio" class="sm"></span></div>' +
     '<div class="r"><label class="lb">Тон</label><input id="cl-h" type="range" min="0" max="360" step="1"></div>' +
@@ -125,7 +125,7 @@
   document.body.appendChild(ui.fab);
   document.body.appendChild(ui.panel);
   function $(id) { return document.getElementById(id); }
-  ['sw', 'name', 'info', 'tt', 'tb', 'hex', 'ratio', 'h', 's', 'l', 'zone', 'chips', 'all', 'reset', 'copy', 'close', 'log'].forEach(function (k) { ui[k] = $('cl-' + k); });
+  ['sw', 'name', 'info', 'theme', 'tt', 'tb', 'hex', 'ratio', 'h', 's', 'l', 'zone', 'chips', 'all', 'reset', 'copy', 'close', 'log'].forEach(function (k) { ui[k] = $('cl-' + k); });
   HUES.forEach(function (h) { var b = el('button', { type: 'button' }, h[0]); b.addEventListener('click', function () { if (!sel) return; hsl[0] = h[1]; hsl[1] = h[2]; if (h[0] === 'сірий') hsl[1] = h[2]; refreshSliders(); applyHsl(); }); ui.chips.appendChild(b); });
 
   /* ---------- вибір елемента ---------- */
@@ -243,6 +243,14 @@
   });
   ui.all.addEventListener('click', function () { all = !all; ui.all.textContent = 'Усі такі самі: ' + (all ? 'так' : 'ні'); ui.all.classList.toggle('on', all); });
   ui.reset.addEventListener('click', resetAll);
+  ui.theme.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light', nx = cur === 'dark' ? 'light' : 'dark';
+    resetAll();                               // правки були для іншої теми — скидаємо
+    try { localStorage.setItem('theme', nx); } catch (e) {}
+    if (window.Rozklad && Rozklad.applyTheme) Rozklad.applyTheme(nx); else document.documentElement.setAttribute('data-theme', nx);
+    ui.log.textContent = 'Тема: ' + nx + ' (правки скинуто)';
+    if (sel) load();
+  });
   ui.copy.addEventListener('click', function () {
     var t = summary();
     var done = function () { ui.log.textContent = 'Скопійовано:\n' + t; };
