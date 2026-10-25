@@ -1,12 +1,12 @@
-/* COLORLAB v5 — подбор цветовой схемы «как Realtime Colors».
+/* COLORLAB v9 — «комбайн» подбора цвета (мобильный, для всех страниц сразу).
    Включение: Info → «Подбор цвета» (или ?colorlab=1 / ?colorlab=0 в адресе).
-   Как работает: меняются не отдельные слова, а ЦВЕТОВЫЕ РОЛИ всей страницы (переменные CSS):
-     Фон, Карточки, Текст, Второй текст, Акцент, Выделение, Линии, Плашка.
-   Выбираешь только два главных цвета — Фон и Акцент (семейство Radix или свой цвет),
-   остальные роли считаются сами (контраст ≥ 4.5 / 7 гарантируется). 🎲 — случайная схема.
-   Ручная правка любой роли блокирует её 🔒 — случайный подбор её не трогает.
-   Схема действует на ВСЕХ страницах сразу (хранится на телефоне), светлая и тёмная темы — отдельно.
-   «Копировать CSS» — готовый блок переменных, пришли его мне, и я впишу в app.css. */
+   Три вкладки:
+   👆 Элемент — тапни слово / иконку / фон: видно цвет, контраст AA/AAA и «Где применить»:
+        • «Все такие же» (по классу) • «Такие же внутри родителя» • «Только этот» • «Роль» (переменная темы).
+      Подсказки подбираются по фону и по соседним цветам, плюс палитра Radix. Правило сохраняется для ВСЕХ страниц.
+   🎨 Схема — вся тема из одного цвета (Material You / Radix) для обеих тем + ручные роли + замки 🔒.
+   📋 Правила — список правил элемента: 🔒 защита, 👁 выкл/вкл, ✕ удалить.
+   «Копировать CSS» — готовый код (переменные + правила) для app.css. */
 (function () {
   'use strict';
   var KEY = 'colorlab', PKEY = 'colorlab-pal';
@@ -55,8 +55,8 @@
   function step(f, n) { return '#' + RDX[f][ti()].substr((n - 1) * 6, 6); }
 
   /* ---------- состояние ---------- */
-  var P = { light: {}, dark: {}, seed: null };
-  try { var sv = JSON.parse(localStorage.getItem(PKEY) || 'null'); if (sv && sv.light && sv.dark) P = sv; } catch (e) {}
+  var P = { light: {}, dark: {}, seed: null, rules: [] };
+  try { var sv = JSON.parse(localStorage.getItem(PKEY) || 'null'); if (sv && sv.light && sv.dark) P = sv; P.rules = P.rules || []; } catch (e) {}
   function save() { try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch (e) {} }
   var ORIG = {}, applied = [];
   function readVars() {
@@ -164,103 +164,10 @@
     var f = pick(ORDER.filter(function (x) { return !NEUTRAL[x]; }));
     useScheme(mode, '#' + RDX[f][0].substr(48, 6), f);
   }
-  function commit() { save(); render(); apply(); render(); }
-
-  /* ---------- интерфейс ---------- */
-  var css = document.createElement('style');
-  css.textContent =
-    '#cl-fab{position:fixed;right:12px;bottom:12px;z-index:2147483001;width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:#222;color:#fff;font-size:22px;line-height:1;box-shadow:0 2px 10px rgba(0,0,0,.5);padding:0}' +
-    '#cl-fab.on{background:#d6249f}' +
-    '#cl-panel{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:#15171c;color:#eef0f4;font:13px/1.35 -apple-system,Roboto,sans-serif;padding:10px 12px 70px;border-top:2px solid #d6249f;max-height:64vh;overflow:auto;display:none}' +
-    '#cl-panel *{box-sizing:border-box;font-family:inherit}' +
-    '#cl-panel .r{display:flex;align-items:center;gap:8px;margin:6px 0}' +
-    '#cl-panel .sm{opacity:.7;font-size:12px}' +
-    '#cl-panel .h{font-size:12px;opacity:.85;margin:10px 0 3px;font-weight:600}' +
-    '#cl-panel button{background:#2a2f39;color:#fff;border:1px solid #3a4150;border-radius:9px;padding:8px 10px;font-size:13px}' +
-    '#cl-panel .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px}' +
-    '#cl-panel .chips button{flex:none;width:34px;height:34px;border-radius:50%;padding:0;border:2px solid #3a4150}' +
-    '#cl-panel .chips button.on{border-color:#fff;box-shadow:0 0 0 2px #d6249f}' +
-    '#cl-panel .role{display:flex;align-items:center;gap:10px;margin:7px 0}' +
-    '#cl-panel .role .sw{width:44px;height:44px;border-radius:10px;border:1px solid #666;position:relative;flex:none}' +
-    '#cl-panel .role .sw input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0}' +
-    '#cl-panel .role .t{flex:1;min-width:0}#cl-panel .role .t b{font-size:14px}' +
-    '#cl-panel .role .rt{font-size:12px;padding:3px 7px;border-radius:7px;border:1px solid #3a4150;flex:none}' +
-    '#cl-panel .rt.p{background:#12351f;border-color:#2ea043;color:#7ee787}#cl-panel .rt.m{background:#3a2f10;border-color:#9e6a03;color:#e3b341}#cl-panel .rt.f{background:#3b1717;border-color:#8b2b2b;color:#ff9b93}' +
-    '#cl-panel .role .lk{padding:6px 8px;font-size:15px;flex:none}#cl-panel .role .lk.on{background:#d6249f;border-color:#d6249f}' +
-    '#cl-bar{position:fixed;left:0;right:64px;bottom:0;z-index:2147483000;background:#15171c;padding:8px 0 10px 12px;display:none;gap:6px;flex-wrap:nowrap;overflow-x:auto}' +
-    '#cl-bar button{flex:none;background:#2a2f39;color:#fff;border:1px solid #3a4150;border-radius:9px;padding:9px 10px;font-size:13px;white-space:nowrap}#cl-bar button.ok2{background:#238636;border-color:#2ea043;font-weight:700}';
-  document.head.appendChild(css);
-  function el(tag, attrs, html) { var e = document.createElement(tag); if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]); if (html != null) e.innerHTML = html; return e; }
-  var fab = el('button', { id: 'cl-fab', type: 'button', 'aria-label': 'Подбор цвета' }, '🎨');
-  var panel = el('div', { id: 'cl-panel' }), bar = el('div', { id: 'cl-bar' });
-  panel.innerHTML =
-    '<div class="r"><b id="cl-th" style="flex:1;font-size:15px"></b><button id="cl-theme" type="button" style="font-size:18px">🌓 Тема</button><button id="cl-rnd" type="button" style="font-size:18px">🎲</button></div>' +
-    '<div class="h">Источник схемы</div><div class="r"><button id="cl-mm" type="button">Material You</button><button id="cl-mr" type="button">Radix</button><label style="position:relative"><span class="sm" style="border:1px solid #3a4150;border-radius:9px;padding:8px 10px;display:inline-block">🎨 свой цвет</span><input id="cl-seed" type="color" style="position:absolute;inset:0;width:100%;height:100%;opacity:0"></label></div>' +
-    '<div class="h">Основной цвет (одного достаточно — схема строится сама для обеих тем)</div><div class="chips" id="cl-fac"></div>' +
-    '<div class="h">Роли (тапни по цвету — свой цвет; 🔒 — не менять при 🎲)</div><div id="cl-roles"></div>' +
-    '<div class="sm" id="cl-log" style="white-space:pre-wrap;margin-top:8px"></div>';
-  bar.innerHTML = '<button id="cl-copy" class="ok2" type="button">Копировать CSS</button><button id="cl-pick" type="button">👆 Выбрать на странице</button><button id="cl-rt" type="button">↶ Сброс темы</button><button id="cl-ra" type="button">Сброс всего</button><button id="cl-close" type="button">✕</button>';
-  document.body.appendChild(fab); document.body.appendChild(panel); document.body.appendChild(bar);
-  function $(id) { return document.getElementById(id); }
-  var active = false;
-  function say(t) { $('cl-log').textContent = t; }
-
-  function seedMode() { return (P.seed && P.seed.mode) || 'material'; }
-  ORDER.forEach(function (f) {
-    var b = el('button', { type: 'button', title: f }); b.__f = f; b.style.background = '#' + RDX[f][0].substr(48, 6);
-    b.addEventListener('click', function () { useScheme(seedMode(), '#' + RDX[f][0].substr(48, 6), f); });
-    $('cl-fac').appendChild(b);
-  });
-  $('cl-mm').addEventListener('click', function () { var sd = P.seed || { hex: '#3e7bfa', fam: 'blue' }; useScheme('material', sd.hex, sd.fam); });
-  $('cl-mr').addEventListener('click', function () { var sd = P.seed || { hex: '#0090ff', fam: 'blue' }; useScheme('radix', sd.hex, sd.fam && !NEUTRAL[sd.fam] ? sd.fam : 'blue'); });
-  $('cl-seed').addEventListener('change', function (e) { var c = e.target.value, lc = hex2lch(c), best = 'blue', bd = 1e9; ORDER.forEach(function (f) { if (NEUTRAL[f]) return; var q = hex2lch('#' + RDX[f][0].substr(48, 6)), d = Math.min(Math.abs(q[2] - lc[2]), 360 - Math.abs(q[2] - lc[2])); if (d < bd) { bd = d; best = f; } }); useScheme(seedMode(), c, best); });
-
-  function render() {
-    var S = P[theme()], V = compute(), L = S.lock || {};
-    $('cl-th').textContent = 'Тема: ' + (theme() === 'dark' ? 'тёмная' : 'светлая');
-    Array.prototype.forEach.call($('cl-fac').children, function (b) { b.classList.toggle('on', !!P.seed && P.seed.fam === b.__f); });
-    $('cl-mm').style.background = seedMode() === 'material' && P.seed ? '#d6249f' : ''; $('cl-mr').style.background = seedMode() === 'radix' && P.seed ? '#d6249f' : '';
-    var host = $('cl-roles'); host.innerHTML = '';
-    ROLES.forEach(function (r) {
-      var v = V[r.id], against = { text: 1, text2: 1, key: 1, next: 1, th: 1, red: 1, wd: 1, ok: 1 }[r.id] ? V.card : r.id === 'accent' ? V.bg : null, rt = against ? ratio(v, against) : 0;
-      var min = r.id === 'text' ? 7 : 4.5, cls = !against ? '' : rt >= min ? 'p' : rt >= 3 ? 'm' : 'f';
-      var row = el('div', { class: 'role' });
-      row.innerHTML = '<div class="sw" style="background:' + v + '"><input type="color" value="' + v + '"></div><div class="t"><b>' + r.name + '</b><div class="sm">' + v + ' · ' + r.vars.join(' ') + '</div></div>' + (against ? '<span class="rt ' + cls + '">' + rt.toFixed(1) + '</span>' : '');
-      var lk = el('button', { type: 'button', class: 'lk' + (L[r.id] ? ' on' : '') }, L[r.id] ? '🔒' : '🔓');
-      lk.addEventListener('click', function () {
-        S.lock = S.lock || {}; S.over = S.over || {};
-        if (S.lock[r.id]) { delete S.lock[r.id]; if (r.id !== 'bg' && r.id !== 'accent') delete S.over[r.id]; }
-        else { S.lock[r.id] = 1; if (r.id !== 'bg' && r.id !== 'accent') S.over[r.id] = V[r.id]; }   // замок = заморозить текущий цвет
-        commit();
-      });
-      row.appendChild(lk);
-      row.querySelector('input').addEventListener('input', function (e) {
-        var c = e.target.value; S.over = S.over || {}; S.lock = S.lock || {};
-        if (r.id === 'bg') { S.bg = c; S.fam = null; delete S.over.bg; } else if (r.id === 'accent') { S.accent = c; S.accentFam = null; delete S.over.accent; } else S.over[r.id] = c;
-        S.lock[r.id] = 1; S.auto = true; save(); apply(); row.querySelector('.sw').style.background = c;
-      });
-      row.querySelector('input').addEventListener('change', function () { render(); });
-      host.appendChild(row);
-    });
-  }
-
   function ensureOrig(t) {
     if (ORIG[t]) return;
     var real = document.documentElement.getAttribute('data-theme');
     clearInline(); document.documentElement.setAttribute('data-theme', t); ORIG[t] = readVars(); document.documentElement.setAttribute('data-theme', real); apply();
-  }
-  function cssText() {
-    var out = [];
-    ['light', 'dark'].forEach(function (t) {
-      var S = P[t]; if (!S.bg && !S.accent && !S.auto && !(S.over && Object.keys(S.over).length)) return;
-      ensureOrig(t);
-      // вычисляем роли именно для темы t
-      var tmp = compute_for(t); var lines = [];
-      ROLES.forEach(function (r) { r.vars.forEach(function (v) { if (tmp[r.id] && tmp[r.id] !== ORIG[t][v]) lines.push('  ' + v + ': ' + tmp[r.id] + ';'); }); });
-      if (tmp.accent && tmp.accent !== ORIG[t]['--accent']) lines.push('  --accent-text: ' + (ratio('#ffffff', tmp.accent) >= ratio('#000000', tmp.accent) ? '#ffffff' : '#000000') + ';');
-      if (lines.length) out.push('html[data-theme="' + t + '"] {\n' + lines.join('\n') + '\n}');
-    });
-    return out.join('\n\n') || '/* схема не менялась */';
   }
   function compute_for(t) {   // роли для темы t (если t — не текущая, подставляем её шкалу Radix)
     var cur = theme();
@@ -271,44 +178,378 @@
     return r;
   }
 
-  /* ---------- события ---------- */
-  function setActive(v) { active = v; fab.classList.toggle('on', v); panel.style.display = v ? 'block' : 'none'; bar.style.display = v ? 'flex' : 'none'; document.body.style.paddingBottom = v ? (panel.offsetHeight + 12) + 'px' : ''; if (v) render(); }
+
+  /* ================== ПРАВИЛА ДЛЯ ОТДЕЛЬНЫХ ЭЛЕМЕНТОВ ================== */
+  var rstyle = document.createElement('style'); rstyle.id = 'cl-rules-style'; document.head.appendChild(rstyle);
+  var PREV = null;                                   // несохранённый просмотр {theme, sel, prop, val}
+  function ruleCss(r, bang) { return 'html[data-theme="' + r.theme + '"] ' + r.sel + ' { ' + r.prop + ': ' + r.val + (bang ? ' !important' : '') + '; }'; }
+  function applyRules() {
+    var out = P.rules.filter(function (r) { return !r.off; }).map(function (r) { return ruleCss(r, true); });
+    if (PREV) out.push(ruleCss(PREV, true));
+    rstyle.textContent = out.join('\n');
+  }
+
+  /* ================== ИНТЕРФЕЙС ================== */
+  var css = document.createElement('style');
+  css.textContent =
+    '#cl-fab{position:fixed;right:12px;bottom:12px;z-index:2147483001;width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:#222;color:#fff;font-size:22px;line-height:1;box-shadow:0 2px 10px rgba(0,0,0,.5);padding:0}' +
+    '#cl-fab.on{background:#d6249f}' +
+    '#cl-panel{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:#15171c;color:#eef0f4;font:13px/1.35 -apple-system,Roboto,sans-serif;padding:8px 12px 70px;border-top:2px solid #d6249f;max-height:66vh;overflow:auto;display:none}' +
+    '#cl-panel *{box-sizing:border-box;font-family:inherit}' +
+    '#cl-panel .r{display:flex;align-items:center;gap:8px;margin:6px 0}' +
+    '#cl-panel .sm{opacity:.7;font-size:12px;word-break:break-all}' +
+    '#cl-panel .h{font-size:12px;opacity:.85;margin:10px 0 3px;font-weight:600}' +
+    '#cl-panel button{background:#2a2f39;color:#fff;border:1px solid #3a4150;border-radius:9px;padding:8px 10px;font-size:13px}' +
+    '#cl-panel button.on{background:#d6249f;border-color:#d6249f}' +
+    '#cl-panel .tabs{display:flex;gap:6px;margin-bottom:6px}#cl-panel .tabs button{flex:1;padding:9px 4px}' +
+    '#cl-panel .pair{display:flex;gap:8px}' +
+    '#cl-panel .box{flex:1;border-radius:12px;border:1px solid #555;padding:8px;text-align:center;position:relative;min-height:70px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}' +
+    '#cl-panel .box b{font-size:13px}#cl-panel .box small{font-size:11px;opacity:.85}' +
+    '#cl-panel .box input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0}' +
+    '#cl-panel .box.nw{outline:2px solid #d6249f}' +
+    '#cl-panel .big{text-align:center;margin:6px 0 2px}#cl-panel .big b{font-size:24px}' +
+    '#cl-panel .bd{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}' +
+    '#cl-panel .bd span{border-radius:7px;padding:3px 7px;font-size:11px;border:1px solid #3a4150}' +
+    '#cl-panel .p{background:#12351f;border-color:#2ea043!important;color:#7ee787}#cl-panel .m{background:#3a2f10;border-color:#9e6a03!important;color:#e3b341}#cl-panel .f{background:#3b1717;border-color:#8b2b2b!important;color:#ff9b93}' +
+    '#cl-panel .sg{display:flex;flex-wrap:wrap;gap:5px}' +
+    '#cl-panel .sg button{padding:0;width:52px;height:42px;border-radius:8px;border:1px solid #555;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;font-size:15px;font-weight:700}' +
+    '#cl-panel .sg button small{font-size:9px;font-weight:400;opacity:.85}' +
+    '#cl-panel .sc{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px}' +
+    '#cl-panel .sc small{display:block;opacity:.7;font-size:11px;font-weight:400;word-break:break-all}' +
+    '#cl-panel .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px}' +
+    '#cl-panel .chips button{flex:none;width:34px;height:34px;border-radius:50%;padding:0;border:2px solid #3a4150}' +
+    '#cl-panel .chips button.on{border-color:#fff;box-shadow:0 0 0 2px #d6249f}' +
+    '#cl-panel .role{display:flex;align-items:center;gap:10px;margin:7px 0}' +
+    '#cl-panel .role .sw{width:42px;height:42px;border-radius:10px;border:1px solid #666;position:relative;flex:none}' +
+    '#cl-panel .role .sw input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0}' +
+    '#cl-panel .role .t{flex:1;min-width:0}#cl-panel .role .t b{font-size:13px}' +
+    '#cl-panel .rt{font-size:12px;padding:3px 7px;border-radius:7px;border:1px solid #3a4150;flex:none}' +
+    '#cl-panel .lk{padding:6px 8px!important;font-size:15px!important;flex:none}' +
+    '#cl-panel input[type=text]{background:#0e1014;color:#fff;border:1px solid #3a4150;border-radius:8px;padding:6px 8px;width:96px;font-size:14px}' +
+    '#cl-panel input[type=range]{flex:1;min-width:0;height:26px;-webkit-appearance:none;appearance:none;border-radius:13px;border:1px solid #444}' +
+    '#cl-panel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid #d6249f}' +
+    '#cl-panel label.lb{width:76px;flex:none;font-size:12px;opacity:.85}' +
+    '#cl-panel .zone{height:7px;border-radius:4px;margin:-2px 0 4px 84px;display:flex;overflow:hidden}#cl-panel .zone i{flex:1}' +
+    '#cl-panel .rl{display:flex;align-items:center;gap:6px;margin:5px 0;font-size:12px}#cl-panel .rl .tx{flex:1;min-width:0;word-break:break-all}' +
+    '#cl-panel .rl i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #666;vertical-align:-2px}' +
+    '#cl-bar{position:fixed;left:0;right:64px;bottom:0;z-index:2147483000;background:#15171c;padding:8px 0 10px 12px;display:none;gap:6px;flex-wrap:nowrap;overflow-x:auto}' +
+    '#cl-bar button{flex:none;background:#2a2f39;color:#fff;border:1px solid #3a4150;border-radius:9px;padding:9px 10px;font-size:13px;white-space:nowrap}' +
+    '#cl-bar button.on{background:#d6249f;border-color:#d6249f}#cl-bar button.ok2{background:#238636;border-color:#2ea043;font-weight:700}#cl-bar button[disabled]{opacity:.4}';
+  document.head.appendChild(css);
+  function el(tag, attrs, html) { var e = document.createElement(tag); if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]); if (html != null) e.innerHTML = html; return e; }
+  function $(id) { return document.getElementById(id); }
+  var fab = el('button', { id: 'cl-fab', type: 'button', 'aria-label': 'Подбор цвета' }, '🎨');
+  var panel = el('div', { id: 'cl-panel' }), bar = el('div', { id: 'cl-bar' });
+  panel.innerHTML =
+    '<div class="tabs"><button id="cl-t-pick" type="button">👆 Элемент</button><button id="cl-t-scheme" type="button">🎨 Схема</button><button id="cl-t-rules" type="button">📋 Правила</button><button id="cl-theme" type="button" style="flex:none;width:58px" aria-label="Тема">🌓</button></div>' +
+    '<div id="cl-body"></div><div class="sm" id="cl-log" style="white-space:pre-wrap;margin-top:8px"></div>';
+  bar.innerHTML = '<button id="cl-apply" class="ok2" type="button" disabled>✓ Применить</button><button id="cl-cancel" type="button" disabled>↶ Отмена</button><button id="cl-pickmode" type="button">👆 Выбор: вкл</button><button id="cl-copy" type="button">Копировать CSS</button><button id="cl-close" type="button">✕</button>';
+  document.body.appendChild(fab); document.body.appendChild(panel); document.body.appendChild(bar);
+  var origCol = '', active = false, tab = 'pick', pickOn = true, sel = null, outlined = null, prop = 'color', cands = [], scope = 0, newHex = null, hslv = [0, 0, 50], fine = false, advOpen = false;
+  var body = $('cl-body');
+  function say(t) { $('cl-log').textContent = t; }
+  function isUi(n) { return n === fab || panel.contains(n) || bar.contains(n); }
+
+  /* ---------- чтение цветов элемента ---------- */
+  function parseC(c) { var m = /rgba?\(([^)]+)\)/.exec(c || ''); if (!m) return null; var p = m[1].split(/[ ,\/]+/).filter(Boolean).map(parseFloat); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; }
+  function bgOf(n) {
+    var st = [], x = n;
+    while (x && x.nodeType === 1) { var c = parseC(getComputedStyle(x).backgroundColor); if (c && c.a > 0) st.push(c); if (c && c.a >= .999) break; x = x.parentElement; }
+    var res = theme() === 'dark' ? [11, 15, 23] : [255, 255, 255];
+    for (var i = st.length - 1; i >= 0; i--) { var a = st[i].a; res = [st[i].r * a + res[0] * (1 - a), st[i].g * a + res[1] * (1 - a), st[i].b * a + res[2] * (1 - a)]; }
+    return hex(res[0], res[1], res[2]);
+  }
+  function propVal(n, p) {
+    var cs = getComputedStyle(n);
+    if (p === 'color') { var c = parseC(cs.color); return c ? hex(c.r, c.g, c.b) : ''; }
+    if (p === 'background-color') { var b = parseC(cs.backgroundColor); return b && b.a > 0 ? bgOf(n) : ''; }
+    var d = parseC(cs.borderTopColor); return d && d.a > 0 ? hex(d.r, d.g, d.b) : '';
+  }
+  function otherOf(n, p) { return p === 'color' || p === 'border-color' ? bgOf(n) : propVal(n, 'color'); }
+  function describe(n) {
+    var s = n.tagName.toLowerCase(); if (n.id) s += '#' + n.id;
+    clsOf(n).slice(0, 2).forEach(function (c) { s += '.' + c; });
+    return s + (n.children.length ? '' : ' «' + (n.textContent || '').trim().slice(0, 22) + '»');
+  }
+  function clsOf(n) { return (typeof n.className === 'string' ? n.className : '').trim().split(/\s+/).filter(function (c) { return c && c.indexOf('cl-') !== 0; }); }
+  function esc(s) { return (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/[^\w-]/g, '\\$&'); }
+  function simple(n) { var s = n.tagName.toLowerCase(); clsOf(n).slice(0, 3).forEach(function (c) { s += '.' + esc(c); }); return s; }
+  function pathSel(n) {
+    var parts = [], cur = n, depth = 0;
+    while (cur && cur !== document.body && cur.nodeType === 1 && depth < 5) {
+      var p = cur.parentElement, idx = 1;
+      if (p) for (var i = 0; i < p.children.length; i++) { if (p.children[i] === cur) break; if (p.children[i].tagName === cur.tagName) idx++; }
+      parts.unshift(simple(cur) + ':nth-of-type(' + idx + ')');
+      if (cur.id) { parts[0] = '#' + esc(cur.id); break; }
+      cur = p; depth++;
+    }
+    var pg = document.body.getAttribute('data-page'); return (pg ? 'body[data-page="' + pg + '"] ' : 'body ') + parts.join(' > ');
+  }
+  function countSel(s) { try { return Array.prototype.filter.call(document.querySelectorAll(s), function (n) { return !isUi(n); }).length; } catch (e) { return 0; } }
+
+  /* ---------- варианты области применения ---------- */
+  function buildCands() {
+    cands = [];
+    var cur = propVal(sel, prop); origCol = cur;
+    var s1 = simple(sel), par = sel.parentElement;
+    function add(o) { if (!cands.some(function (c) { return c.sel === o.sel && c.role === o.role; })) cands.push(o); }
+    add({ k: 'all', title: 'Все такие же', sel: s1, n: countSel(s1) });
+    if (par && par !== document.body) { var s2 = simple(par) + ' ' + s1; add({ k: 'in', title: 'Такие же внутри «' + simple(par) + '»', sel: s2, n: countSel(s2) }); }
+    var s3 = pathSel(sel); add({ k: 'one', title: 'Только этот (на этой странице)', sel: s3, n: countSel(s3) });
+    if (prop !== 'border-color' && cur) {
+      var V = compute();
+      ROLES.forEach(function (r) {
+        if (V[r.id] && V[r.id].toLowerCase() === cur.toLowerCase()) {
+          var n = 0, all = document.body.querySelectorAll('*'), lim = Math.min(all.length, 4000);
+          for (var i = 0; i < lim; i++) if (!isUi(all[i]) && propVal(all[i], prop) === cur) n++;
+          add({ k: 'role', title: 'Роль «' + r.name + '» — меняет всё с этим цветом', sel: r.vars[0], n: n, role: r.id });
+        }
+      });
+    }
+    var def = 0; if (cands[0].n > 25 && !clsOf(sel).length) def = cands.findIndex(function (c) { return c.k === 'one'; });
+    scope = Math.max(0, def);
+  }
+
+  /* ---------- выбор элемента на странице ---------- */
+  function iconLike(n) { return n.namespaceURI && n.namespaceURI.indexOf('svg') >= 0; }
+  function choose(n) {
+    var wasIcon = !!(n && iconLike(n));
+    while (n && iconLike(n) && n.parentElement) n = n.parentElement;
+    if (!n || n === document.documentElement) return;
+    if (PREV) cancel(true);
+    if (outlined) { outlined.el.style.outline = outlined.o; outlined.el.style.outlineOffset = outlined.f; }
+    sel = n; outlined = { el: n, o: n.style.outline, f: n.style.outlineOffset };
+    n.style.outline = '2px dashed #d6249f'; n.style.outlineOffset = '1px';
+    var hasText = wasIcon || Array.prototype.some.call(n.childNodes, function (c) { return c.nodeType === 3 && c.textContent.trim(); }); var bgv = propVal(n, 'background-color');
+    prop = hasText || !bgv ? 'color' : 'background-color';
+    newHex = null; setTab('pick', true);
+  }
+  function setProp(p) { prop = p; if (PREV) cancel(true); newHex = null; if (sel) buildCands(); renderPick(); }
+
+  /* ---------- просмотр / применение ---------- */
+  function setNew(hx) {
+    newHex = hx; var h = hsl(rgb(hx)); hslv = [h[0], h[1], h[2]];
+    var c = cands[scope];
+    if (c.k === 'role') { PREV = null; ROLE[c.role].vars.forEach(function (v) { document.documentElement.style.setProperty(v, hx); applied.indexOf(v) < 0 && applied.push(v); }); }
+    else PREV = { theme: theme(), sel: c.sel, prop: prop, val: hx };
+    applyRules(); $('cl-apply').disabled = false; $('cl-cancel').disabled = false;
+  }
+  function cancel(silent) {
+    PREV = null; newHex = null; apply(); applyRules();
+    $('cl-apply').disabled = true; $('cl-cancel').disabled = true;
+    if (!silent) { say('Отменено'); renderPick(); }
+  }
+  function applyNew() {
+    if (!newHex || !sel) return;
+    var c = cands[scope], from = origCol;
+    if (c.k === 'role') {
+      var S = P[theme()]; S.over = S.over || {}; S.lock = S.lock || {}; S.over[c.role] = newHex; S.lock[c.role] = 1; S.auto = true;
+      if (c.role === 'bg') S.bg = newHex; if (c.role === 'accent') S.accent = newHex;
+      PREV = null; newHex = null; commit(); say('✓ Роль «' + ROLE[c.role].name + '» изменена для темы ' + theme() + ' и закрыта замком 🔒'); }
+    else {
+      P.rules = P.rules.filter(function (r) { return !(r.theme === theme() && r.sel === c.sel && r.prop === prop); });
+      P.rules.push({ id: Date.now() + Math.random(), theme: theme(), sel: c.sel, prop: prop, val: newHex, from: from, label: describe(sel), lock: false, off: false });
+      PREV = null; newHex = null; commit(); say('✓ Правило сохранено для всех страниц (' + c.n + ' эл. на этой)');
+    }
+    $('cl-apply').disabled = true; $('cl-cancel').disabled = true; buildCands(); renderPick();
+  }
+
+  /* ---------- подсказки: по фону и по соседям ---------- */
+  function familyOf(h) {
+    var q = hsl(rgb(h)); if (q[1] < 12) return 'gray';
+    var best = 'gray', bd = 999;
+    ORDER.forEach(function (f) { if (NEUTRAL[f]) return; var t = hsl(rgb('#' + RDX[f][0].substr(48, 6))), d = Math.min(Math.abs(t[0] - q[0]), 360 - Math.abs(t[0] - q[0])); if (d < bd) { bd = d; best = f; } });
+    return best;
+  }
+  function neighbourColors() {
+    var set = {}, out = [], nodes = [], par = sel.parentElement;
+    if (par) { nodes.push(par); Array.prototype.forEach.call(par.children, function (c) { nodes.push(c); Array.prototype.forEach.call(c.children, function (cc) { nodes.push(cc); }); }); var gp = par.parentElement; if (gp) Array.prototype.forEach.call(gp.children, function (c) { nodes.push(c); }); }
+    nodes.slice(0, 80).forEach(function (m) { if (m === sel || isUi(m)) return; var v = propVal(m, prop); if (v && !set[v]) { set[v] = 1; out.push(v); } });
+    return out;
+  }
+  function suggestGroups() {
+    var oc = otherOf(sel, prop), cur = (propVal(sel, prop) || '').toLowerCase(), V = compute(), min = prop === 'background-color' ? 4.5 : 4.5, seen = {}, groups = [];
+    function g(title, cap) { var o = { t: title, items: [], cap: cap }; groups.push(o); return o; }
+    function add(o, hx, name, need) { hx = hx.toLowerCase(); if (seen[hx] || hx === cur) return; if (ratio(hx, oc) < (need || min)) return; if (o.items.length >= o.cap) return; seen[hx] = 1; o.items.push([hx, name]); }
+    var fam = familyOf(oc), n = NEUTRAL[fam] ? fam : ({ tomato: 'mauve', red: 'mauve', ruby: 'mauve', crimson: 'mauve', pink: 'mauve', plum: 'mauve', purple: 'mauve', violet: 'mauve', iris: 'slate', indigo: 'slate', blue: 'slate', sky: 'slate', cyan: 'slate', teal: 'sage', jade: 'sage', mint: 'sage', green: 'sage', grass: 'olive', lime: 'olive' }[fam] || 'sand');
+    var gN = g('Как у соседей', 6); neighbourColors().forEach(function (c) { add(gN, c, 'сосед', 3); });
+    var gR = g('Из вашей схемы', 6); ROLES.forEach(function (r) { if (V[r.id]) add(gR, V[r.id], r.name, 3); });
+    var gP = g('Под этот ' + (prop === 'background-color' ? 'текст' : 'фон') + ' (Radix)', 10);
+    if (prop === 'background-color') { [1, 2, 3, 4].forEach(function (k) { add(gP, step(fam === 'gray' ? n : fam, k), (fam === 'gray' ? n : fam) + '-' + k); }); [1, 2, 3].forEach(function (k) { add(gP, step(n, k), n + '-' + k); }); }
+    else {
+      [12, 11].forEach(function (k) { add(gP, step(n, k), n + '-' + k); });
+      if (fam !== 'gray' && !NEUTRAL[fam]) [12, 11, 10, 9].forEach(function (k) { add(gP, step(fam, k), fam + '-' + k, k === 9 ? 3 : min); });
+      ['red', 'orange', 'amber', 'green', 'teal', 'blue', 'violet', 'pink'].forEach(function (f) { if (f !== fam) add(gP, step(f, 11), f + '-11'); });
+    }
+    return groups;
+  }
+  function swatch(hx, name, oc) {
+    var b = el('button', { type: 'button', title: name }), cr = ratio(hx, oc);
+    if (prop === 'background-color') { b.style.background = hx; b.style.color = oc; } else { b.style.background = oc; b.style.color = hx; }
+    b.innerHTML = 'Аа<small>' + cr.toFixed(1) + '</small>'; b.addEventListener('click', function () { setNew(hx); renderPick(); });
+    return b;
+  }
+
+  /* ---------- вкладка «Элемент» ---------- */
+  function badges(r) { return [['AA', 4.5], ['AA ↑', 3], ['AAA', 7]].map(function (x) { return '<span class="' + (r >= x[1] ? 'p' : 'f') + '">' + (r >= x[1] ? '✓' : '✗') + ' ' + x[0] + '</span>'; }).join(''); }
+  function renderPick() {
+    body.innerHTML = '';
+    if (!sel) { body.innerHTML = '<div class="sm" style="padding:10px 0">Тапни слово, иконку или фон на странице — покажу, что это, и подберу цвет. Ссылки пока не открываются (кнопка «Выбор» внизу).</div>'; return; }
+    var cur = propVal(sel, prop), oc = otherOf(sel, prop), shown = newHex || cur || '#000000';
+    var wrap = el('div');
+    wrap.innerHTML =
+      '<div class="r"><div style="flex:1;min-width:0"><b>' + describe(sel).replace(/</g, '&lt;') + '</b><div class="sm">' + (iconLike(sel) ? 'иконка · ' : '') + 'тема: ' + theme() + '</div></div></div>' +
+      '<div class="r"><button id="cl-p-c" type="button">Текст / иконка</button><button id="cl-p-b" type="button">Фон</button><button id="cl-p-d" type="button">Граница</button></div>' +
+      '<div class="pair"><div class="box" style="background:' + (prop === 'background-color' ? cur || oc : oc) + ';color:' + (prop === 'background-color' ? oc : cur || '#888') + '"><b>Сейчас</b><small>' + (cur || 'нет') + '</small></div>' +
+      '<div class="box nw" style="background:' + (prop === 'background-color' ? shown : oc) + ';color:' + (prop === 'background-color' ? oc : shown) + '"><b>Новый</b><small id="cl-hx">' + (newHex || '— выбери —') + '</small><input type="color" id="cl-pk" value="' + shown + '"></div></div>' +
+      '<div class="big"><b id="cl-rt">' + ratio(shown, oc).toFixed(2) + ' : 1</b></div><div class="bd" id="cl-bd">' + badges(ratio(shown, oc)) + '</div>' +
+      '<div id="cl-sug"></div>' +
+      '<div class="h">Где применить</div><div class="sg" id="cl-sc" style="gap:6px"></div><div class="sm" id="cl-scd" style="margin-top:4px"></div>' +
+      '<div class="r"><button id="cl-adv" type="button">⚙ Точно ' + (advOpen ? '▴' : '▾') + '</button><button id="cl-aa" type="button">Подогнать к AA</button></div>' +
+      '<div id="cl-advb" style="display:' + (advOpen ? 'block' : 'none') + '">' +
+      '<div class="r"><label class="lb">HEX</label><input id="cl-hex" type="text" maxlength="7" value="' + shown + '"></div>' +
+      '<div class="r"><label class="lb">Тон</label><input id="cl-h" type="range" min="0" max="360"></div>' +
+      '<div class="r"><label class="lb">Насыщ.</label><input id="cl-s" type="range" min="0" max="100"></div>' +
+      '<div class="r"><label class="lb">Яркость</label><input id="cl-l" type="range" min="0" max="100"></div><div class="zone" id="cl-zone"></div></div>';
+    body.appendChild(wrap);
+    var hh = hsl(rgb(shown)); hslv = [hh[0], hh[1], hh[2]];
+    $('cl-p-c').className = prop === 'color' ? 'on' : ''; $('cl-p-b').className = prop === 'background-color' ? 'on' : ''; $('cl-p-d').className = prop === 'border-color' ? 'on' : '';
+    $('cl-p-c').onclick = function () { setProp('color'); }; $('cl-p-b').onclick = function () { setProp('background-color'); }; $('cl-p-d').onclick = function () { setProp('border-color'); };
+    var sc = $('cl-sc');
+    cands.forEach(function (c, i) {
+      var short = c.k === 'all' ? 'Все такие же' : c.k === 'in' ? 'В родителе' : c.k === 'one' ? 'Только этот' : 'Роль: ' + ROLE[c.role].name.split(',')[0];
+      var b = el('button', { type: 'button', style: 'width:auto;height:auto;padding:8px 10px;font-size:13px;font-weight:600;display:block;text-align:left' + (i === scope ? ';background:#d6249f;border-color:#d6249f' : '') }, short + ' · ' + c.n);
+      b.addEventListener('click', function () { var nh = newHex; if (PREV) cancel(true); scope = i; if (nh) setNew(nh); renderPick(); });
+      sc.appendChild(b);
+    });
+    var cc = cands[scope]; $('cl-scd').textContent = (cc.k === 'role' ? 'Меняет переменную ' + cc.sel + ' — всё, что её использует. ' : 'Селектор: ' + cc.sel + '. ') + 'Совпадений на этой странице: ' + cc.n + '.';
+    var sug = $('cl-sug');
+    suggestGroups().forEach(function (g) {
+      if (!g.items.length) return; sug.appendChild(el('div', { class: 'h' }, g.t));
+      var w = el('div', { class: 'sg' }); g.items.forEach(function (it) { w.appendChild(swatch(it[0], it[1], oc)); }); sug.appendChild(w);
+    });
+    $('cl-pk').addEventListener('input', function (e) { setNew(e.target.value); liveUpd(); });
+    $('cl-pk').addEventListener('change', function () { renderPick(); });
+    $('cl-adv').onclick = function () { advOpen = !advOpen; renderPick(); };
+    $('cl-aa').onclick = function () { var f = fix(shown, oc, 4.5); if (f === shown) { say('Уже проходит AA'); return; } setNew(f); renderPick(); };
+    $('cl-hex').onchange = function (e) { var v = e.target.value.trim(); if (/^#?[0-9a-f]{6}$/i.test(v)) { setNew(v[0] === '#' ? v : '#' + v); renderPick(); } };
+    [['cl-h', 0], ['cl-s', 1], ['cl-l', 2]].forEach(function (x) { var inp = $(x[0]); inp.value = Math.round(hslv[x[1]]); inp.oninput = function () { hslv[x[1]] = parseFloat(inp.value); setNew(hex.apply(null, fromHsl(hslv[0], hslv[1], hslv[2]))); hslv[x[1]] = parseFloat(inp.value); liveUpd(); }; });
+    paintZone(oc); if (!newHex && !PREV) { $('cl-apply').disabled = true; $('cl-cancel').disabled = true; }
+  }
+  function paintZone(oc) {
+    var z = '', i; for (i = 0; i < 40; i++) { var q = hex.apply(null, fromHsl(hslv[0], hslv[1], i * 100 / 39)), cr = ratio(q, oc); z += '<i style="background:' + (cr >= 4.5 ? '#2ea043' : cr >= 3 ? '#d29922' : '#8b2b2b') + '"></i>'; }
+    var zn = $('cl-zone'); if (zn) zn.innerHTML = z;
+  }
+  function liveUpd() {   // лёгкое обновление без перерисовки (чтобы не терять фокус бегунка)
+    var oc = otherOf(sel, prop), r = ratio(newHex, oc);
+    $('cl-hx').textContent = newHex; $('cl-rt').textContent = r.toFixed(2) + ' : 1'; $('cl-bd').innerHTML = badges(r);
+    var nb = body.querySelector('.box.nw'); if (nb) { if (prop === 'background-color') nb.style.background = newHex; else nb.style.color = newHex; }
+    var hx = $('cl-hex'); if (hx) hx.value = newHex; paintZone(oc);
+  }
+
+  /* ---------- вкладка «Схема» ---------- */
+  function seedMode() { return (P.seed && P.seed.mode) || 'material'; }
+  function renderScheme() {
+    var S = P[theme()], V = compute(), L = S.lock || {};
+    body.innerHTML =
+      '<div class="sm">Вся схема из одного цвета — для обеих тем сразу. Ручные правки и замки 🔒 сохраняются.</div>' +
+      '<div class="r"><button id="cl-mm" type="button">Material You</button><button id="cl-mr" type="button">Radix</button><button id="cl-rnd" type="button">🎲</button><label style="position:relative"><span style="border:1px solid #3a4150;border-radius:9px;padding:8px 10px;display:inline-block;background:#2a2f39">🎨 свой</span><input id="cl-seed" type="color" style="position:absolute;inset:0;width:100%;height:100%;opacity:0"></label></div>' +
+      '<div class="chips" id="cl-fac"></div><div class="h">Роли темы: ' + (theme() === 'dark' ? 'тёмной' : 'светлой') + ' (тап по цвету — свой; 🔒 — заморозить)</div><div id="cl-roles"></div>';
+    $('cl-mm').className = P.seed && seedMode() === 'material' ? 'on' : ''; $('cl-mr').className = P.seed && seedMode() === 'radix' ? 'on' : '';
+    ORDER.forEach(function (f) {
+      var b = el('button', { type: 'button', title: f }); b.style.background = '#' + RDX[f][0].substr(48, 6); if (P.seed && P.seed.fam === f) b.className = 'on';
+      b.onclick = function () { useScheme(seedMode(), '#' + RDX[f][0].substr(48, 6), f); }; $('cl-fac').appendChild(b);
+    });
+    $('cl-mm').onclick = function () { var sd = P.seed || { hex: '#3e7bfa', fam: 'blue' }; useScheme('material', sd.hex, sd.fam); };
+    $('cl-mr').onclick = function () { var sd = P.seed || { fam: 'blue' }; useScheme('radix', sd.hex || '#0090ff', sd.fam && !NEUTRAL[sd.fam] ? sd.fam : 'blue'); };
+    $('cl-rnd').onclick = randomize;
+    $('cl-seed').onchange = function (e) { var c = e.target.value; useScheme(seedMode(), c, familyOf(c)); };
+    var host = $('cl-roles');
+    ROLES.forEach(function (r) {
+      var v = V[r.id], against = { text: 1, text2: 1, key: 1, next: 1, th: 1, red: 1, wd: 1, ok: 1 }[r.id] ? V.card : r.id === 'accent' ? V.bg : null, rt = against ? ratio(v, against) : 0;
+      var min = r.id === 'text' ? 7 : 4.5, cls = !against ? '' : rt >= min ? 'p' : rt >= 3 ? 'm' : 'f';
+      var row = el('div', { class: 'role' });
+      row.innerHTML = '<div class="sw" style="background:' + v + '"><input type="color" value="' + v + '"></div><div class="t"><b>' + r.name + '</b><div class="sm">' + v + ' · ' + r.vars.join(' ') + '</div></div>' + (against ? '<span class="rt ' + cls + '">' + rt.toFixed(1) + '</span>' : '');
+      var lk = el('button', { type: 'button', class: 'lk' + (L[r.id] ? ' on' : '') }, L[r.id] ? '🔒' : '🔓');
+      lk.onclick = function () {
+        S.lock = S.lock || {}; S.over = S.over || {};
+        if (S.lock[r.id]) { delete S.lock[r.id]; if (r.id !== 'bg' && r.id !== 'accent') delete S.over[r.id]; } else { S.lock[r.id] = 1; if (r.id !== 'bg' && r.id !== 'accent') S.over[r.id] = V[r.id]; }
+        commit();
+      };
+      row.appendChild(lk);
+      var inp = row.querySelector('input');
+      inp.oninput = function (e) { var c = e.target.value; S.over = S.over || {}; S.lock = S.lock || {}; if (r.id === 'bg') { S.bg = c; S.fam = null; delete S.over.bg; } else if (r.id === 'accent') { S.accent = c; S.accentFam = null; delete S.over.accent; } else S.over[r.id] = c; S.lock[r.id] = 1; S.auto = true; save(); apply(); row.querySelector('.sw').style.background = c; };
+      inp.onchange = function () { render(); };
+      host.appendChild(row);
+    });
+  }
+
+  /* ---------- вкладка «Правила» ---------- */
+  function renderRules() {
+    body.innerHTML = '<div class="sm">Правила для отдельных элементов — работают на всех страницах и сильнее схемы. 🔒 — защитить от «Сбросить незакрытые».</div><div id="cl-rl"></div>' +
+      '<div class="r"><button id="cl-rc" type="button">Сбросить незакрытые 🔓</button><button id="cl-ra" type="button">Сброс всего</button></div>';
+    var host = $('cl-rl');
+    if (!P.rules.length) host.innerHTML = '<div class="sm" style="margin:8px 0">— правил нет. Выбери элемент на вкладке «Элемент» и нажми «✓ Применить».</div>';
+    P.rules.forEach(function (r, i) {
+      var row = el('div', { class: 'rl', style: r.off ? 'opacity:.45' : '' });
+      row.innerHTML = '<div class="tx"><b>' + r.theme + '</b> · ' + r.label.replace(/</g, '&lt;') + '<br><span class="sm">' + r.sel + ' · ' + (r.prop === 'color' ? 'текст' : r.prop === 'background-color' ? 'фон' : 'граница') + ' <i style="background:' + r.from + '"></i>→<i style="background:' + r.val + '"></i> ' + r.val + '</span></div>';
+      var bl = el('button', { type: 'button', class: r.lock ? 'on' : '' }, r.lock ? '🔒' : '🔓'); bl.onclick = function () { r.lock = !r.lock; commit(); };
+      var bo = el('button', { type: 'button' }, r.off ? '🚫' : '👁'); bo.onclick = function () { r.off = !r.off; commit(); };
+      var bx = el('button', { type: 'button' }, '✕'); bx.onclick = function () { P.rules.splice(i, 1); commit(); };
+      row.appendChild(bl); row.appendChild(bo); row.appendChild(bx); host.appendChild(row);
+    });
+    $('cl-rc').onclick = function () { P.rules = P.rules.filter(function (r) { return r.lock; }); commit(); say('Незакрытые правила удалены'); };
+    $('cl-ra').onclick = function () { P = { light: {}, dark: {}, seed: null, rules: [] }; PREV = null; commit(); say('Всё сброшено'); };
+  }
+
+  /* ---------- общее ---------- */
+  function render() {
+    ['pick', 'scheme', 'rules'].forEach(function (t) { $('cl-t-' + t).className = tab === t ? 'on' : ''; });
+    $('cl-pickmode').style.display = tab === 'pick' ? '' : 'none'; $('cl-apply').style.display = tab === 'pick' ? '' : 'none'; $('cl-cancel').style.display = tab === 'pick' ? '' : 'none';
+    if (tab === 'pick') renderPick(); else if (tab === 'scheme') renderScheme(); else renderRules();
+    if (active) document.body.style.paddingBottom = (panel.offsetHeight + 12) + 'px';
+  }
+  function commit() { save(); apply(); applyRules(); render(); }
+  function setTab(t, keep) { tab = t; if (t === 'pick' && sel) { buildCands(); } render(); }
+  function cssText() {
+    var out = [];
+    ['light', 'dark'].forEach(function (t) {
+      var S = P[t]; if (!S.bg && !S.accent && !S.auto && !(S.over && Object.keys(S.over).length)) return;
+      ensureOrig(t);
+      var tmp = compute_for(t), lines = [];
+      ROLES.forEach(function (r) { r.vars.forEach(function (v) { if (tmp[r.id] && tmp[r.id] !== ORIG[t][v]) lines.push('  ' + v + ': ' + tmp[r.id] + ';'); }); });
+      if (tmp.accent && tmp.accent !== ORIG[t]['--accent']) lines.push('  --accent-text: ' + (ratio('#ffffff', tmp.accent) >= ratio('#000000', tmp.accent) ? '#ffffff' : '#000000') + ';');
+      if (lines.length) out.push('html[data-theme="' + t + '"] {\n' + lines.join('\n') + '\n}');
+    });
+    var rl = P.rules.filter(function (r) { return !r.off; }).map(function (r) { return ruleCss(r, false) + '   /* ' + r.label + ' · было ' + r.from + ' */'; });
+    if (rl.length) out.push('/* правила для элементов */\n' + rl.join('\n'));
+    return out.join('\n\n') || '/* ничего не менялось */';
+  }
+  function setActive(v) {
+    active = v; fab.classList.toggle('on', v); panel.style.display = v ? 'block' : 'none'; bar.style.display = v ? 'flex' : 'none';
+    document.body.style.paddingBottom = v ? (panel.offsetHeight + 12) + 'px' : '';
+    if (v) render(); else { if (PREV) cancel(true); if (outlined) { outlined.el.style.outline = outlined.o; outlined.el.style.outlineOffset = outlined.f; outlined = null; } sel = null; }
+  }
   fab.addEventListener('click', function (e) { e.stopPropagation(); setActive(!active); });
-  $('cl-close').addEventListener('click', function () { setActive(false); });
-  $('cl-rnd').addEventListener('click', randomize);
-  $('cl-theme').addEventListener('click', function () {
+  $('cl-close').onclick = function () { setActive(false); };
+  ['pick', 'scheme', 'rules'].forEach(function (t) { $('cl-t-' + t).onclick = function () { if (PREV && t !== 'pick') cancel(true); setTab(t); }; });
+  $('cl-apply').onclick = applyNew; $('cl-cancel').onclick = function () { cancel(false); };
+  $('cl-pickmode').onclick = function () { pickOn = !pickOn; $('cl-pickmode').textContent = pickOn ? '👆 Выбор: вкл' : '🔗 Выбор: выкл (ссылки работают)'; $('cl-pickmode').className = pickOn ? '' : 'on'; };
+  $('cl-copy').onclick = function () { var t = cssText(), done = function () { say('Скопировано:\n' + t); }; try { navigator.clipboard.writeText(t).then(done, function () { say(t); }); } catch (e) { say(t); } };
+  $('cl-theme').onclick = function () {
+    if (PREV) cancel(true);
     var nx = theme() === 'dark' ? 'light' : 'dark';
-    clearInline();
-    try { localStorage.setItem('theme', nx); } catch (e) {}
+    clearInline(); try { localStorage.setItem('theme', nx); } catch (e) {}
     if (window.Rozklad && Rozklad.applyTheme) Rozklad.applyTheme(nx); else document.documentElement.setAttribute('data-theme', nx);
     if (!ORIG[nx]) ORIG[nx] = readVars();
-    apply(); render();
-  });
-  $('cl-rt').addEventListener('click', function () { P[theme()] = {}; commit(); say('Тема сброшена'); });
-  $('cl-ra').addEventListener('click', function () { P = { light: {}, dark: {}, seed: null }; commit(); say('Всё сброшено'); });
-  $('cl-copy').addEventListener('click', function () {
-    var t = cssText(), done = function () { say('Скопировано:\n' + t); };
-    try { navigator.clipboard.writeText(t).then(done, function () { say(t); }); } catch (e) { say(t); }
-  });
-  var pick = false;
-  $('cl-pick').addEventListener('click', function () { pick = !pick; $('cl-pick').style.background = pick ? '#d6249f' : ''; say(pick ? 'Режим выбора: тапни слово или фон на странице — покажу, какая это роль (ссылки временно не работают)' : 'Режим выбора выключен'); });
+    apply(); applyRules(); if (sel) { newHex = null; buildCands(); } render();
+  };
   document.addEventListener('click', function (e) {
-    if (!active || !pick || fab.contains(e.target) || panel.contains(e.target) || bar.contains(e.target)) return;
-    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-    var cs = getComputedStyle(e.target), V = compute(), fg = cs.color, bgc = cs.backgroundColor, hits = [];
-    function h(c) { var m = /rgba?\(([^)]+)\)/.exec(c); if (!m) return ''; var p = m[1].split(/[ ,\/]+/).filter(Boolean).map(parseFloat); return p.length > 3 && p[3] === 0 ? '' : hex(p[0], p[1], p[2]); }
-    var f = h(fg), b = h(bgc);
-    ROLES.forEach(function (r) { var v = V[r.id]; if (v && (v === f || v === b)) hits.push({ r: r, what: v === f ? 'текст' : 'фон' }); });
-    Array.prototype.forEach.call($('cl-roles').children, function (n) { n.style.outline = ''; });
-    hits.sort(function (x, y) { return (x.what === 'текст' ? 0 : 1) - (y.what === 'текст' ? 0 : 1); });
-    if (hits.length) {
-      hits.forEach(function (x) { var idx = ROLES.indexOf(x.r), row = $('cl-roles').children[idx]; row.style.outline = '2px solid #d6249f'; row.style.borderRadius = '8px'; });
-      $('cl-roles').children[ROLES.indexOf(hits[0].r)].scrollIntoView({ block: 'center' });
-      say('Это: ' + hits.map(function (x) { return x.r.name + ' (' + x.what + ' ' + x.r.vars[0] + ')'; }).join(', '));
-    } else say('Цвет текста ' + (f || '—') + ', фона ' + (b || 'прозрачный') + ' — ни одна роль не совпала (смешанный или родной цвет).');
+    if (!active || tab !== 'pick' || !pickOn || isUi(e.target)) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); choose(e.target);
   }, true);
   window.addEventListener('resize', function () { if (active) document.body.style.paddingBottom = (panel.offsetHeight + 12) + 'px'; });
 
   ORIG[theme()] = readVars();
-  apply();
+  apply(); applyRules();
 })();
