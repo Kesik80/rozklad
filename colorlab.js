@@ -81,6 +81,8 @@
         text2 = hex.apply(null, fromHsl(hh[0], Math.min(hh[1], 14), d ? 72 : 40));
         line = mix(card, text, .14);
       }
+      if (S.over && S.over.card) card = S.over.card;
+      if (S.over && S.over.text) text = S.over.text;
       text = fix(text, card, 7); text2 = fix(text2, card, 4.5);
       var base = function (id) { return S.accent ? accent : orole(id); };
       key = fix(base('key'), card, 4.5); next = fix(base('next'), card, 4.5); th = fix(base('th'), card, 4.5);
@@ -157,6 +159,7 @@
       var b = el('button', { type: 'button', title: f }); b.__f = f; b.__k = key; b.style.background = '#' + RDX[f][0].substr(key === 'fam' ? 18 : 48, 6);
       b.addEventListener('click', function () {
         var S = P[theme()]; S.over = S.over || {};
+        if (S.lock && S.lock[key === 'fam' ? 'bg' : 'accent']) { say((key === 'fam' ? 'Фон' : 'Акцент') + ' закрыт замком 🔒 — открой его, чтобы менять'); return; }
         if (key === 'fam') { S.fam = f; S.bg = step(f, 1); delete S.over.bg; } else { S.accent = step(f, 9); S.accentFam = f; delete S.over.accent; }
         S.auto = true; commit();
       });
@@ -176,7 +179,12 @@
       var row = el('div', { class: 'role' });
       row.innerHTML = '<div class="sw" style="background:' + v + '"><input type="color" value="' + v + '"></div><div class="t"><b>' + r.name + '</b><div class="sm">' + v + ' · ' + r.vars.join(' ') + '</div></div>' + (against ? '<span class="rt ' + cls + '">' + rt.toFixed(1) + '</span>' : '');
       var lk = el('button', { type: 'button', class: 'lk' + (L[r.id] ? ' on' : '') }, L[r.id] ? '🔒' : '🔓');
-      lk.addEventListener('click', function () { S.lock = S.lock || {}; if (S.lock[r.id]) delete S.lock[r.id]; else S.lock[r.id] = 1; commit(); });
+      lk.addEventListener('click', function () {
+        S.lock = S.lock || {}; S.over = S.over || {};
+        if (S.lock[r.id]) { delete S.lock[r.id]; if (r.id !== 'bg' && r.id !== 'accent') delete S.over[r.id]; }
+        else { S.lock[r.id] = 1; if (r.id !== 'bg' && r.id !== 'accent') S.over[r.id] = V[r.id]; }   // замок = заморозить текущий цвет
+        commit();
+      });
       row.appendChild(lk);
       row.querySelector('input').addEventListener('input', function (e) {
         var c = e.target.value; S.over = S.over || {}; S.lock = S.lock || {};
