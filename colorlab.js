@@ -5,7 +5,7 @@
       або з кольором тексту (для фону); показано лише ті, де контраст достатній.
    3) Або обери родину Radix (brown, orange…) і крок 1–12 (1–2 тло, 3–5 елементи, 9 акцент, 11–12 текст).
    4) Бігунки — точне підлаштування. Усе — це ПОПЕРЕДНІЙ перегляд.
-   5) «✓ Зафіксувати» — зберегти правку в списку; незафіксована правка скасовується,
+   5) «✓ Залишити» — зберегти правку в списку; незафіксована правка скасовується,
       коли торкаєшся іншого елемента. Світла і темна теми ведуться окремо (🌓).
    6) «Копіювати» — звіт зі всіма зафіксованими правками (для мене → app.css). */
 (function () {
@@ -130,8 +130,8 @@
     '#cl-panel .cm span{flex:1;min-width:0;word-break:break-all}' +
     '#cl-panel .cm i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #666;vertical-align:-2px}' +
     '#cl-panel .bad{color:#ff7b72}#cl-panel .ok{color:#56d364}#cl-panel .mid{color:#e3b341}' +
-    '#cl-bar{position:fixed;left:0;right:64px;bottom:0;z-index:2147483000;background:#15171c;padding:8px 0 10px 12px;display:none;gap:6px;flex-wrap:nowrap;overflow-x:auto}' +
-    '#cl-bar button{flex:none;background:#2a2f39;color:#fff;border:1px solid #3a4150;border-radius:9px;padding:9px 10px;font-size:13px;white-space:nowrap}' +
+    '#cl-bar{position:fixed;left:0;right:64px;bottom:0;z-index:2147483000;background:#15171c;padding:8px 0 10px 12px;display:none;gap:6px;flex-wrap:nowrap}' +
+    '#cl-bar button{background:#2a2f39;color:#fff;border:1px solid #3a4150;border-radius:9px;padding:9px 10px;font-size:13px;white-space:nowrap}' +
     '#cl-bar button.on{background:#d6249f;border-color:#d6249f}#cl-bar button.ok2{background:#238636;border-color:#2ea043;font-weight:700}';
   document.head.appendChild(css);
 
@@ -144,8 +144,10 @@
   ui.panel.innerHTML =
     '<div class="r"><div class="sw" id="cl-sw"></div><div class="t"><b id="cl-name">Торкнись слова або фону</b><div class="sm" id="cl-info"></div></div><button id="cl-theme" type="button" style="flex:none;font-size:20px;padding:8px 12px" aria-label="Тема">🌓</button></div>' +
     '<div class="r"><button id="cl-tt" class="on" type="button">Текст</button><button id="cl-tb" type="button">Фон</button>' +
-    '<input id="cl-hex" type="text" maxlength="7" value="#" aria-label="HEX"><span id="cl-ratio" class="sm"></span></div>' +
-    '<div class="h">Підказки <span class="sm" id="cl-sgh"></span></div><div id="cl-sug"></div>' +
+    '<span id="cl-ratio" class="sm"></span></div>' +
+    '<div class="h">Підібрано під ' + '<span id="cl-sgh"></span></div><div id="cl-sug"></div>' +
+    '<div class="r"><button id="cl-adv-b" type="button">⚙ Точно ▾</button></div>' +
+    '<div id="cl-adv" style="display:none"><div class="r"><label class="lb">HEX</label><input id="cl-hex" type="text" maxlength="7" value="#" aria-label="HEX"></div>' +
     '<div class="h">Палітра Radix — родина</div><div class="fams" id="cl-fams"></div>' +
     '<div class="sg" id="cl-steps"></div>' +
     '<div class="h">Точно</div>' +
@@ -153,11 +155,11 @@
     '<div class="r"><label class="lb">Насиченість</label><input id="cl-s" type="range" min="0" max="100" step="1"></div>' +
     '<div class="r"><label class="lb">Яскравість</label><input id="cl-l" type="range" min="0" max="100" step="1"></div>' +
     '<div class="zone" id="cl-zone"></div>' +
-    '<div class="h">Зафіксовані правки</div><div id="cl-list" class="sm">—</div>' +
-    '<div class="sm" id="cl-log" style="white-space:pre-wrap;margin-top:6px"></div>';
-  ui.bar.innerHTML = '<button id="cl-fix" class="ok2" type="button">✓ Зафіксувати</button><button id="cl-reset" type="button">↶ Скасувати</button><button id="cl-all" type="button">Усі такі: ні</button><button id="cl-copy" type="button">Копіювати</button><button id="cl-close" type="button">✕</button>';
+    '<div class="h">Залишені правки</div><div id="cl-list" class="sm">—</div>' +
+    '</div><div class="sm" id="cl-log" style="white-space:pre-wrap;margin-top:6px"></div>';
+  ui.bar.innerHTML = '<button id="cl-fix" class="ok2" type="button">✓ Залишити</button><button id="cl-reset" type="button">↶ Скасувати</button><button id="cl-all" type="button">Усі такі: ні</button><button id="cl-copy" type="button">Копіювати</button><button id="cl-close" type="button">✕</button>';
   document.body.appendChild(ui.fab); document.body.appendChild(ui.panel); document.body.appendChild(ui.bar);
-  ['sw', 'name', 'info', 'theme', 'tt', 'tb', 'hex', 'ratio', 'sgh', 'sug', 'fams', 'steps', 'h', 's', 'l', 'zone', 'list', 'log', 'fix', 'reset', 'all', 'copy', 'close'].forEach(function (k) { ui[k] = $('cl-' + k); });
+  ['sw', 'name', 'info', 'theme', 'tt', 'tb', 'hex', 'ratio', 'sgh', 'sug', 'fams', 'steps', 'h', 's', 'l', 'zone', 'list', 'log', 'adv', 'adv-b', 'fix', 'reset', 'all', 'copy', 'close'].forEach(function (k) { ui[k] = $('cl-' + k); });
   ORDER.forEach(function (f) {
     var b = el('button', { type: 'button' }, '<i style="background:' + '#' + RDX[f][0].substr(48, 6) + '"></i>' + f);
     b.addEventListener('click', function () { fam = fam === f ? null : f; renderFams(); renderSteps(); });
@@ -168,7 +170,7 @@
   function inUi(t) { return t === ui.fab || ui.panel.contains(t) || ui.bar.contains(t); }
   function clearOutline() { if (outlined) { outlined.el.style.outline = outlined.o; outlined.el.style.outlineOffset = outlined.f; outlined = null; } }
   function select(t) {
-    if (t !== sel && cur) { revertPreview(); say('Незафіксовану правку скасовано'); }
+    if (t !== sel && cur) { revertPreview(); say('Непідтверджену правку скасовано'); }
     clearOutline();
     sel = t;
     outlined = { el: t, o: t.style.outline, f: t.style.outlineOffset };
@@ -208,7 +210,7 @@
     if (sel && orig) {
       var vs = varName(orig.rgb.concat([1]));
       ui.name.textContent = describe(sel) + (sel.children.length ? '' : ' — «' + (sel.textContent || '').trim().slice(0, 24) + '»');
-      ui.info.textContent = 'було ' + hex(orig.rgb[0], orig.rgb[1], orig.rgb[2]) + (vs.length ? ' = ' + vs.join(' / ') : '') + ' · тема: ' + themeName() + (cur ? ' · не зафіксовано' : '');
+      ui.info.textContent = 'було ' + hex(orig.rgb[0], orig.rgb[1], orig.rgb[2]) + (vs.length ? ' = ' + vs.join(' / ') : '') + ' · тема: ' + themeName() + (cur ? ' · не залишено' : '');
     }
     paintTracks(); renderSuggest(); renderSteps(); renderList();
     ui.fix.classList.toggle('on', !!cur);
@@ -232,26 +234,22 @@
       var hx = step(f, n), key = hx; if (seen[key] || ratio(fromHex(hx), oc) < min) return; seen[key] = 1; g.items.push([hx, f + '-' + n]);
     }
     if (tab === 'text') {
-      ui.sgh.textContent = '— до фону ' + hex(oc[0], oc[1], oc[2]) + ' (' + base + ')';
+      ui.sgh.textContent = 'фон ' + hex(oc[0], oc[1], oc[2]);
       var g1 = { t: 'Тон у тон', items: [] }; add(g1, base, 12, 4.5); add(g1, base, 11, 4.5); add(g1, base, 10, 4.5); add(g1, base, 9, 3);
       var g2 = { t: 'Нейтральні', items: [] }; ['gray', 'slate', 'mauve', 'sand'].forEach(function (f) { add(g2, f, 12, 4.5); add(g2, f, 11, 4.5); });
       var g3 = { t: 'Акценти (близькі → контрастні)', items: [] };
       byHue(ACC, base).forEach(function (f) { if (f !== base) { add(g3, f, 11, 4.5); add(g3, f, 9, 3); } });
       groups = [g1, g2, g3];
     } else {
-      var tf = familyOf(oc); ui.sgh.textContent = '— до тексту ' + hex(oc[0], oc[1], oc[2]) + ' (' + tf + ')';
+      var tf = familyOf(oc); ui.sgh.textContent = 'текст ' + hex(oc[0], oc[1], oc[2]);
       var gA = { t: 'Тон у тон з текстом', items: [] }; [1, 2, 3, 4].forEach(function (n) { add(gA, tf, n, 4.5); }); add(gA, tf, 9, 3);
       var gB = { t: 'Нейтральні', items: [] }; ['gray', 'slate', 'mauve', 'sand'].forEach(function (f) { [1, 2, 3].forEach(function (n) { add(gB, f, n, 4.5); }); });
       var gC = { t: 'Кольорові', items: [] }; byHue(ACC, tf).forEach(function (f) { if (f !== tf) { [2, 3].forEach(function (n) { add(gC, f, n, 4.5); }); add(gC, f, 9, 3); } });
       groups = [gA, gB, gC];
     }
-    groups.forEach(function (g) {
-      if (!g.items.length) return;
-      ui.sug.appendChild(el('div', { class: 'sm', style: 'margin:4px 0 2px' }, g.t));
-      var w = el('div', { class: 'sg' });
-      g.items.slice(0, 14).forEach(function (it) { w.appendChild(swatchBtn(it[0], it[1], oc)); });
-      ui.sug.appendChild(w);
-    });
+    var caps = [3, 2, 3], flat = [];
+    groups.forEach(function (g, i) { g.items.slice(0, caps[i]).forEach(function (it) { flat.push(it); }); });
+    if (flat.length) { var w = el('div', { class: 'sg' }); flat.forEach(function (it) { w.appendChild(swatchBtn(it[0], it[1], oc)); }); ui.sug.appendChild(w); }
     if (!ui.sug.children.length) ui.sug.innerHTML = '<div class="sm">Немає варіантів із достатнім контрастом — обери вручну.</div>';
   }
   function renderFams() { Array.prototype.forEach.call(ui.fams.children, function (b) { b.classList.toggle('on', b.__f === fam); }); }
@@ -295,8 +293,8 @@
     var e = cur.entries[p];
     if (!e) e = cur.entries[p] = { el: describe(sel), text: (sel.textContent || '').trim().slice(0, 24), prop: p === 'color' ? 'текст' : 'фон', from: hex(orig.rgb[0], orig.rgb[1], orig.rgb[2]), vars: varName(orig.rgb.concat([1])), theme: themeName() };
     e.to = hx; e.n = list.length; e.all = all; e.note = note;
-    say('Перегляд: ' + e.prop + ' ' + e.from + ' → ' + hx + (list.length > 1 ? ' (' + list.length + ' ел.)' : '') + '\nНатисни «✓ Зафіксувати», щоб залишити.');
-    ui.fix.classList.add('on'); ui.info.textContent = ui.info.textContent.replace(/ · не зафіксовано$/, '') + ' · не зафіксовано';
+    say('Перегляд: ' + e.prop + ' ' + e.from + ' → ' + hx + (list.length > 1 ? ' (' + list.length + ' ел.)' : '') + '\nНатисни «✓ Залишити», щоб залишити.');
+    ui.fix.classList.add('on'); ui.info.textContent = ui.info.textContent.replace(/ · не залишено$/, '') + ' · не залишено';
     paintTracks(); renderSuggest(); renderSteps();
   }
   function applyHsl(forceHex) {
@@ -315,14 +313,14 @@
     if (!cur || !cur.saved.length) { say('Немає що фіксувати'); return; }
     cur.saved.forEach(function (s) { s.neu = s.n.style.getPropertyValue(s.p); delete s.n['__cl_' + s.p]; });
     Object.keys(cur.entries).forEach(function (k) { committed.push({ e: cur.entries[k], saved: cur.saved.filter(function (s) { return s.p === k; }), active: true }); });
-    cur = null; say('✓ Зафіксовано'); if (sel) { load(); }
+    cur = null; say('✓ Залишено'); if (sel) { load(); }
   }
   function undoCommitted(i) {
     var c = committed[i]; if (!c) return;
     if (c.active) c.saved.slice().reverse().forEach(function (s) { if (s.old) s.n.style.setProperty(s.p, s.old, s.pr); else s.n.style.removeProperty(s.p); });
     committed.splice(i, 1); if (sel) load(); else renderList();
   }
-  function resetPreview() { if (!cur) { say('Немає незафіксованої правки'); return; } revertPreview(); say('Правку скасовано'); if (sel) load(); }
+  function resetPreview() { if (!cur) { say('Немає непідтвердженої правки'); return; } revertPreview(); say('Правку скасовано'); if (sel) load(); }
   function renderList() {
     if (!committed.length) { ui.list.textContent = '— поки нічого'; return; }
     ui.list.innerHTML = '';
@@ -335,7 +333,7 @@
   function summary() {
     var pg = document.body.getAttribute('data-page') || location.pathname, lines = ['Сторінка: ' + pg];
     committed.forEach(function (c) { var e = c.e; lines.push('• [' + e.theme + '] ' + e.el + (e.text ? ' «' + e.text + '»' : '') + ' [' + e.prop + ']: ' + e.from + (e.vars.length ? ' (' + e.vars.join('/') + ')' : '') + ' → ' + e.to + (e.note ? ' · ' + e.note : '') + (e.all ? ' · усі такі самі (' + e.n + ' ел.)' : '')); });
-    if (cur) lines.push('(є незафіксована правка — не включено)');
+    if (cur) lines.push('(є непідтверджена правка — не включено)');
     return lines.join('\n');
   }
   function switchTheme() {
@@ -373,6 +371,7 @@
     all = !all; ui.all.textContent = 'Усі такі: ' + (all ? 'так' : 'ні'); ui.all.classList.toggle('on', all);
     if (cur) { revertPreview(); say('Режим змінено — перегляд скинуто'); if (sel) load(); }
   });
+  ui['adv-b'].addEventListener('click', function () { var o = ui.adv.style.display === 'none'; ui.adv.style.display = o ? 'block' : 'none'; ui['adv-b'].textContent = o ? '⚙ Точно ▴' : '⚙ Точно ▾'; });
   ui.fix.addEventListener('click', commit);
   ui.reset.addEventListener('click', resetPreview);
   ui.theme.addEventListener('click', switchTheme);
