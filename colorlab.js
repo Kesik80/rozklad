@@ -25,7 +25,12 @@
     { id: 'text', name: 'Текст', vars: ['--label', '--label-3'] },
     { id: 'text2', name: 'Второй текст', vars: ['--label-2', '--hint'] },
     { id: 'accent', name: 'Акцент', vars: ['--accent'] },
-    { id: 'key', name: 'Выделение', vars: ['--key', '--next', '--th'] },
+    { id: 'key', name: 'Заголовок страницы, Терешки, выделенные времена', vars: ['--key'] },
+    { id: 'next', name: 'Ближайший рейс, ссылки', vars: ['--next'] },
+    { id: 'th', name: 'Скоро рейс, цены', vars: ['--th'] },
+    { id: 'red', name: 'Предупреждение, рейс сейчас', vars: ['--red'] },
+    { id: 'wd', name: 'Рейс только Пн–Пт', vars: ['--wd'] },
+    { id: 'ok', name: 'Зелёный текст', vars: ['--ok'] },
     { id: 'line', name: 'Линии', vars: ['--separator'] },
     { id: 'plate', name: 'Плашка', vars: ['--th-bg'] }
   ];
@@ -67,7 +72,7 @@
     function orole(id) { return O[ROLE[id].vars[0]]; }
     var bg = S.bg || orole('bg'), accent = S.accent || orole('accent'), auto = !!(S.bg || S.accent || S.auto);
     var d = lum(rgb(bg)) < .2, hh = hsl(rgb(bg)), fam = S.fam;
-    var card, text, text2, line, plate, key;
+    var card, text, text2, line, plate, key, next, th, red, wd, ok;
     if (auto) {
       if (fam && RDX[fam]) { card = step(fam, 2); text = step(fam, 12); text2 = step(fam, 11); line = step(fam, d ? 5 : 6); }
       else {
@@ -77,9 +82,12 @@
         line = mix(card, text, .14);
       }
       text = fix(text, card, 7); text2 = fix(text2, card, 4.5);
-      key = fix(accent, card, 4.5); plate = mix(card, accent, d ? .16 : .12);
-    } else { card = orole('card'); text = orole('text'); text2 = orole('text2'); line = orole('line'); key = orole('key'); plate = orole('plate'); }
-    out = { bg: bg, card: card, text: text, text2: text2, accent: accent, key: key, line: line, plate: plate };
+      var base = function (id) { return S.accent ? accent : orole(id); };
+      key = fix(base('key'), card, 4.5); next = fix(base('next'), card, 4.5); th = fix(base('th'), card, 4.5);
+      red = fix(orole('red'), card, 4.5); wd = fix(orole('wd'), card, 4.5); ok = fix(orole('ok'), card, 4.5);
+      plate = mix(card, accent, d ? .16 : .12);
+    } else { card = orole('card'); text = orole('text'); text2 = orole('text2'); line = orole('line'); key = orole('key'); next = orole('next'); th = orole('th'); red = orole('red'); wd = orole('wd'); ok = orole('ok'); plate = orole('plate'); }
+    out = { bg: bg, card: card, text: text, text2: text2, accent: accent, key: key, next: next, th: th, red: red, wd: wd, ok: ok, line: line, plate: plate };
     ROLES.forEach(function (r) { if (S.over && S.over[r.id]) out[r.id] = S.over[r.id]; });
     return out;
   }
@@ -138,7 +146,7 @@
     '<div class="h">Акцент — родина Radix</div><div class="chips" id="cl-fac"></div>' +
     '<div class="h">Роли (тапни по цвету — свой цвет; 🔒 — не менять при 🎲)</div><div id="cl-roles"></div>' +
     '<div class="sm" id="cl-log" style="white-space:pre-wrap;margin-top:8px"></div>';
-  bar.innerHTML = '<button id="cl-copy" class="ok2" type="button">Копировать CSS</button><button id="cl-rt" type="button">↶ Сброс темы</button><button id="cl-ra" type="button">Сброс всего</button><button id="cl-close" type="button">✕</button>';
+  bar.innerHTML = '<button id="cl-copy" class="ok2" type="button">Копировать CSS</button><button id="cl-pick" type="button">👆 Выбрать на странице</button><button id="cl-rt" type="button">↶ Сброс темы</button><button id="cl-ra" type="button">Сброс всего</button><button id="cl-close" type="button">✕</button>';
   document.body.appendChild(fab); document.body.appendChild(panel); document.body.appendChild(bar);
   function $(id) { return document.getElementById(id); }
   var active = false;
@@ -163,7 +171,7 @@
     [['cl-fbg', 'fam'], ['cl-fac', 'accentFam']].forEach(function (x) { Array.prototype.forEach.call($(x[0]).children, function (b) { b.classList.toggle('on', S[x[1]] === b.__f); b.style.background = '#' + RDX[b.__f][ti()].substr(x[1] === 'fam' ? 18 : 48, 6); }); });
     var host = $('cl-roles'); host.innerHTML = '';
     ROLES.forEach(function (r) {
-      var v = V[r.id], against = r.id === 'text' || r.id === 'text2' || r.id === 'key' ? V.card : r.id === 'accent' ? V.bg : null, rt = against ? ratio(v, against) : 0;
+      var v = V[r.id], against = { text: 1, text2: 1, key: 1, next: 1, th: 1, red: 1, wd: 1, ok: 1 }[r.id] ? V.card : r.id === 'accent' ? V.bg : null, rt = against ? ratio(v, against) : 0;
       var min = r.id === 'text' ? 7 : 4.5, cls = !against ? '' : rt >= min ? 'p' : rt >= 3 ? 'm' : 'f';
       var row = el('div', { class: 'role' });
       row.innerHTML = '<div class="sw" style="background:' + v + '"><input type="color" value="' + v + '"></div><div class="t"><b>' + r.name + '</b><div class="sm">' + v + ' · ' + r.vars.join(' ') + '</div></div>' + (against ? '<span class="rt ' + cls + '">' + rt.toFixed(1) + '</span>' : '');
@@ -226,7 +234,23 @@
     var t = cssText(), done = function () { say('Скопировано:\n' + t); };
     try { navigator.clipboard.writeText(t).then(done, function () { say(t); }); } catch (e) { say(t); }
   });
-  document.addEventListener('click', function (e) { if (active && !fab.contains(e.target) && !panel.contains(e.target) && !bar.contains(e.target)) { /* страница не блокируется — можно ходить по ссылкам и смотреть схему */ } }, true);
+  var pick = false;
+  $('cl-pick').addEventListener('click', function () { pick = !pick; $('cl-pick').style.background = pick ? '#d6249f' : ''; say(pick ? 'Режим выбора: тапни слово или фон на странице — покажу, какая это роль (ссылки временно не работают)' : 'Режим выбора выключен'); });
+  document.addEventListener('click', function (e) {
+    if (!active || !pick || fab.contains(e.target) || panel.contains(e.target) || bar.contains(e.target)) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    var cs = getComputedStyle(e.target), V = compute(), fg = cs.color, bgc = cs.backgroundColor, hits = [];
+    function h(c) { var m = /rgba?\(([^)]+)\)/.exec(c); if (!m) return ''; var p = m[1].split(/[ ,\/]+/).filter(Boolean).map(parseFloat); return p.length > 3 && p[3] === 0 ? '' : hex(p[0], p[1], p[2]); }
+    var f = h(fg), b = h(bgc);
+    ROLES.forEach(function (r) { var v = V[r.id]; if (v && (v === f || v === b)) hits.push({ r: r, what: v === f ? 'текст' : 'фон' }); });
+    Array.prototype.forEach.call($('cl-roles').children, function (n) { n.style.outline = ''; });
+    hits.sort(function (x, y) { return (x.what === 'текст' ? 0 : 1) - (y.what === 'текст' ? 0 : 1); });
+    if (hits.length) {
+      hits.forEach(function (x) { var idx = ROLES.indexOf(x.r), row = $('cl-roles').children[idx]; row.style.outline = '2px solid #d6249f'; row.style.borderRadius = '8px'; });
+      $('cl-roles').children[ROLES.indexOf(hits[0].r)].scrollIntoView({ block: 'center' });
+      say('Это: ' + hits.map(function (x) { return x.r.name + ' (' + x.what + ' ' + x.r.vars[0] + ')'; }).join(', '));
+    } else say('Цвет текста ' + (f || '—') + ', фона ' + (b || 'прозрачный') + ' — ни одна роль не совпала (смешанный или родной цвет).');
+  }, true);
   window.addEventListener('resize', function () { if (active) document.body.style.paddingBottom = (panel.offsetHeight + 12) + 'px'; });
 
   ORIG[theme()] = readVars();
