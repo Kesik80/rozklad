@@ -55,7 +55,7 @@
   function step(f, n) { return '#' + RDX[f][ti()].substr((n - 1) * 6, 6); }
 
   /* ---------- состояние ---------- */
-  var P = { light: {}, dark: {} };
+  var P = { light: {}, dark: {}, seed: null };
   try { var sv = JSON.parse(localStorage.getItem(PKEY) || 'null'); if (sv && sv.light && sv.dark) P = sv; } catch (e) {}
   function save() { try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch (e) {} }
   var ORIG = {}, applied = [];
@@ -103,15 +103,66 @@
     var m = document.getElementById('themeColorMeta'); if (m && V.bg) m.setAttribute('content', V.bg);
     return V;
   }
-  function randomize() {
-    var S = P[theme()], L = S.lock || {}, dark = ti() === 1;
-    S.over = S.over || {};
-    var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
-    if (!L.bg) { S.fam = pick(ORDER); S.bg = step(S.fam, 1); }
-    if (!L.accent) { var f = pick(['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'teal', 'cyan', 'blue', 'indigo', 'violet', 'pink', 'crimson', 'tomato']); S.accent = step(f, 9); S.accentFam = f; }
-    S.auto = true;
-    ROLES.forEach(function (r) { if (!L[r.id] && S.over[r.id]) delete S.over[r.id]; });
+  /* ---------- генераторы схем ---------- */
+  function lab2hex(L, C, h) {          // CIE L*C*h → sRGB (если вне гаммы, уменьшаем хрому)
+    function conv(Cc) {
+      var a = Cc * Math.cos(h * Math.PI / 180), bb = Cc * Math.sin(h * Math.PI / 180), fy = (L + 16) / 116, fx = fy + a / 500, fz = fy - bb / 200;
+      var f = function (t) { return t * t * t > .008856 ? t * t * t : (t - 16 / 116) / 7.787; };
+      var X = f(fx) * .95047, Y = L > 8 ? f(fy) : L / 903.3, Z = f(fz) * 1.08883;
+      var lin = [3.2406 * X - 1.5372 * Y - .4986 * Z, -.9689 * X + 1.8758 * Y + .0415 * Z, .0557 * X - .2040 * Y + 1.0570 * Z];
+      return lin;
+    }
+    for (var Cc = C; Cc >= 0; Cc -= 1) {
+      var lin = conv(Cc), ok = lin.every(function (v) { return v >= -.0005 && v <= 1.0005; });
+      if (ok || Cc < 1) return hex.apply(null, lin.map(function (v) { v = Math.max(0, Math.min(1, v)); return 255 * (v <= .0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - .055); }));
+    }
+  }
+  function hex2lch(h) {
+    var c = rgb(h).map(function (v) { v /= 255; return v <= .04045 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); });
+    var X = (.4124 * c[0] + .3576 * c[1] + .1805 * c[2]) / .95047, Y = .2126 * c[0] + .7152 * c[1] + .0722 * c[2], Z = (.0193 * c[0] + .1192 * c[1] + .9505 * c[2]) / 1.08883;
+    var f = function (t) { return t > .008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116; };
+    var L = 116 * f(Y) - 16, a = 500 * (f(X) - f(Y)), b = 200 * (f(Y) - f(Z));
+    return [L, Math.sqrt(a * a + b * b), (Math.atan2(b, a) * 180 / Math.PI + 360) % 360];
+  }
+  function material(seed) {              // Material You: тональные палитры от одного цвета
+    var lc = hex2lch(seed), h = lc[2], C = Math.max(40, Math.min(80, lc[1]));
+    var pri = function (t) { return lab2hex(t, C, h); }, sec = function (t) { return lab2hex(t, 16, h); }, ter = function (t) { return lab2hex(t, 36, (h + 60) % 360); };
+    var neu = function (t) { return lab2hex(t, 4, h); }, nv = function (t) { return lab2hex(t, 8, h); };
+    var err = function (t) { return lab2hex(t, 75, 40); }, grn = function (t) { return lab2hex(t, 55, 140); }, cyn = function (t) { return lab2hex(t, 40, 205); };
+    return {
+      light: { bg: neu(98), card: neu(100), text: neu(10), text2: nv(30), accent: pri(48), key: pri(40), next: pri(40), th: ter(40), line: nv(80), plate: pri(92), red: err(45), wd: cyn(40), ok: grn(40) },
+      dark: { bg: neu(7), card: neu(12), text: neu(92), text2: nv(80), accent: pri(80), key: pri(80), next: pri(80), th: ter(80), line: nv(30), plate: pri(24), red: err(80), wd: cyn(80), ok: grn(80) }
+    };
+  }
+  var PAIR = { tomato: 'mauve', red: 'mauve', ruby: 'mauve', crimson: 'mauve', pink: 'mauve', plum: 'mauve', purple: 'mauve', violet: 'mauve', iris: 'slate', indigo: 'slate', blue: 'slate', sky: 'slate', cyan: 'slate', teal: 'sage', jade: 'sage', mint: 'sage', green: 'sage', grass: 'olive', lime: 'olive', yellow: 'sand', amber: 'sand', orange: 'sand', brown: 'sand', bronze: 'sand', gold: 'sand' };
+  function radix(f) {                    // Radix Colors: шаги шкалы по ролям, нейтральная пара подбирается автоматически
+    var n = NEUTRAL[f] ? f : (PAIR[f] || 'gray'), out = {};
+    [0, 1].forEach(function (i) {
+      var st = function (fam, k) { return '#' + RDX[fam][i].substr((k - 1) * 6, 6); };
+      out[i ? 'dark' : 'light'] = { bg: st(n, 1), card: st(n, 2), text: st(n, 12), text2: st(n, 11), accent: st(f, 9), key: st(f, 11), next: st(f, 11), th: st('amber', 11), line: st(n, i ? 5 : 6), plate: st(f, 3), red: st('red', 11), wd: st('jade', 11), ok: st('green', 11) };
+    });
+    return out;
+  }
+  function useScheme(mode, seed, fam) {
+    var sc = mode === 'radix' ? radix(fam || 'blue') : material(seed);
+    ['light', 'dark'].forEach(function (t) {
+      var S = P[t], L = S.lock || {}, c = sc[t]; S.over = S.over || {};
+      var card = L.card ? S.over.card : c.card;
+      ROLES.forEach(function (r) {
+        if (L[r.id]) return;
+        var v = c[r.id];
+        if (r.id === 'text') v = fix(v, card, 7); else if (['text2', 'key', 'next', 'th', 'red', 'wd', 'ok'].indexOf(r.id) >= 0) v = fix(v, card, 4.5);
+        S.over[r.id] = v; if (r.id === 'bg') S.bg = v; if (r.id === 'accent') S.accent = v;
+      });
+      S.fam = null; S.accentFam = null; S.auto = true;
+    });
+    P.seed = { mode: mode, hex: seed, fam: fam || null };
     commit();
+  }
+  function randomize() {
+    var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; }, mode = (P.seed && P.seed.mode) || 'material';
+    var f = pick(ORDER.filter(function (x) { return !NEUTRAL[x]; }));
+    useScheme(mode, '#' + RDX[f][0].substr(48, 6), f);
   }
   function commit() { save(); render(); apply(); render(); }
 
@@ -144,8 +195,8 @@
   var panel = el('div', { id: 'cl-panel' }), bar = el('div', { id: 'cl-bar' });
   panel.innerHTML =
     '<div class="r"><b id="cl-th" style="flex:1;font-size:15px"></b><button id="cl-theme" type="button" style="font-size:18px">🌓 Тема</button><button id="cl-rnd" type="button" style="font-size:18px">🎲</button></div>' +
-    '<div class="h">Фон — родина Radix</div><div class="chips" id="cl-fbg"></div>' +
-    '<div class="h">Акцент — родина Radix</div><div class="chips" id="cl-fac"></div>' +
+    '<div class="h">Источник схемы</div><div class="r"><button id="cl-mm" type="button">Material You</button><button id="cl-mr" type="button">Radix</button><label style="position:relative"><span class="sm" style="border:1px solid #3a4150;border-radius:9px;padding:8px 10px;display:inline-block">🎨 свой цвет</span><input id="cl-seed" type="color" style="position:absolute;inset:0;width:100%;height:100%;opacity:0"></label></div>' +
+    '<div class="h">Основной цвет (одного достаточно — схема строится сама для обеих тем)</div><div class="chips" id="cl-fac"></div>' +
     '<div class="h">Роли (тапни по цвету — свой цвет; 🔒 — не менять при 🎲)</div><div id="cl-roles"></div>' +
     '<div class="sm" id="cl-log" style="white-space:pre-wrap;margin-top:8px"></div>';
   bar.innerHTML = '<button id="cl-copy" class="ok2" type="button">Копировать CSS</button><button id="cl-pick" type="button">👆 Выбрать на странице</button><button id="cl-rt" type="button">↶ Сброс темы</button><button id="cl-ra" type="button">Сброс всего</button><button id="cl-close" type="button">✕</button>';
@@ -154,24 +205,21 @@
   var active = false;
   function say(t) { $('cl-log').textContent = t; }
 
-  function chipRow(host, key) {
-    ORDER.forEach(function (f) {
-      var b = el('button', { type: 'button', title: f }); b.__f = f; b.__k = key; b.style.background = '#' + RDX[f][0].substr(key === 'fam' ? 18 : 48, 6);
-      b.addEventListener('click', function () {
-        var S = P[theme()]; S.over = S.over || {};
-        if (S.lock && S.lock[key === 'fam' ? 'bg' : 'accent']) { say((key === 'fam' ? 'Фон' : 'Акцент') + ' закрыт замком 🔒 — открой его, чтобы менять'); return; }
-        if (key === 'fam') { S.fam = f; S.bg = step(f, 1); delete S.over.bg; } else { S.accent = step(f, 9); S.accentFam = f; delete S.over.accent; }
-        S.auto = true; commit();
-      });
-      host.appendChild(b);
-    });
-  }
-  chipRow($('cl-fbg'), 'fam'); chipRow($('cl-fac'), 'acc');
+  function seedMode() { return (P.seed && P.seed.mode) || 'material'; }
+  ORDER.forEach(function (f) {
+    var b = el('button', { type: 'button', title: f }); b.__f = f; b.style.background = '#' + RDX[f][0].substr(48, 6);
+    b.addEventListener('click', function () { useScheme(seedMode(), '#' + RDX[f][0].substr(48, 6), f); });
+    $('cl-fac').appendChild(b);
+  });
+  $('cl-mm').addEventListener('click', function () { var sd = P.seed || { hex: '#3e7bfa', fam: 'blue' }; useScheme('material', sd.hex, sd.fam); });
+  $('cl-mr').addEventListener('click', function () { var sd = P.seed || { hex: '#0090ff', fam: 'blue' }; useScheme('radix', sd.hex, sd.fam && !NEUTRAL[sd.fam] ? sd.fam : 'blue'); });
+  $('cl-seed').addEventListener('change', function (e) { var c = e.target.value, lc = hex2lch(c), best = 'blue', bd = 1e9; ORDER.forEach(function (f) { if (NEUTRAL[f]) return; var q = hex2lch('#' + RDX[f][0].substr(48, 6)), d = Math.min(Math.abs(q[2] - lc[2]), 360 - Math.abs(q[2] - lc[2])); if (d < bd) { bd = d; best = f; } }); useScheme(seedMode(), c, best); });
 
   function render() {
     var S = P[theme()], V = compute(), L = S.lock || {};
     $('cl-th').textContent = 'Тема: ' + (theme() === 'dark' ? 'тёмная' : 'светлая');
-    [['cl-fbg', 'fam'], ['cl-fac', 'accentFam']].forEach(function (x) { Array.prototype.forEach.call($(x[0]).children, function (b) { b.classList.toggle('on', S[x[1]] === b.__f); b.style.background = '#' + RDX[b.__f][ti()].substr(x[1] === 'fam' ? 18 : 48, 6); }); });
+    Array.prototype.forEach.call($('cl-fac').children, function (b) { b.classList.toggle('on', !!P.seed && P.seed.fam === b.__f); });
+    $('cl-mm').style.background = seedMode() === 'material' && P.seed ? '#d6249f' : ''; $('cl-mr').style.background = seedMode() === 'radix' && P.seed ? '#d6249f' : '';
     var host = $('cl-roles'); host.innerHTML = '';
     ROLES.forEach(function (r) {
       var v = V[r.id], against = { text: 1, text2: 1, key: 1, next: 1, th: 1, red: 1, wd: 1, ok: 1 }[r.id] ? V.card : r.id === 'accent' ? V.bg : null, rt = against ? ratio(v, against) : 0;
@@ -237,7 +285,7 @@
     apply(); render();
   });
   $('cl-rt').addEventListener('click', function () { P[theme()] = {}; commit(); say('Тема сброшена'); });
-  $('cl-ra').addEventListener('click', function () { P = { light: {}, dark: {} }; commit(); say('Всё сброшено'); });
+  $('cl-ra').addEventListener('click', function () { P = { light: {}, dark: {}, seed: null }; commit(); say('Всё сброшено'); });
   $('cl-copy').addEventListener('click', function () {
     var t = cssText(), done = function () { say('Скопировано:\n' + t); };
     try { navigator.clipboard.writeText(t).then(done, function () { say(t); }); } catch (e) { say(t); }
