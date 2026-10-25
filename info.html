@@ -36,6 +36,11 @@
   <a class="btn-guide" href="install.html">Як встановити додаток</a>
 
 
+  <button class="btn-guide" id="clToggle" type="button" style="margin-top:10px;width:100%"></button>
+  <script>(function(){var b=document.getElementById('clToggle');function r(){b.textContent='Підбір кольору: '+(window.ColorLab&&ColorLab.enabled()?'увімкнено':'вимкнено');}
+  b.addEventListener('click',function(){var on=localStorage.getItem('colorlab')==='1';localStorage.setItem('colorlab',on?'0':'1');location.reload();});
+  b.textContent='Підбір кольору: '+(localStorage.getItem('colorlab')==='1'?'увімкнено':'вимкнено');})();</script>
+
   <div class="share-hint">
     <span>Поділитися додатком</span>
     <svg viewBox="0 0 64 48" width="64" height="48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -91,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {   // після то
 
 });
 </script>
+<script src="colorlab.js"></script>
 <script src="console.js"></script>
 </body>
 </html>
