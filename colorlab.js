@@ -241,11 +241,11 @@
   var fab = el('button', { id: 'cl-fab', type: 'button', 'aria-label': 'Подбор цвета' }, '🎨');
   var panel = el('div', { id: 'cl-panel' }), bar = el('div', { id: 'cl-bar' });
   panel.innerHTML =
-    '<div class="tabs"><button id="cl-t-pick" type="button">👆 Элемент</button><button id="cl-t-scheme" type="button">🎨 Схема</button><button id="cl-t-rules" type="button">📋 Правила</button><button id="cl-theme" type="button" style="flex:none;width:58px" aria-label="Тема">🌓</button></div>' +
+    '<div class="tabs"><button id="cl-t-pick" type="button">👆 Элемент</button><button id="cl-t-scheme" type="button">🎨 Схема</button><button id="cl-t-rules" type="button">📋 Правила</button></div>' +
     '<div id="cl-body"></div><div class="sm" id="cl-log" style="white-space:pre-wrap;margin-top:8px"></div>';
-  bar.innerHTML = '<button id="cl-apply" class="ok2" type="button" disabled>✓ Применить</button><button id="cl-cancel" type="button" disabled>↶ Отмена</button><button id="cl-pickmode" type="button">👆 Выбор: вкл</button><button id="cl-copy" type="button">Копировать CSS</button><button id="cl-close" type="button">✕</button>';
+  bar.innerHTML = '<button id="cl-apply" class="ok2" type="button" disabled>✓ Готово</button><button id="cl-cancel" type="button" disabled>↶ Отмена</button><button id="cl-theme" type="button" aria-label="Тема">🌓</button><button id="cl-more" type="button">⋯ Ещё</button><button id="cl-pickmode" class="mm" type="button">👆 Выбор: вкл</button><button id="cl-copy" class="mm" type="button">Копировать CSS</button><button id="cl-close" type="button">✕</button>';
   document.body.appendChild(fab); document.body.appendChild(panel); document.body.appendChild(bar);
-  var origCol = '', active = false, tab = 'pick', pickOn = true, sel = null, outlined = null, prop = 'color', cands = [], scope = 0, newHex = null, hslv = [0, 0, 50], fine = false, advOpen = false;
+  var more = false, origCol = '', active = false, tab = 'pick', pickOn = true, sel = null, outlined = null, prop = 'color', cands = [], scope = 0, newHex = null, hslv = [0, 0, 50], fine = false, advOpen = false;
   var body = $('cl-body');
   function say(t) { $('cl-log').textContent = t; }
   function isUi(n) { return n === fab || panel.contains(n) || bar.contains(n); }
@@ -394,55 +394,58 @@
   function badges(r) { return [['AA', 4.5], ['AA ↑', 3], ['AAA', 7]].map(function (x) { return '<span class="' + (r >= x[1] ? 'p' : 'f') + '">' + (r >= x[1] ? '✓' : '✗') + ' ' + x[0] + '</span>'; }).join(''); }
   function renderPick() {
     body.innerHTML = '';
-    if (!sel) { body.innerHTML = '<div class="sm" style="padding:10px 0">Тапни слово, иконку или фон на странице — покажу, что это, и подберу цвет. Ссылки пока не открываются (кнопка «Выбор» внизу).</div>'; return; }
-    var cur = propVal(sel, prop), oc = otherOf(sel, prop), shown = newHex || cur || '#000000';
+    if (!sel) { body.innerHTML = '<div class="sm" style="padding:16px 0;font-size:15px;text-align:center">👆 Тапни любое слово, иконку или фон на странице</div>'; return; }
+    var cur = propVal(sel, prop), oc = otherOf(sel, prop), shown = newHex || cur || '#000000', r = ratio(shown, oc);
+    var verdict = r >= 4.5 ? '<span class="p" style="padding:3px 8px;border-radius:7px;border:1px solid">✓ читается хорошо</span>' : r >= 3 ? '<span class="m" style="padding:3px 8px;border-radius:7px;border:1px solid">⚠ слабовато</span>' : '<span class="f" style="padding:3px 8px;border-radius:7px;border:1px solid">✗ плохо видно</span>';
     var wrap = el('div');
     wrap.innerHTML =
-      '<div class="r"><div style="flex:1;min-width:0"><b>' + describe(sel).replace(/</g, '&lt;') + '</b><div class="sm">' + (iconLike(sel) ? 'иконка · ' : '') + 'тема: ' + theme() + '</div></div></div>' +
-      '<div class="r"><button id="cl-p-c" type="button">Текст / иконка</button><button id="cl-p-b" type="button">Фон</button><button id="cl-p-d" type="button">Граница</button></div>' +
-      '<div class="pair"><div class="box" style="background:' + (prop === 'background-color' ? cur || oc : oc) + ';color:' + (prop === 'background-color' ? oc : cur || '#888') + '"><b>Сейчас</b><small>' + (cur || 'нет') + '</small></div>' +
-      '<div class="box nw" style="background:' + (prop === 'background-color' ? shown : oc) + ';color:' + (prop === 'background-color' ? oc : shown) + '"><b>Новый</b><small id="cl-hx">' + (newHex || '— выбери —') + '</small><input type="color" id="cl-pk" value="' + shown + '"></div></div>' +
-      '<div class="big"><b id="cl-rt">' + ratio(shown, oc).toFixed(2) + ' : 1</b></div><div class="bd" id="cl-bd">' + badges(ratio(shown, oc)) + '</div>' +
-      '<div id="cl-sug"></div>' +
-      '<div class="h">Где применить</div><div class="sg" id="cl-sc" style="gap:6px"></div><div class="sm" id="cl-scd" style="margin-top:4px"></div>' +
-      '<div class="r"><button id="cl-adv" type="button">⚙ Точно ' + (advOpen ? '▴' : '▾') + '</button><button id="cl-aa" type="button">Подогнать к AA</button></div>' +
-      '<div id="cl-advb" style="display:' + (advOpen ? 'block' : 'none') + '">' +
-      '<div class="r"><label class="lb">HEX</label><input id="cl-hex" type="text" maxlength="7" value="' + shown + '"></div>' +
-      '<div class="r"><label class="lb">Тон</label><input id="cl-h" type="range" min="0" max="360"></div>' +
-      '<div class="r"><label class="lb">Насыщ.</label><input id="cl-s" type="range" min="0" max="100"></div>' +
-      '<div class="r"><label class="lb">Яркость</label><input id="cl-l" type="range" min="0" max="100"></div><div class="zone" id="cl-zone"></div></div>';
+      '<div class="r"><b style="flex:1;min-width:0;font-size:14px;word-break:break-all">' + describe(sel).replace(/</g, '&lt;') + '</b><button id="cl-p-c" type="button">Текст</button><button id="cl-p-b" type="button">Фон</button>' + (more ? '<button id="cl-p-d" type="button">Рамка</button>' : '') + '</div>' +
+      '<div class="pair"><div class="box" style="background:' + (prop === 'background-color' ? cur || oc : oc) + ';color:' + (prop === 'background-color' ? oc : cur || '#888') + '"><b>Было</b><small>' + (cur || 'нет') + '</small></div>' +
+      '<div class="box nw" style="background:' + (prop === 'background-color' ? shown : oc) + ';color:' + (prop === 'background-color' ? oc : shown) + '"><b>Стало</b><small id="cl-hx">' + (newHex || 'выбери ниже') + '</small><input type="color" id="cl-pk" value="' + shown + '"></div></div>' +
+      '<div class="big"><span id="cl-rt" style="font-size:13px;opacity:.8">' + r.toFixed(1) + ' : 1</span> <span id="cl-vd">' + verdict + '</span></div>' +
+      '<div class="h">Подходящие цвета</div><div class="sg" id="cl-sug"></div>' +
+      '<div class="h">Темнее ◀──▶ светлее</div><div class="r"><input id="cl-l" type="range" min="0" max="100"></div><div class="zone" id="cl-zone" style="margin-left:0"></div>' +
+      (more ? '<div class="h">Где применить</div><div class="sg" id="cl-sc" style="gap:6px"></div><div class="sm" id="cl-scd" style="margin-top:4px"></div>' +
+        '<div class="r"><button id="cl-aa" type="button">Подогнать к читаемости</button></div>' +
+        '<div class="r"><label class="lb">HEX</label><input id="cl-hex" type="text" maxlength="7" value="' + shown + '"></div>' +
+        '<div class="r"><label class="lb">Тон</label><input id="cl-h" type="range" min="0" max="360"></div>' +
+        '<div class="r"><label class="lb">Насыщ.</label><input id="cl-s" type="range" min="0" max="100"></div>' : '');
     body.appendChild(wrap);
     var hh = hsl(rgb(shown)); hslv = [hh[0], hh[1], hh[2]];
-    $('cl-p-c').className = prop === 'color' ? 'on' : ''; $('cl-p-b').className = prop === 'background-color' ? 'on' : ''; $('cl-p-d').className = prop === 'border-color' ? 'on' : '';
-    $('cl-p-c').onclick = function () { setProp('color'); }; $('cl-p-b').onclick = function () { setProp('background-color'); }; $('cl-p-d').onclick = function () { setProp('border-color'); };
-    var sc = $('cl-sc');
-    cands.forEach(function (c, i) {
-      var short = c.k === 'all' ? 'Все такие же' : c.k === 'in' ? 'В родителе' : c.k === 'one' ? 'Только этот' : 'Роль: ' + ROLE[c.role].name.split(',')[0];
-      var b = el('button', { type: 'button', style: 'width:auto;height:auto;padding:8px 10px;font-size:13px;font-weight:600;display:block;text-align:left' + (i === scope ? ';background:#d6249f;border-color:#d6249f' : '') }, short + ' · ' + c.n);
-      b.addEventListener('click', function () { var nh = newHex; if (PREV) cancel(true); scope = i; if (nh) setNew(nh); renderPick(); });
-      sc.appendChild(b);
-    });
-    var cc = cands[scope]; $('cl-scd').textContent = (cc.k === 'role' ? 'Меняет переменную ' + cc.sel + ' — всё, что её использует. ' : 'Селектор: ' + cc.sel + '. ') + 'Совпадений на этой странице: ' + cc.n + '.';
-    var sug = $('cl-sug');
-    suggestGroups().forEach(function (g) {
-      if (!g.items.length) return; sug.appendChild(el('div', { class: 'h' }, g.t));
-      var w = el('div', { class: 'sg' }); g.items.forEach(function (it) { w.appendChild(swatch(it[0], it[1], oc)); }); sug.appendChild(w);
-    });
+    $('cl-p-c').className = prop === 'color' ? 'on' : ''; $('cl-p-b').className = prop === 'background-color' ? 'on' : '';
+    $('cl-p-c').onclick = function () { setProp('color'); }; $('cl-p-b').onclick = function () { setProp('background-color'); };
+    if ($('cl-p-d')) { $('cl-p-d').className = prop === 'border-color' ? 'on' : ''; $('cl-p-d').onclick = function () { setProp('border-color'); }; }
+    var sug = $('cl-sug'), caps = [4, 2, 6], flat = [];
+    suggestGroups().forEach(function (g, i) { g.items.slice(0, caps[i] || 4).forEach(function (it) { flat.push(it); }); });
+    flat.forEach(function (it) { sug.appendChild(swatch(it[0], it[1], oc)); });
+    if (!flat.length) sug.innerHTML = '<div class="sm">Нет готовых вариантов — двигай бегунок или тапни «Стало».</div>';
     $('cl-pk').addEventListener('input', function (e) { setNew(e.target.value); liveUpd(); });
     $('cl-pk').addEventListener('change', function () { renderPick(); });
-    $('cl-adv').onclick = function () { advOpen = !advOpen; renderPick(); };
-    $('cl-aa').onclick = function () { var f = fix(shown, oc, 4.5); if (f === shown) { say('Уже проходит AA'); return; } setNew(f); renderPick(); };
-    $('cl-hex').onchange = function (e) { var v = e.target.value.trim(); if (/^#?[0-9a-f]{6}$/i.test(v)) { setNew(v[0] === '#' ? v : '#' + v); renderPick(); } };
-    [['cl-h', 0], ['cl-s', 1], ['cl-l', 2]].forEach(function (x) { var inp = $(x[0]); inp.value = Math.round(hslv[x[1]]); inp.oninput = function () { hslv[x[1]] = parseFloat(inp.value); setNew(hex.apply(null, fromHsl(hslv[0], hslv[1], hslv[2]))); hslv[x[1]] = parseFloat(inp.value); liveUpd(); }; });
+    if (more) {
+      var sc = $('cl-sc');
+      cands.forEach(function (c, i) {
+        var short = c.k === 'all' ? 'Все такие же' : c.k === 'in' ? 'В родителе' : c.k === 'one' ? 'Только этот' : 'Роль: ' + ROLE[c.role].name.split(',')[0];
+        var b = el('button', { type: 'button', style: 'width:auto;height:auto;padding:8px 10px;font-size:13px;font-weight:600;display:block;text-align:left' + (i === scope ? ';background:#d6249f;border-color:#d6249f' : '') }, short + ' · ' + c.n);
+        b.addEventListener('click', function () { var nh = newHex; if (PREV) cancel(true); scope = i; if (nh) setNew(nh); renderPick(); });
+        sc.appendChild(b);
+      });
+      var cc = cands[scope]; $('cl-scd').textContent = (cc.k === 'role' ? 'Меняет переменную ' + cc.sel + '. ' : 'Селектор: ' + cc.sel + '. ') + 'Совпадений на странице: ' + cc.n + '.';
+      $('cl-aa').onclick = function () { var f = fix(shown, oc, 4.5); if (f === shown) { say('Уже читается'); return; } setNew(f); renderPick(); };
+      $('cl-hex').onchange = function (e) { var v = e.target.value.trim(); if (/^#?[0-9a-f]{6}$/i.test(v)) { setNew(v[0] === '#' ? v : '#' + v); renderPick(); } };
+      [['cl-h', 0], ['cl-s', 1]].forEach(function (x) { var inp = $(x[0]); inp.value = Math.round(hslv[x[1]]); inp.oninput = function () { hslv[x[1]] = parseFloat(inp.value); setNew(hex.apply(null, fromHsl(hslv[0], hslv[1], hslv[2]))); hslv[x[1]] = parseFloat(inp.value); liveUpd(); }; });
+    }
+    var li = $('cl-l'); li.value = Math.round(hslv[2]); li.oninput = function () { hslv[2] = parseFloat(li.value); setNew(hex.apply(null, fromHsl(hslv[0], hslv[1], hslv[2]))); hslv[2] = parseFloat(li.value); liveUpd(); };
     paintZone(oc); if (!newHex && !PREV) { $('cl-apply').disabled = true; $('cl-cancel').disabled = true; }
   }
   function paintZone(oc) {
     var z = '', i; for (i = 0; i < 40; i++) { var q = hex.apply(null, fromHsl(hslv[0], hslv[1], i * 100 / 39)), cr = ratio(q, oc); z += '<i style="background:' + (cr >= 4.5 ? '#2ea043' : cr >= 3 ? '#d29922' : '#8b2b2b') + '"></i>'; }
     var zn = $('cl-zone'); if (zn) zn.innerHTML = z;
+    var lr = $('cl-l'); if (lr) { var st = []; for (i = 0; i <= 10; i++) st.push(hex.apply(null, fromHsl(hslv[0], hslv[1], i * 10))); lr.style.background = 'linear-gradient(90deg,' + st.join(',') + ')'; }
   }
   function liveUpd() {   // лёгкое обновление без перерисовки (чтобы не терять фокус бегунка)
     var oc = otherOf(sel, prop), r = ratio(newHex, oc);
-    $('cl-hx').textContent = newHex; $('cl-rt').textContent = r.toFixed(2) + ' : 1'; $('cl-bd').innerHTML = badges(r);
+    $('cl-hx').textContent = newHex; $('cl-rt').textContent = r.toFixed(1) + ' : 1';
+    $('cl-vd').innerHTML = r >= 4.5 ? '<span class="p" style="padding:3px 8px;border-radius:7px;border:1px solid">✓ читается хорошо</span>' : r >= 3 ? '<span class="m" style="padding:3px 8px;border-radius:7px;border:1px solid">⚠ слабовато</span>' : '<span class="f" style="padding:3px 8px;border-radius:7px;border:1px solid">✗ плохо видно</span>';
     var nb = body.querySelector('.box.nw'); if (nb) { if (prop === 'background-color') nb.style.background = newHex; else nb.style.color = newHex; }
     var hx = $('cl-hex'); if (hx) hx.value = newHex; paintZone(oc);
   }
@@ -504,8 +507,10 @@
 
   /* ---------- общее ---------- */
   function render() {
+    panel.querySelector('.tabs').style.display = more ? 'flex' : 'none'; Array.prototype.forEach.call(bar.querySelectorAll('.mm'), function (b) { b.style.display = more ? '' : 'none'; });
+    $('cl-more').className = more ? 'on' : ''; if (!more && tab !== 'pick') tab = 'pick';
     ['pick', 'scheme', 'rules'].forEach(function (t) { $('cl-t-' + t).className = tab === t ? 'on' : ''; });
-    $('cl-pickmode').style.display = tab === 'pick' ? '' : 'none'; $('cl-apply').style.display = tab === 'pick' ? '' : 'none'; $('cl-cancel').style.display = tab === 'pick' ? '' : 'none';
+    $('cl-apply').style.display = tab === 'pick' ? '' : 'none'; $('cl-cancel').style.display = tab === 'pick' ? '' : 'none';
     if (tab === 'pick') renderPick(); else if (tab === 'scheme') renderScheme(); else renderRules();
     if (active) document.body.style.paddingBottom = (panel.offsetHeight + 12) + 'px';
   }
@@ -534,7 +539,8 @@
   $('cl-close').onclick = function () { setActive(false); };
   ['pick', 'scheme', 'rules'].forEach(function (t) { $('cl-t-' + t).onclick = function () { if (PREV && t !== 'pick') cancel(true); setTab(t); }; });
   $('cl-apply').onclick = applyNew; $('cl-cancel').onclick = function () { cancel(false); };
-  $('cl-pickmode').onclick = function () { pickOn = !pickOn; $('cl-pickmode').textContent = pickOn ? '👆 Выбор: вкл' : '🔗 Выбор: выкл (ссылки работают)'; $('cl-pickmode').className = pickOn ? '' : 'on'; };
+  $('cl-more').onclick = function () { if (PREV) cancel(true); more = !more; if (sel && tab === 'pick') buildCands(); render(); };
+  $('cl-pickmode').onclick = function () { pickOn = !pickOn; $('cl-pickmode').textContent = pickOn ? '👆 Выбор: вкл' : '🔗 Выбор: выкл'; $('cl-pickmode').className = pickOn ? '' : 'on'; };
   $('cl-copy').onclick = function () { var t = cssText(), done = function () { say('Скопировано:\n' + t); }; try { navigator.clipboard.writeText(t).then(done, function () { say(t); }); } catch (e) { say(t); } };
   $('cl-theme').onclick = function () {
     if (PREV) cancel(true);
