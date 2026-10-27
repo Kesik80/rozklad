@@ -89,7 +89,7 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 }
 .hdr.scrolled { box-shadow: 0 1px 0 var(--separator); }
 .hdr-mid { text-align: center; min-width: 0; }
-.hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--key); }   /* заголовок: бордовий (світла) / коралловий (темна) — колір --key */
+.hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--title, var(--key)); }   /* заголовок: бордовий (світла) / коралловий (темна) — колір --key */
 body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
 /* Електрички в темній темі — заголовок блакитний (лише слово в шапці) */
 [data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: #ff9f0a; }
@@ -123,9 +123,9 @@ th {
 }
 th.red { color: var(--red); }
 th.tbl-title { padding: 10px 6px; font-size: 17px; white-space: nowrap; overflow: hidden; }
-.tbl-title .from { color: var(--key); }
+.tbl-title .from { color: var(--stop, var(--key)); }
 a[href^='tel:'] { white-space: nowrap; }   /* номер телефону не рвати між рядками */
-tr.key-row td:not(.loc) { color: var(--key); font-weight: 700; }   /* виділений рядок: лише часи, назва зупинки — звичайна */
+tr.key-row td:not(.loc) { color: var(--ktime, var(--key)); font-weight: 700; }   /* виділений рядок: лише часи, назва зупинки — звичайна */
 
 td {
   background: var(--bg-2); color: var(--label-2);

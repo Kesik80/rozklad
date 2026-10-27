@@ -25,7 +25,9 @@
     { id: 'text', name: 'Текст', vars: ['--label', '--label-3'] },
     { id: 'text2', name: 'Второй текст', vars: ['--label-2', '--hint'] },
     { id: 'accent', name: 'Акцент', vars: ['--accent'] },
-    { id: 'key', name: 'Заголовок страницы, Терешки, выделенные времена', vars: ['--key'] },
+    { id: 'title', name: 'Заголовок страницы', vars: ['--title'], fb: '--key' },
+    { id: 'stop', name: 'Терешки (ключевые остановки в заголовках таблиц)', vars: ['--stop'], fb: '--key' },
+    { id: 'ktime', name: 'Выделенные времена (строка Терешки)', vars: ['--ktime'], fb: '--key' },
     { id: 'next', name: 'Ближайший рейс, ссылки', vars: ['--next'] },
     { id: 'th', name: 'Скоро рейс, цены', vars: ['--th'] },
     { id: 'red', name: 'Предупреждение, рейс сейчас', vars: ['--red'] },
@@ -61,7 +63,7 @@
   var ORIG = {}, applied = [];
   function readVars() {
     var o = {}, pr = document.createElement('i'); pr.style.cssText = 'position:absolute;visibility:hidden'; document.body.appendChild(pr);
-    ROLES.forEach(function (r) { r.vars.forEach(function (v) { pr.style.color = 'var(' + v + ')'; var m = /rgba?\(([^)]+)\)/.exec(getComputedStyle(pr).color); if (m) { var p = m[1].split(/[ ,\/]+/).filter(Boolean).map(parseFloat); o[v] = hex(p[0], p[1], p[2]); } }); });
+    ROLES.forEach(function (r) { r.vars.forEach(function (v) { pr.style.color = 'var(' + v + (r.fb ? ',var(' + r.fb + ')' : '') + ')'; var m = /rgba?\(([^)]+)\)/.exec(getComputedStyle(pr).color); if (m) { var p = m[1].split(/[ ,\/]+/).filter(Boolean).map(parseFloat); o[v] = hex(p[0], p[1], p[2]); } }); });
     pr.remove(); return o;
   }
   function clearInline() { applied.forEach(function (v) { document.documentElement.style.removeProperty(v); }); applied = []; }
@@ -72,7 +74,7 @@
     function orole(id) { return O[ROLE[id].vars[0]]; }
     var bg = S.bg || orole('bg'), accent = S.accent || orole('accent'), auto = !!(S.bg || S.accent || S.auto);
     var d = lum(rgb(bg)) < .2, hh = hsl(rgb(bg)), fam = S.fam;
-    var card, text, text2, line, plate, key, next, th, red, wd, ok;
+    var card, text, text2, line, plate, key, title, stop, ktime, next, th, red, wd, ok;
     if (auto) {
       if (fam && RDX[fam]) { card = step(fam, 2); text = step(fam, 12); text2 = step(fam, 11); line = step(fam, d ? 5 : 6); }
       else {
@@ -85,11 +87,11 @@
       if (S.over && S.over.text) text = S.over.text;
       text = fix(text, card, 7); text2 = fix(text2, card, 4.5);
       var base = function (id) { return S.accent ? accent : orole(id); };
-      key = fix(base('key'), card, 4.5); next = fix(base('next'), card, 4.5); th = fix(base('th'), card, 4.5);
+      title = fix(base('title'), card, 4.5); stop = fix(base('stop'), card, 4.5); ktime = fix(base('ktime'), card, 4.5); next = fix(base('next'), card, 4.5); th = fix(base('th'), card, 4.5);
       red = fix(orole('red'), card, 4.5); wd = fix(orole('wd'), card, 4.5); ok = fix(orole('ok'), card, 4.5);
       plate = mix(card, accent, d ? .16 : .12);
-    } else { card = orole('card'); text = orole('text'); text2 = orole('text2'); line = orole('line'); key = orole('key'); next = orole('next'); th = orole('th'); red = orole('red'); wd = orole('wd'); ok = orole('ok'); plate = orole('plate'); }
-    out = { bg: bg, card: card, text: text, text2: text2, accent: accent, key: key, next: next, th: th, red: red, wd: wd, ok: ok, line: line, plate: plate };
+    } else { card = orole('card'); text = orole('text'); text2 = orole('text2'); line = orole('line'); title = orole('title'); stop = orole('stop'); ktime = orole('ktime'); next = orole('next'); th = orole('th'); red = orole('red'); wd = orole('wd'); ok = orole('ok'); plate = orole('plate'); }
+    out = { bg: bg, card: card, text: text, text2: text2, accent: accent, title: title, stop: stop, ktime: ktime, next: next, th: th, red: red, wd: wd, ok: ok, line: line, plate: plate };
     ROLES.forEach(function (r) { if (S.over && S.over[r.id]) out[r.id] = S.over[r.id]; });
     return out;
   }
@@ -161,8 +163,8 @@
       var card = L.card ? S.over.card : c.card;
       ROLES.forEach(function (r) {
         if (L[r.id]) return;
-        var v = c[r.id];
-        if (r.id === 'text') v = fix(v, card, 7); else if (['text2', 'key', 'next', 'th', 'red', 'wd', 'ok'].indexOf(r.id) >= 0) v = fix(v, card, 4.5);
+        var v = c[r.id] || c.key;
+        if (r.id === 'text') v = fix(v, card, 7); else if (['text2', 'title', 'stop', 'ktime', 'next', 'th', 'red', 'wd', 'ok'].indexOf(r.id) >= 0) v = fix(v, card, 4.5);
         S.over[r.id] = v; if (r.id === 'bg') S.bg = v; if (r.id === 'accent') S.accent = v;
       });
       S.fam = null; S.accentFam = null; S.auto = true;
@@ -500,7 +502,7 @@
     $('cl-seed').onchange = function (e) { var c = e.target.value; useScheme(seedMode(), c, familyOf(c)); };
     var host = $('cl-roles');
     ROLES.forEach(function (r) {
-      var v = V[r.id], against = { text: 1, text2: 1, key: 1, next: 1, th: 1, red: 1, wd: 1, ok: 1 }[r.id] ? V.card : r.id === 'accent' ? V.bg : null, rt = against ? ratio(v, against) : 0;
+      var v = V[r.id], against = { text: 1, text2: 1, title: 1, stop: 1, ktime: 1, next: 1, th: 1, red: 1, wd: 1, ok: 1 }[r.id] ? V.card : r.id === 'accent' ? V.bg : null, rt = against ? ratio(v, against) : 0;
       var min = r.id === 'text' ? 7 : 4.5, cls = !against ? '' : rt >= min ? 'p' : rt >= 3 ? 'm' : 'f';
       var row = el('div', { class: 'role' });
       row.innerHTML = '<div class="sw" style="background:' + v + '"><input type="color" value="' + v + '"></div><div class="t"><b>' + r.name + '</b><div class="sm">' + v + ' · ' + r.vars.join(' ') + '</div></div>' + (against ? '<span class="rt ' + cls + '">' + rt.toFixed(1) + '</span>' : '');
