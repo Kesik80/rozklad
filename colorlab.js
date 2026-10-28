@@ -319,13 +319,14 @@
     var s1 = simple(sel), par = sel.parentElement;
     function add(o) { if (!cands.some(function (c) { return c.sel === o.sel && c.role === o.role; })) cands.push(o); }
     add({ k: 'all', title: 'Все такие же', sel: s1, n: countSel(s1) });
-    function excl() {
-      var mine = clsOf(sel), out = [];
-      if (par) Array.prototype.forEach.call(par.children, function (sb) { if (sb !== sel && sb.tagName === sel.tagName) clsOf(sb).forEach(function (c) { if (mine.indexOf(c) < 0 && out.indexOf(c) < 0 && out.length < 3) out.push(c); }); });
-      return out.map(function (c) { return ':not(.' + esc(c) + ')'; }).join('');
+    function excl(base) {          // исключаем классы «других состояний» среди совпадений (th.red, .next-dep и т.п.)
+      var mine = clsOf(sel), cnt = {}, out = [];
+      try { Array.prototype.forEach.call(document.querySelectorAll(base), function (m) { if (m === sel || isUi(m) || propVal(m, prop) === cur) return; clsOf(m).forEach(function (c) { if (mine.indexOf(c) < 0) cnt[c] = (cnt[c] || 0) + 1; }); }); } catch (e) {}
+      Object.keys(cnt).sort(function (x, y) { return cnt[y] - cnt[x]; }).slice(0, 4).forEach(function (c) { out.push(':not(.' + esc(c) + ')'); });
+      return out.join('');
     }
     var anc = par; while (anc && anc !== document.body && !clsOf(anc).length && !anc.id) anc = anc.parentElement;
-    if (anc && anc !== document.body) { var s2 = simple(anc) + ' ' + s1 + (anc === par ? excl() : ''); add({ k: 'in', title: 'Такие же внутри «' + simple(par) + '»', sel: s2, n: countSel(s2) }); }
+    if (anc && anc !== document.body) { var s2raw = simple(anc) + ' ' + s1, s2 = s2raw + excl(s2raw); add({ k: 'in', title: 'Такие же внутри «' + simple(par) + '»', sel: s2, n: countSel(s2) }); }
     var s3 = pathSel(sel); add({ k: 'one', title: 'Только этот (на этой странице)', sel: s3, n: countSel(s3) });
     if (prop !== 'border-color' && cur) {
       var V = compute();
