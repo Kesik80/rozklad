@@ -91,6 +91,7 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 .hdr-mid { text-align: center; min-width: 0; }
 .hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--title, var(--key)); }   /* заголовок: бордовий (світла) / коралловий (темна) — колір --key */
 body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
+body[data-page="index"] { padding-top: calc(var(--gy) + 5vh); }   /* головна: усе трохи нижче від верху екрана */
 /* Електрички в темній темі — заголовок блакитний (лише слово в шапці) */
 [data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: #ff9f0a; }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
