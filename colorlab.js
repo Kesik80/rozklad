@@ -156,8 +156,18 @@
     });
     return out;
   }
+  /* Android / Material Design — палитра (500 / 200 / 700) и базовая тема */
+  var ANDROID = { red: ['#f44336', '#ef9a9a', '#d32f2f'], pink: ['#e91e63', '#f48fb1', '#c2185b'], purple: ['#9c27b0', '#ce93d8', '#7b1fa2'], deeppurple: ['#673ab7', '#b39ddb', '#512da8'], indigo: ['#3f51b5', '#9fa8da', '#303f9f'], blue: ['#2196f3', '#90caf9', '#1976d2'], lightblue: ['#03a9f4', '#81d4fa', '#0288d1'], cyan: ['#00bcd4', '#80deea', '#0097a7'], teal: ['#009688', '#80cbc4', '#00796b'], green: ['#4caf50', '#a5d6a7', '#388e3c'], lightgreen: ['#8bc34a', '#c5e1a5', '#689f38'], lime: ['#cddc39', '#e6ee9c', '#afb42b'], yellow: ['#ffeb3b', '#fff59d', '#f9a825'], amber: ['#ffc107', '#ffe082', '#ffa000'], orange: ['#ff9800', '#ffcc80', '#f57c00'], deeporange: ['#ff5722', '#ffab91', '#e64a19'], brown: ['#795548', '#bcaaa4', '#5d4037'], bluegrey: ['#607d8b', '#b0bec5', '#455a64'] };
+  function android(name) {
+    var a = ANDROID[name] || ANDROID.indigo, out = {};
+    [0, 1].forEach(function (i) {
+      var card = i ? '#1e1e1e' : '#ffffff', acc = i ? a[1] : a[0], txt = i ? a[1] : a[2];
+      out[i ? 'dark' : 'light'] = { bg: i ? '#121212' : '#f5f5f5', card: card, text: i ? '#e0e0e0' : '#212121', text2: i ? '#9e9e9e' : '#616161', accent: acc, key: txt, next: txt, th: i ? ANDROID.orange[1] : ANDROID.orange[2], line: i ? '#2c2c2c' : '#e0e0e0', plate: mix(card, acc, i ? .16 : .12), red: i ? '#cf6679' : '#b00020', wd: i ? ANDROID.teal[1] : ANDROID.teal[2], ok: i ? ANDROID.green[1] : ANDROID.green[2] };
+    });
+    return out;
+  }
   function useScheme(mode, seed, fam) {
-    var sc = mode === 'apple' ? apple(fam || 'blue') : mode === 'radix' ? radix(fam || 'blue') : material(seed);
+    var sc = mode === 'android' ? android(fam || 'indigo') : mode === 'apple' ? apple(fam || 'blue') : mode === 'radix' ? radix(fam || 'blue') : material(seed);
     ['light', 'dark'].forEach(function (t) {
       var S = P[t], L = S.lock || {}, c = sc[t]; S.over = S.over || {};
       var card = L.card ? S.over.card : c.card;
@@ -174,6 +184,7 @@
   }
   function randomize() {
     var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; }, mode = (P.seed && P.seed.mode) || 'material';
+    if (mode === 'android') { var nn = pick(Object.keys(ANDROID)); useScheme('android', ANDROID[nn][0], nn); return; }
     if (mode === 'apple') { var an = pick(APPLE_ACC); useScheme('apple', APPLE[an][0], an); return; }
     var f = pick(ORDER.filter(function (x) { return !NEUTRAL[x]; }));
     useScheme(mode, '#' + RDX[f][0].substr(48, 6), f);
@@ -259,7 +270,7 @@
     '<div id="cl-body"></div><div class="sm" id="cl-log" style="white-space:pre-wrap;margin-top:8px"></div>';
   bar.innerHTML = '<button id="cl-apply" class="ok2" type="button" disabled>✓ Готово</button><button id="cl-cancel" type="button" disabled>↶ Отмена</button><button id="cl-theme" type="button" aria-label="Тема">🌓</button><button id="cl-more" type="button">⋯ Ещё</button><button id="cl-pickmode" class="mm" type="button">👆 Выбор: вкл</button><button id="cl-copy" class="mm" type="button">Копировать CSS</button><button id="cl-close" type="button">✕</button>';
   document.body.appendChild(fab); document.body.appendChild(panel); document.body.appendChild(bar);
-  var more = false, origCol = '', active = false, tab = 'pick', pickOn = true, sel = null, outlined = null, prop = 'color', cands = [], scope = 0, newHex = null, hslv = [0, 0, 50], fine = false, advOpen = false;
+  var palSrc = 'apple', more = false, origCol = '', active = false, tab = 'pick', pickOn = true, sel = null, outlined = null, prop = 'color', cands = [], scope = 0, newHex = null, hslv = [0, 0, 50], fine = false, advOpen = false;
   var body = $('cl-body');
   function say(t) { $('cl-log').textContent = t; }
   function isUi(n) { return n === fab || panel.contains(n) || bar.contains(n); }
@@ -308,7 +319,13 @@
     var s1 = simple(sel), par = sel.parentElement;
     function add(o) { if (!cands.some(function (c) { return c.sel === o.sel && c.role === o.role; })) cands.push(o); }
     add({ k: 'all', title: 'Все такие же', sel: s1, n: countSel(s1) });
-    if (par && par !== document.body) { var s2 = simple(par) + ' ' + s1; add({ k: 'in', title: 'Такие же внутри «' + simple(par) + '»', sel: s2, n: countSel(s2) }); }
+    function excl() {
+      var mine = clsOf(sel), out = [];
+      if (par) Array.prototype.forEach.call(par.children, function (sb) { if (sb !== sel && sb.tagName === sel.tagName) clsOf(sb).forEach(function (c) { if (mine.indexOf(c) < 0 && out.indexOf(c) < 0 && out.length < 3) out.push(c); }); });
+      return out.map(function (c) { return ':not(.' + esc(c) + ')'; }).join('');
+    }
+    var anc = par; while (anc && anc !== document.body && !clsOf(anc).length && !anc.id) anc = anc.parentElement;
+    if (anc && anc !== document.body) { var s2 = simple(anc) + ' ' + s1 + (anc === par ? excl() : ''); add({ k: 'in', title: 'Такие же внутри «' + simple(par) + '»', sel: s2, n: countSel(s2) }); }
     var s3 = pathSel(sel); add({ k: 'one', title: 'Только этот (на этой странице)', sel: s3, n: countSel(s3) });
     if (prop !== 'border-color' && cur) {
       var V = compute();
@@ -320,7 +337,9 @@
         }
       });
     }
-    var def = 0; if (cands[0].n > 25 && !clsOf(sel).length) def = cands.findIndex(function (c) { return c.k === 'one'; });
+    var def = 0, iq = cands.findIndex(function (c) { return c.k === 'in'; });
+    if (iq >= 0 && cands[iq].n >= 1 && cands[iq].n < cands[0].n) def = iq;
+    if (def === 0 && cands[0].n > 25 && !clsOf(sel).length) { var ii = cands.findIndex(function (c) { return c.k === 'in'; }); def = ii >= 0 && cands[ii].n <= 60 ? ii : cands.findIndex(function (c) { return c.k === 'one'; }); }
     scope = Math.max(0, def);
   }
 
@@ -428,7 +447,7 @@
       '<div class="box nw" style="background:' + (prop === 'background-color' ? shown : oc) + ';color:' + (prop === 'background-color' ? oc : shown) + '"><b>Стало</b><small id="cl-hx">' + (newHex || 'выбери ниже') + '</small><input type="color" id="cl-pk" value="' + shown + '"></div></div>' +
       '<div class="big"><span id="cl-rt" style="font-size:13px;opacity:.8">' + r.toFixed(1) + ' : 1</span> <span id="cl-vd">' + verdict + '</span></div>' +
       '<div class="h">Подходящие цвета</div><div class="sg" id="cl-sug"></div>' +
-      '<div class="h">Системные цвета Apple</div><div class="sg" id="cl-ap"></div>' +
+      '<div class="h">Системные цвета <button id="cl-pa" type="button" style="padding:3px 8px;font-size:12px' + (palSrc === 'apple' ? ';background:#d6249f' : '') + '">Apple</button> <button id="cl-pd" type="button" style="padding:3px 8px;font-size:12px' + (palSrc === 'android' ? ';background:#d6249f' : '') + '">Android</button></div><div class="sg" id="cl-ap"></div>' +
       '<div class="h">Темнее ◀──▶ светлее</div><div class="r"><input id="cl-l" type="range" min="0" max="100"></div><div class="zone" id="cl-zone" style="margin-left:0"></div>' +
       (more ? '<div class="h">Где применить</div><div class="sg" id="cl-sc" style="gap:6px"></div><div class="sm" id="cl-scd" style="margin-top:4px"></div>' +
         '<div class="r"><button id="cl-aa" type="button">Подогнать к читаемости</button></div>' +
@@ -445,7 +464,9 @@
     suggestGroups().forEach(function (g, i) { g.items.slice(0, caps[i] || 4).forEach(function (it) { flat.push(it); }); });
     flat.forEach(function (it) { sug.appendChild(swatch(it[0], it[1], oc)); });
     if (!flat.length) sug.innerHTML = '<div class="sm">Нет готовых вариантов — двигай бегунок или тапни «Стало».</div>';
-    Object.keys(APPLE).forEach(function (n) { $('cl-ap').appendChild(swatch(APPLE[n][ti()], 'Apple ' + n, oc)); });
+    if (palSrc === 'apple') Object.keys(APPLE).forEach(function (n) { $('cl-ap').appendChild(swatch(APPLE[n][ti()], 'Apple ' + n, oc)); });
+    else Object.keys(ANDROID).forEach(function (n) { $('cl-ap').appendChild(swatch(ANDROID[n][ti() ? 1 : 2], 'Android ' + n, oc)); });
+    $('cl-pa').onclick = function () { palSrc = 'apple'; renderPick(); }; $('cl-pd').onclick = function () { palSrc = 'android'; renderPick(); };
     var fr = findRules(); if (fr.length) { $('cl-rs1').style.display = ''; $('cl-rs1').onclick = function () { P.rules = P.rules.filter(function (r) { return fr.indexOf(r) < 0; }); if (PREV) cancel(true); commit(); buildCands(); renderPick(); say('Правило для этого элемента удалено'); }; }
     $('cl-rs2').onclick = confirmReset;
     $('cl-pk').addEventListener('input', function (e) { setNew(e.target.value); liveUpd(); });
@@ -453,7 +474,7 @@
     if (more) {
       var sc = $('cl-sc');
       cands.forEach(function (c, i) {
-        var short = c.k === 'all' ? 'Все такие же' : c.k === 'in' ? 'В родителе' : c.k === 'one' ? 'Только этот' : 'Роль: ' + ROLE[c.role].name.split(',')[0];
+        var short = c.k === 'all' ? 'Все такие же' : c.k === 'in' ? 'Такие же в строке/блоке' : c.k === 'one' ? 'Только этот' : 'Роль: ' + ROLE[c.role].name.split(',')[0];
         var b = el('button', { type: 'button', style: 'width:auto;height:auto;padding:8px 10px;font-size:13px;font-weight:600;display:block;text-align:left' + (i === scope ? ';background:#d6249f;border-color:#d6249f' : '') }, short + ' · ' + c.n);
         b.addEventListener('click', function () { var nh = newHex; if (PREV) cancel(true); scope = i; if (nh) setNew(nh); renderPick(); });
         sc.appendChild(b);
@@ -484,18 +505,23 @@
   function renderScheme() {
     var S = P[theme()], V = compute(), L = S.lock || {};
     body.innerHTML =
-      '<div class="sm">Вся схема из одного цвета — для обеих тем сразу. Ручные правки и замки 🔒 сохраняются.</div>' +
-      '<div class="r"><button id="cl-mm" type="button">Material You</button><button id="cl-mr" type="button">Radix</button><button id="cl-ma" type="button">Apple</button><button id="cl-rnd" type="button">🎲</button><label style="position:relative"><span style="border:1px solid #3a4150;border-radius:9px;padding:8px 10px;display:inline-block;background:#2a2f39">🎨 свой</span><input id="cl-seed" type="color" style="position:absolute;inset:0;width:100%;height:100%;opacity:0"></label></div>' +
+      '<div class="sm">Вся схема из одного цвета — для обеих тем сразу. Ручные правки и замки 🔒 сохраняются.</div>' + mirrorBtn() +
+      '<div class="r"><button id="cl-mm" type="button">Material You</button><button id="cl-mr" type="button">Radix</button><button id="cl-ma" type="button">Apple</button><button id="cl-md" type="button">Android</button><button id="cl-rnd" type="button">🎲</button><label style="position:relative"><span style="border:1px solid #3a4150;border-radius:9px;padding:8px 10px;display:inline-block;background:#2a2f39">🎨 свой</span><input id="cl-seed" type="color" style="position:absolute;inset:0;width:100%;height:100%;opacity:0"></label></div>' +
       '<div class="chips" id="cl-fac"></div><div class="h">Роли темы: ' + (theme() === 'dark' ? 'тёмной' : 'светлой') + ' (тап по цвету — свой; 🔒 — заморозить)</div><div id="cl-roles"></div>';
-    $('cl-mm').className = P.seed && seedMode() === 'material' ? 'on' : ''; $('cl-mr').className = P.seed && seedMode() === 'radix' ? 'on' : ''; $('cl-ma').className = P.seed && seedMode() === 'apple' ? 'on' : '';
-    if (seedMode() === 'apple') APPLE_ACC.forEach(function (f) {
+    $('cl-mm').className = P.seed && seedMode() === 'material' ? 'on' : ''; $('cl-mr').className = P.seed && seedMode() === 'radix' ? 'on' : ''; $('cl-ma').className = P.seed && seedMode() === 'apple' ? 'on' : ''; $('cl-md').className = P.seed && seedMode() === 'android' ? 'on' : '';
+    if (seedMode() === 'android') Object.keys(ANDROID).forEach(function (f) {
+      var b = el('button', { type: 'button', title: f }); b.style.background = ANDROID[f][0]; if (P.seed && P.seed.fam === f) b.className = 'on';
+      b.onclick = function () { useScheme('android', ANDROID[f][0], f); }; $('cl-fac').appendChild(b);
+    }); else if (seedMode() === 'apple') APPLE_ACC.forEach(function (f) {
       var b = el('button', { type: 'button', title: f }); b.style.background = APPLE[f][ti()]; if (P.seed && P.seed.fam === f) b.className = 'on';
       b.onclick = function () { useScheme('apple', APPLE[f][0], f); }; $('cl-fac').appendChild(b);
     }); else ORDER.forEach(function (f) {
       var b = el('button', { type: 'button', title: f }); b.style.background = '#' + RDX[f][0].substr(48, 6); if (P.seed && P.seed.fam === f) b.className = 'on';
       b.onclick = function () { useScheme(seedMode(), '#' + RDX[f][0].substr(48, 6), f); }; $('cl-fac').appendChild(b);
     });
+    $('cl-md').onclick = function () { var f = P.seed && ANDROID[P.seed.fam] ? P.seed.fam : 'indigo'; useScheme('android', ANDROID[f][0], f); };
     $('cl-ma').onclick = function () { var f = P.seed && APPLE[P.seed.fam] ? P.seed.fam : 'blue'; useScheme('apple', APPLE[f][0], f); };
+    $('cl-mir').onclick = mirror;
     $('cl-mm').onclick = function () { var sd = P.seed || { hex: '#3e7bfa', fam: 'blue' }; useScheme('material', sd.hex, sd.fam); };
     $('cl-mr').onclick = function () { var sd = P.seed || { fam: 'blue' }; useScheme('radix', sd.hex || '#0090ff', sd.fam && RDX[sd.fam] && !NEUTRAL[sd.fam] ? sd.fam : 'blue'); };
     $('cl-rnd').onclick = randomize;
@@ -520,10 +546,50 @@
     });
   }
 
+  /* ---------- светлая ↔ тёмная ---------- */
+  function conv(hx, kind, toDark) {
+    var c = hex2lch(hx), L = c[0], C = c[1], h = c[2];
+    if (kind === 'surface') return toDark ? lab2hex(4 + (100 - L) * .35, Math.min(C * .8, 10), h) : lab2hex(Math.max(60, Math.min(100, 100 - (L - 4) / .35)), Math.min(C * .8, 10), h);
+    if (kind === 'line') return lab2hex(toDark ? 26 : 88, Math.min(C, 8), h);
+    return lab2hex(toDark ? Math.max(62, Math.min(94, 100 - L + 4)) : Math.max(12, Math.min(48, 100 - L - 6)), C * .95, h);
+  }
+  function mirror() {
+    if (PREV) cancel(true);
+    var from = theme(), to = from === 'dark' ? 'light' : 'dark', toDark = to === 'dark';
+    ensureOrig(to);
+    var V = compute(), S = P[to]; S.over = S.over || {}; S.lock = S.lock || {};
+    var res = {}, nr = 0;
+    res.bg = S.lock.bg ? (S.bg || ORIG[to]['--bg-0']) : conv(V.bg, 'surface', toDark);
+    var bl = hex2lch(res.bg);
+    res.card = S.lock.card && S.over.card ? S.over.card : (toDark ? lab2hex(bl[0] + 5, Math.min(bl[1], 6), bl[2]) : '#ffffff');
+    res.accent = S.lock.accent ? (S.accent || ORIG[to]['--accent']) : conv(V.accent, 'fg', toDark);
+    ROLES.forEach(function (r) {
+      if (r.id === 'bg' || r.id === 'card' || r.id === 'accent') return;
+      if (S.lock[r.id]) return;
+      if (r.id === 'line') res.line = conv(V.line, 'line', toDark);
+      else if (r.id === 'plate') res.plate = mix(res.card, res.accent, toDark ? .16 : .12);
+      else res[r.id] = fix(conv(V[r.id], 'fg', toDark), res.card, r.id === 'text' ? 7 : 4.5);
+    });
+    Object.keys(res).forEach(function (id) { if (id === 'bg' || id === 'accent' || !S.lock[id]) { S.over[id] = res[id]; nr++; } });
+    S.bg = res.bg; S.accent = res.accent; S.fam = null; S.accentFam = null; S.auto = true;
+    var n = 0;
+    P.rules.filter(function (r) { return r.theme === from && !r.off; }).forEach(function (r) {
+      var ex = P.rules.filter(function (q) { return q.theme === to && q.sel === r.sel && q.prop === r.prop; })[0];
+      if (ex && ex.lock) return;
+      var kind = r.prop === 'background-color' ? 'surface' : r.prop === 'border-color' ? 'line' : 'fg', nv = conv(r.val, kind, toDark);
+      if (kind === 'fg') nv = fix(nv, res.card, 4.5);
+      if (ex) { ex.val = nv; ex.label = r.label; } else P.rules.push({ id: Date.now() + Math.random(), theme: to, sel: r.sel, prop: r.prop, val: nv, from: conv(r.from || r.val, kind, toDark), label: r.label, lock: false, off: false });
+      n++;
+    });
+    commit(); say('✓ Из ' + (from === 'dark' ? 'тёмной' : 'светлой') + ' получена ' + (toDark ? 'тёмная' : 'светлая') + ' тема: ролей ' + nr + ', правил ' + n + '. Переключи 🌓 и поправь, что не нравится (🔒 защитит от пересчёта).');
+  }
+  function mirrorBtn() { return '<div class="r"><button id="cl-mir" type="button" style="flex:1">' + (theme() === 'dark' ? '☀ Получить светлую тему из этой' : '🌙 Получить тёмную тему из этой') + '</button></div>'; }
+
   /* ---------- вкладка «Правила» ---------- */
   function renderRules() {
-    body.innerHTML = '<div class="sm">Правила для отдельных элементов — работают на всех страницах и сильнее схемы. 🔒 — защитить от «Сбросить незакрытые».</div><div id="cl-rl"></div>' +
+    body.innerHTML = mirrorBtn() + '<div class="sm">Правила для отдельных элементов — работают на всех страницах и сильнее схемы. 🔒 — защитить от «Сбросить незакрытые».</div><div id="cl-rl"></div>' +
       '<div class="r"><button id="cl-rc" type="button">Сбросить незакрытые 🔓</button><button id="cl-ra" type="button">Сброс всего</button></div>';
+    $('cl-mir').onclick = mirror;
     var host = $('cl-rl');
     if (!P.rules.length) host.innerHTML = '<div class="sm" style="margin:8px 0">— правил нет. Выбери элемент на вкладке «Элемент» и нажми «✓ Применить».</div>';
     P.rules.forEach(function (r, i) {
