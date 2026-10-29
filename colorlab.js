@@ -502,7 +502,7 @@
       layHtml +
       '<div class="cmp">' +
         '<div class="cb">' + aa(cur || '#888888', a0, '') + '<div class="hx"><small>Было</small><b>' + (cur || 'нет') + '</b></div><button id="cl-c1" type="button" class="ic" title="Копировать цвет">' + IC_COPY + '</button></div>' +
-        '<div class="cb nw">' + aa(shown, a1, 'cl-aan', '<input type="color" id="cl-pk" value="' + shown + '">') + '<div class="hx"><small>Стало</small><input id="cl-hex" type="text" maxlength="7" value="' + shown + '"></div><button id="cl-c2" type="button" class="ic" title="Копировать цвет">' + IC_COPY + '</button><button id="cl-pst" type="button" class="ic" title="Вставить скопированный цвет">' + IC_PASTE + '<i id="cl-pdot" style="background:' + (CLIP || 'transparent') + '"></i></button></div>' +
+        '<div class="cb nw">' + aa(shown, a1, 'cl-aan', '<input type="color" id="cl-pk" value="' + shown + '">') + '<div class="hx"><small>Стало</small><input id="cl-hex" type="text" maxlength="7" value="' + shown + '"></div><button id="cl-c2" type="button" class="ic" title="Копировать цвет">' + IC_COPY + '</button><button id="cl-pst" type="button" class="ic" title="Вставить скопированный цвет">' + IC_PASTE + '</button></div>' +
       '</div>' +
       '<div class="r" style="margin:6px 0 0"><button id="cl-xt" type="button" class="xb">' + IC_THEME + ' Этот → ' + (theme() === 'dark' ? 'в светлую' : 'в тёмную') + '</button><button id="cl-xa" type="button" class="xb">' + IC_THEME + ' Все правила → ' + (theme() === 'dark' ? 'в светлую' : 'в тёмную') + '</button></div>' +
       '<div class="r sl" style="margin-top:8px"><label class="lb">Тон</label><input id="cl-h" type="range" min="0" max="360"></div>' +
