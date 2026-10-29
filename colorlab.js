@@ -252,11 +252,24 @@
     '#cl-panel .lk{padding:6px 8px!important;font-size:15px!important;flex:none}' +
     '#cl-panel input[type=text]{background:#0e1014;color:#fff;border:1px solid #3a4150;border-radius:8px;padding:6px 8px;width:96px;font-size:14px}' +
     '#cl-panel input[type=range]{flex:1;min-width:0;height:26px;-webkit-appearance:none;appearance:none;border-radius:13px;border:1px solid #444}' +
-    '#cl-panel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid #d6249f}' +
+    '#cl-panel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--cur,#fff);border:3px solid #fff;box-shadow:0 0 0 1.5px #d6249f,0 1px 4px rgba(0,0,0,.6)}' +
     '#cl-panel label.lb{width:76px;flex:none;font-size:12px;opacity:.85}' +
     '#cl-panel .zone{height:7px;border-radius:4px;margin:-2px 0 4px 84px;display:flex;overflow:hidden}#cl-panel .zone i{flex:1}' +
     '#cl-panel .rl{display:flex;align-items:center;gap:6px;margin:5px 0;font-size:12px}#cl-panel .rl .tx{flex:1;min-width:0;word-break:break-all}' +
     '#cl-panel .rl i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #666;vertical-align:-2px}' +
+    '#cl-panel .en{flex:1;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '#cl-panel .ic{padding:0!important;width:36px;height:36px;flex:none;font-size:16px;position:relative}' +
+    '#cl-panel .ic i{position:absolute;right:3px;bottom:3px;width:11px;height:11px;border-radius:50%;border:1px solid #fff}' +
+    '#cl-panel .vd{padding:3px 8px;border-radius:7px;border:1px solid;font-size:12px;font-weight:600}' +
+    '#cl-panel .cmp{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}' +
+    '#cl-panel .cb{display:flex;align-items:center;gap:6px;border:1px solid #3a4150;border-radius:12px;padding:5px;flex:1 1 140px;min-width:0}#cl-panel .cb.nw{border-color:#d6249f;flex:2 1 220px}' +
+    '#cl-panel .aa{width:40px;height:36px;border-radius:8px;border:1px solid #666;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex:none;position:relative;overflow:hidden}' +
+    '#cl-panel .aa input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0}' +
+    '#cl-panel .hx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.15}#cl-panel .hx small{font-size:10px;opacity:.7}#cl-panel .hx b{font-size:13px}' +
+    '#cl-panel .hx input[type=text]{width:100%;padding:3px 5px;font-size:13px}' +
+    '#cl-panel .lay{display:flex;flex-direction:column;gap:4px}#cl-panel .lay button{display:flex;align-items:center;gap:8px;text-align:left;padding:6px 8px;font-size:12px}#cl-panel .lay button i{width:22px;height:22px;border-radius:5px;border:1px solid #888;flex:none}#cl-panel .lay small{opacity:.75;font-size:11px}' +
+    '#cl-panel .sl .lb{width:62px}#cl-panel .sl input[type=range]{height:24px}' +
+    '#cl-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:76px;z-index:2147483002;background:rgba(0,0,0,.85);color:#fff;border:1px solid #d6249f;border-radius:16px;padding:7px 14px;font:13px sans-serif;display:none;pointer-events:none}' +
     '#cl-bar{position:fixed;left:0;right:64px;bottom:0;z-index:2147483000;background:#15171c;padding:8px 0 10px 12px;display:none;gap:6px;flex-wrap:nowrap;overflow-x:auto}' +
     '#cl-bar button{flex:none;background:#2a2f39;color:#fff;border:1px solid #3a4150;border-radius:9px;padding:9px 10px;font-size:13px;white-space:nowrap}' +
     '#cl-bar button.on{background:#d6249f;border-color:#d6249f}#cl-bar button.ok2{background:#238636;border-color:#2ea043;font-weight:700}#cl-bar button[disabled]{opacity:.4}';
@@ -270,7 +283,7 @@
     '<div id="cl-body"></div><div class="sm" id="cl-log" style="white-space:pre-wrap;margin-top:8px"></div>';
   bar.innerHTML = '<button id="cl-apply" class="ok2" type="button" disabled>✓ Готово</button><button id="cl-cancel" type="button" disabled>↶ Отмена</button><button id="cl-theme" type="button" aria-label="Тема">🌓</button><button id="cl-more" type="button">⋯ Ещё</button><button id="cl-pickmode" class="mm" type="button">👆 Выбор: вкл</button><button id="cl-copy" class="mm" type="button">Копировать CSS</button><button id="cl-close" type="button">✕</button>';
   document.body.appendChild(fab); document.body.appendChild(panel); document.body.appendChild(bar);
-  var palSrc = 'apple', more = false, origCol = '', active = false, tab = 'pick', pickOn = true, sel = null, outlined = null, prop = 'color', cands = [], scope = 0, newHex = null, hslv = [0, 0, 50], fine = false, advOpen = false;
+  var palSrc = 'apple', more = false, origCol = '', active = false, tab = 'pick', pickOn = true, sel = null, outlined = null, prop = 'color', cands = [], scope = 0, newHex = null, newA = null, pseudo = '', leaf = null, hslv = [0, 0, 50], fine = false, advOpen = false;
   var body = $('cl-body');
   function say(t) { $('cl-log').textContent = t; }
   function isUi(n) { return n === fab || panel.contains(n) || bar.contains(n); }
@@ -287,7 +300,7 @@
   function propVal(n, p) {
     var cs = getComputedStyle(n);
     if (p === 'color') { var c = parseC(cs.color); return c ? hex(c.r, c.g, c.b) : ''; }
-    if (p === 'background-color') { var b = parseC(cs.backgroundColor); return b && b.a > 0 ? bgOf(n) : ''; }
+    if (p === 'background-color') { var ps = (n === sel && pseudo) ? pseudo : '', b = parseC(ps ? getComputedStyle(n, ps).backgroundColor : cs.backgroundColor); return b && b.a > 0 ? hex(b.r, b.g, b.b) : ''; }
     var d = parseC(cs.borderTopColor); return d && d.a > 0 ? hex(d.r, d.g, d.b) : '';
   }
   function otherOf(n, p) { return p === 'color' || p === 'border-color' ? bgOf(n) : propVal(n, 'color'); }
@@ -328,7 +341,7 @@
     var anc = par; while (anc && anc !== document.body && !clsOf(anc).length && !anc.id) anc = anc.parentElement;
     if (anc && anc !== document.body) { var s2raw = simple(anc) + ' ' + s1, s2 = s2raw + excl(s2raw); add({ k: 'in', title: 'Такие же внутри «' + simple(par) + '»', sel: s2, n: countSel(s2) }); }
     var s3 = pathSel(sel); add({ k: 'one', title: 'Только этот (на этой странице)', sel: s3, n: countSel(s3) });
-    if (prop !== 'border-color' && cur) {
+    if (prop !== 'border-color' && cur && !pseudo) {
       var V = compute();
       ROLES.forEach(function (r) {
         if (V[r.id] && V[r.id].toLowerCase() === cur.toLowerCase()) {
@@ -338,6 +351,7 @@
         }
       });
     }
+    if (pseudo) cands.forEach(function (c) { c.sel += pseudo; });
     var def = 0, iq = cands.findIndex(function (c) { return c.k === 'in'; });
     if (iq >= 0 && cands[iq].n >= 1 && cands[iq].n < cands[0].n) def = iq;
     if (def === 0 && cands[0].n > 25 && !clsOf(sel).length) { var ii = cands.findIndex(function (c) { return c.k === 'in'; }); def = ii >= 0 && cands[ii].n <= 60 ? ii : cands.findIndex(function (c) { return c.k === 'one'; }); }
@@ -352,24 +366,24 @@
     if (!n || n === document.documentElement) return;
     if (PREV) cancel(true);
     if (outlined) { outlined.el.style.outline = outlined.o; outlined.el.style.outlineOffset = outlined.f; }
-    sel = n; outlined = { el: n, o: n.style.outline, f: n.style.outlineOffset };
+    sel = n; leaf = n; pseudo = ''; outlined = { el: n, o: n.style.outline, f: n.style.outlineOffset };
     n.style.outline = '2px dashed #d6249f'; n.style.outlineOffset = '1px';
     var hasText = wasIcon || Array.prototype.some.call(n.childNodes, function (c) { return c.nodeType === 3 && c.textContent.trim(); }); var bgv = propVal(n, 'background-color');
     prop = hasText || !bgv ? 'color' : 'background-color';
-    newHex = null; setTab('pick', true);
+    newHex = null; newA = null; setTab('pick', true);
   }
-  function setProp(p) { prop = p; if (PREV) cancel(true); newHex = null; if (sel) buildCands(); renderPick(); }
+  function setProp(p) { prop = p; if (p !== 'background-color') pseudo = ''; if (PREV) cancel(true); newHex = null; newA = null; if (sel) buildCands(); renderPick(); }
 
   /* ---------- просмотр / применение ---------- */
-  function setNew(hx) {
-    newHex = hx; var h = hsl(rgb(hx)); hslv = [h[0], h[1], h[2]];
+  function setNew(hx, a) {
+    newHex = hx; if (a !== undefined) newA = a; var h = hsl(rgb(hx)); hslv = [h[0], h[1], h[2]];
     var c = cands[scope];
     if (c.k === 'role') { PREV = null; ROLE[c.role].vars.forEach(function (v) { document.documentElement.style.setProperty(v, hx); applied.indexOf(v) < 0 && applied.push(v); }); }
-    else PREV = { theme: theme(), sel: c.sel, prop: prop, val: hx };
+    else PREV = { theme: theme(), sel: c.sel, prop: prop, val: cssVal(hx) };
     applyRules(); $('cl-apply').disabled = false; $('cl-cancel').disabled = false;
   }
   function cancel(silent) {
-    PREV = null; newHex = null; apply(); applyRules();
+    PREV = null; newHex = null; newA = null; apply(); applyRules();
     $('cl-apply').disabled = true; $('cl-cancel').disabled = true;
     if (!silent) { say('Отменено'); renderPick(); }
   }
@@ -379,11 +393,11 @@
     if (c.k === 'role') {
       var S = P[theme()]; S.over = S.over || {}; S.lock = S.lock || {}; S.over[c.role] = newHex; S.lock[c.role] = 1; S.auto = true;
       if (c.role === 'bg') S.bg = newHex; if (c.role === 'accent') S.accent = newHex;
-      PREV = null; newHex = null; commit(); say('✓ Роль «' + ROLE[c.role].name + '» изменена для темы ' + theme() + ' и закрыта замком 🔒'); }
+      PREV = null; newHex = null; newA = null; commit(); say('✓ Роль «' + ROLE[c.role].name + '» изменена для темы ' + theme() + ' и закрыта замком 🔒'); }
     else {
       P.rules = P.rules.filter(function (r) { return !(r.theme === theme() && r.sel === c.sel && r.prop === prop); });
-      P.rules.push({ id: Date.now() + Math.random(), theme: theme(), sel: c.sel, prop: prop, val: newHex, from: from, label: describe(sel), lock: false, off: false });
-      PREV = null; newHex = null; commit(); say('✓ Правило сохранено для всех страниц (' + c.n + ' эл. на этой)');
+      P.rules.push({ id: Date.now() + Math.random(), theme: theme(), sel: c.sel, prop: prop, val: cssVal(newHex), from: from, label: describe(sel), lock: false, off: false });
+      PREV = null; newHex = null; newA = null; commit(); say('✓ Правило сохранено для всех страниц (' + c.n + ' эл. на этой)');
     }
     $('cl-apply').disabled = true; $('cl-cancel').disabled = true; buildCands(); renderPick();
   }
@@ -429,49 +443,105 @@
   function badges(r) { return [['AA', 4.5], ['AA ↑', 3], ['AAA', 7]].map(function (x) { return '<span class="' + (r >= x[1] ? 'p' : 'f') + '">' + (r >= x[1] ? '✓' : '✗') + ' ' + x[0] + '</span>'; }).join(''); }
   function findRules() { return P.rules.filter(function (r) { try { return r.theme === theme() && r.prop === prop && sel.matches(r.sel); } catch (e) { return false; } }); }
   var rsTimer = null;
-  function resetAll() { P = { light: {}, dark: {}, seed: null, rules: [] }; PREV = null; newHex = null; try { localStorage.removeItem(PKEY); } catch (e) {} clearInline(); commit(); if (sel) buildCands(); render(); say('✓ Всё сброшено: цвета как в app.css'); }
+  function resetAll() { P = { light: {}, dark: {}, seed: null, rules: [] }; PREV = null; newHex = null; newA = null; try { localStorage.removeItem(PKEY); } catch (e) {} clearInline(); commit(); if (sel) buildCands(); render(); say('✓ Всё сброшено: цвета как в app.css'); }
   function confirmReset() {
     var b = $('cl-rs2') || $('cl-ra'); if (!b) return;
     if (b.__arm) { clearTimeout(rsTimer); b.__arm = false; resetAll(); return; }
     b.__arm = true; var old = b.textContent; b.textContent = 'Точно? Тапни ещё раз'; b.style.background = '#8b2b2b';
     rsTimer = setTimeout(function () { b.__arm = false; b.textContent = old; b.style.background = ''; }, 4000);
   }
+  /* ---------- буфер цвета, прозрачность, слои ---------- */
+  var CLIPK = 'colorlab-clip', CLIP = ''; try { CLIP = localStorage.getItem(CLIPK) || ''; } catch (e) {}
+  function setClip(hx) { CLIP = hx; try { localStorage.setItem(CLIPK, hx); } catch (e) {} try { navigator.clipboard.writeText(hx).catch(function () {}); } catch (e) {} var d = $('cl-pdot'); if (d) d.style.background = hx; }
+  var toastEl = el('div', { id: 'cl-toast' }), toastT = null; document.body.appendChild(toastEl);
+  function flash(t) { toastEl.textContent = t; toastEl.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(function () { toastEl.style.display = 'none'; }, 1600); }
+  function ownAlpha() { if (!sel) return 1; var b = parseC(getComputedStyle(sel, pseudo || null).backgroundColor); return b && b.a > 0 ? Math.round(b.a * 100) / 100 : 1; }
+  function curA() { return newA != null ? newA : ownAlpha(); }
+  function rgbaCss(hx, a) { var c = rgb(hx); return a >= .999 ? hx : 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+  function cssVal(hx) { return prop === 'background-color' ? rgbaCss(hx, curA()) : hx; }
+  function effHex(hx) {            // как цвет выглядит на странице (с учётом прозрачности слоя)
+    if (prop !== 'background-color') return hx; var a = curA(); if (a >= .999) return hx;
+    var u = rgb(bgOf(pseudo ? sel : (sel.parentElement || sel))), c = rgb(hx); return hex(c[0] * a + u[0] * (1 - a), c[1] * a + u[1] * (1 - a), c[2] * a + u[2] * (1 - a));
+  }
+  function layersOf(n) {
+    var out = [], x = n, d = 0, stop = false;
+    while (x && x.nodeType === 1 && x !== document.documentElement && d < 9) {
+      ['', '::before', '::after'].forEach(function (ps) {
+        var cs = getComputedStyle(x, ps || null); if (ps && cs.content === 'none') return;
+        var b = parseC(cs.backgroundColor); if (b && b.a > 0) { out.push({ n: x, ps: ps, hex: hex(b.r, b.g, b.b), a: Math.round(b.a * 100) / 100, hid: stop }); if (!ps && b.a >= .999) stop = true; }
+      });
+      x = x.parentElement; d++;
+    }
+    return out;
+  }
+  function chooseLayer(n, ps, keepLeaf, keepProp) {
+    if (PREV) cancel(true);
+    if (outlined) { outlined.el.style.outline = outlined.o; outlined.el.style.outlineOffset = outlined.f; }
+    sel = n; pseudo = ps || ''; if (!keepProp) prop = 'background-color'; if (!keepLeaf) leaf = n;
+    outlined = { el: n, o: n.style.outline, f: n.style.outlineOffset }; n.style.outline = '2px dashed #d6249f'; n.style.outlineOffset = '1px';
+    newHex = null; newA = null; setTab('pick', true);
+  }
+  function lbl(n, ps) { var s = n.tagName.toLowerCase(); clsOf(n).slice(0, 2).forEach(function (c) { s += '.' + c; }); return s + (ps || ''); }
+  function vdHtml(r) { return r >= 4.5 ? '<span class="p vd">✓ ' + r.toFixed(1) + ':1</span>' : r >= 3 ? '<span class="m vd">⚠ ' + r.toFixed(1) + ':1</span>' : '<span class="f vd">✗ ' + r.toFixed(1) + ':1</span>'; }
+
+  /* ---------- вкладка «Элемент» ---------- */
   function renderPick() {
     body.innerHTML = '';
     if (!sel) { body.innerHTML = '<div class="sm" style="padding:16px 0;font-size:15px;text-align:center">👆 Тапни любое слово, иконку или фон на странице</div>'; return; }
-    var cur = propVal(sel, prop), oc = otherOf(sel, prop), shown = newHex || cur || '#000000', r = ratio(shown, oc);
-    var verdict = r >= 4.5 ? '<span class="p" style="padding:3px 8px;border-radius:7px;border:1px solid">✓ читается хорошо</span>' : r >= 3 ? '<span class="m" style="padding:3px 8px;border-radius:7px;border:1px solid">⚠ слабовато</span>' : '<span class="f" style="padding:3px 8px;border-radius:7px;border:1px solid">✗ плохо видно</span>';
+    var cur = propVal(sel, prop), oc = otherOf(sel, prop), shown = newHex || cur || '#000000', a0 = ownAlpha(), a1 = curA();
+    var isBg = prop === 'background-color', r = ratio(effHex(shown), oc);
+    function aa(hx, al, id, extra) { var c = isBg ? rgbaCss(hx, al) : hx; return '<div class="aa"' + (id ? ' id="' + id + '"' : '') + ' style="background:' + (isBg ? c : oc) + ';color:' + (isBg ? oc : c) + '">Аа' + (extra || '') + '</div>'; }
     var wrap = el('div');
+    var lay = isBg ? layersOf(leaf || sel) : [];
+    var layHtml = '';
+    if (isBg && lay.length) layHtml = '<div class="h" style="margin:6px 0 3px">Слои фона под пальцем (сверху вниз)</div><div class="lay" id="cl-lay"></div>';
     wrap.innerHTML =
-      '<div class="r"><b style="flex:1;min-width:0;font-size:14px;word-break:break-all">' + describe(sel).replace(/</g, '&lt;') + '</b><button id="cl-p-c" type="button">Текст</button><button id="cl-p-b" type="button">Фон</button>' + (more ? '<button id="cl-p-d" type="button">Рамка</button>' : '') + '</div>' +
-      '<div class="pair"><div class="box" style="background:' + (prop === 'background-color' ? cur || oc : oc) + ';color:' + (prop === 'background-color' ? oc : cur || '#888') + '"><b>Было</b><small>' + (cur || 'нет') + '</small></div>' +
-      '<div class="box nw" style="background:' + (prop === 'background-color' ? shown : oc) + ';color:' + (prop === 'background-color' ? oc : shown) + '"><b>Стало</b><small id="cl-hx">' + (newHex || 'выбери ниже') + '</small><input type="color" id="cl-pk" value="' + shown + '"></div></div>' +
-      '<div class="big"><span id="cl-rt" style="font-size:13px;opacity:.8">' + r.toFixed(1) + ' : 1</span> <span id="cl-vd">' + verdict + '</span></div>' +
+      '<div class="r" style="margin:2px 0"><b class="en">' + describe(sel).replace(/</g, '&lt;') + (pseudo ? ' ' + pseudo : '') + '</b><button id="cl-up" type="button" class="ic" title="Выбрать элемент выше (родителя)">⬆</button></div>' +
+      '<div class="r" style="margin:4px 0"><button id="cl-p-c" type="button">Текст</button><button id="cl-p-b" type="button">Фон</button>' + (more ? '<button id="cl-p-d" type="button">Рамка</button>' : '') + '<span style="flex:1"></span><span id="cl-vd">' + vdHtml(r) + '</span><button id="cl-aa" type="button" class="ic" title="Подогнать к читаемости" style="' + (r >= 4.5 ? 'display:none' : '') + '">✨</button></div>' +
+      layHtml +
+      '<div class="cmp">' +
+        '<div class="cb">' + aa(cur || '#888888', a0, '') + '<div class="hx"><small>Было</small><b>' + (cur || 'нет') + '</b></div><button id="cl-c1" type="button" class="ic" title="Копировать цвет">📋</button></div>' +
+        '<div class="cb nw">' + aa(shown, a1, 'cl-aan', '<input type="color" id="cl-pk" value="' + shown + '">') + '<div class="hx"><small>Стало</small><input id="cl-hex" type="text" maxlength="7" value="' + shown + '"></div><button id="cl-c2" type="button" class="ic" title="Копировать цвет">📋</button><button id="cl-pst" type="button" class="ic" title="Вставить скопированный цвет">📥<i id="cl-pdot" style="background:' + (CLIP || 'transparent') + '"></i></button></div>' +
+      '</div>' +
+      '<div class="r sl" style="margin-top:8px"><label class="lb">Тон</label><input id="cl-h" type="range" min="0" max="360"></div>' +
+      '<div class="r sl"><label class="lb">Насыщ.</label><input id="cl-s" type="range" min="0" max="100"></div>' +
+      '<div class="r sl"><label class="lb">Светлота</label><input id="cl-l" type="range" min="0" max="100"></div><div class="zone" id="cl-zone"></div>' +
+      (isBg ? '<div class="r sl"><label class="lb">Прозрачн.</label><input id="cl-a" type="range" min="5" max="100"></div>' : '') +
       '<div class="h">Подходящие цвета</div><div class="sg" id="cl-sug"></div>' +
       '<div class="h">Системные цвета <button id="cl-pa" type="button" style="padding:3px 8px;font-size:12px' + (palSrc === 'apple' ? ';background:#d6249f' : '') + '">Apple</button> <button id="cl-pd" type="button" style="padding:3px 8px;font-size:12px' + (palSrc === 'android' ? ';background:#d6249f' : '') + '">Android</button></div><div class="sg" id="cl-ap"></div>' +
-      '<div class="h">Темнее ◀──▶ светлее</div><div class="r"><input id="cl-l" type="range" min="0" max="100"></div><div class="zone" id="cl-zone" style="margin-left:0"></div>' +
-      (more ? '<div class="h">Где применить</div><div class="sg" id="cl-sc" style="gap:6px"></div><div class="sm" id="cl-scd" style="margin-top:4px"></div>' +
-        '<div class="r"><button id="cl-aa" type="button">Подогнать к читаемости</button></div>' +
-        '<div class="r"><label class="lb">HEX</label><input id="cl-hex" type="text" maxlength="7" value="' + shown + '"></div>' +
-        '<div class="r"><label class="lb">Тон</label><input id="cl-h" type="range" min="0" max="360"></div>' +
-        '<div class="r"><label class="lb">Насыщ.</label><input id="cl-s" type="range" min="0" max="100"></div>' : '') +
+      (more ? '<div class="h">Где применить</div><div class="sg" id="cl-sc" style="gap:6px"></div><div class="sm" id="cl-scd" style="margin-top:4px"></div>' : '') +
       '<div class="r" style="margin-top:14px;border-top:1px solid #333;padding-top:10px"><button id="cl-rs1" type="button" style="display:none">↺ Этот элемент как было</button><button id="cl-rs2" type="button">⟲ Сбросить всё</button></div>';
     body.appendChild(wrap);
     var hh = hsl(rgb(shown)); hslv = [hh[0], hh[1], hh[2]];
-    $('cl-p-c').className = prop === 'color' ? 'on' : ''; $('cl-p-b').className = prop === 'background-color' ? 'on' : '';
+    $('cl-p-c').className = prop === 'color' ? 'on' : ''; $('cl-p-b').className = isBg ? 'on' : '';
     $('cl-p-c').onclick = function () { setProp('color'); }; $('cl-p-b').onclick = function () { setProp('background-color'); };
     if ($('cl-p-d')) { $('cl-p-d').className = prop === 'border-color' ? 'on' : ''; $('cl-p-d').onclick = function () { setProp('border-color'); }; }
+    $('cl-up').onclick = function () { var p = sel.parentElement; if (!p || p === document.body || p === document.documentElement) { flash('Выше выбирать нечего'); return; } chooseLayer(p, '', true, true); };
+    if (isBg && lay.length) {
+      var lw = $('cl-lay');
+      lay.forEach(function (L) {
+        var on = L.n === sel && L.ps === pseudo;
+        var b = el('button', { type: 'button', class: on ? 'on' : '', style: L.hid ? 'opacity:.55' : '' }, '<i style="background:' + rgbaCss(L.hex, L.a) + '"></i>' + lbl(L.n, L.ps) + ' <small>' + L.hex + (L.a < .999 ? ' · ' + Math.round(L.a * 100) + '%' : '') + (L.hid ? ' · скрыт под верхним' : '') + '</small>');
+        b.onclick = function () { chooseLayer(L.n, L.ps, true); };
+        lw.appendChild(b);
+      });
+    }
     var sug = $('cl-sug'), caps = [4, 2, 6], flat = [];
     suggestGroups().forEach(function (g, i) { g.items.slice(0, caps[i] || 4).forEach(function (it) { flat.push(it); }); });
     flat.forEach(function (it) { sug.appendChild(swatch(it[0], it[1], oc)); });
-    if (!flat.length) sug.innerHTML = '<div class="sm">Нет готовых вариантов — двигай бегунок или тапни «Стало».</div>';
+    if (!flat.length) sug.innerHTML = '<div class="sm">Нет готовых вариантов — двигай бегунки.</div>';
     if (palSrc === 'apple') Object.keys(APPLE).forEach(function (n) { $('cl-ap').appendChild(swatch(APPLE[n][ti()], 'Apple ' + n, oc)); });
     else Object.keys(ANDROID).forEach(function (n) { $('cl-ap').appendChild(swatch(ANDROID[n][ti() ? 1 : 2], 'Android ' + n, oc)); });
     $('cl-pa').onclick = function () { palSrc = 'apple'; renderPick(); }; $('cl-pd').onclick = function () { palSrc = 'android'; renderPick(); };
     var fr = findRules(); if (fr.length) { $('cl-rs1').style.display = ''; $('cl-rs1').onclick = function () { P.rules = P.rules.filter(function (r) { return fr.indexOf(r) < 0; }); if (PREV) cancel(true); commit(); buildCands(); renderPick(); say('Правило для этого элемента удалено'); }; }
     $('cl-rs2').onclick = confirmReset;
-    $('cl-pk').addEventListener('input', function (e) { setNew(e.target.value); liveUpd(); });
+    $('cl-pk').addEventListener('input', function (e) { setNew(e.target.value); liveUpd(true); });
     $('cl-pk').addEventListener('change', function () { renderPick(); });
+    $('cl-hex').onchange = function (e) { var v = e.target.value.trim(); if (/^#?[0-9a-f]{6}$/i.test(v)) { setNew((v[0] === '#' ? v : '#' + v).toLowerCase()); renderPick(); } else e.target.value = shown; };
+    $('cl-c1').onclick = function () { if (!cur) { flash('У элемента нет цвета'); return; } setClip(cur); flash('📋 Скопировано ' + cur); };
+    $('cl-c2').onclick = function () { setClip(shown); flash('📋 Скопировано ' + shown); };
+    $('cl-pst').onclick = function () { if (!/^#[0-9a-f]{6}$/i.test(CLIP)) { flash('Буфер пуст — сначала нажми 📋'); return; } setNew(CLIP.toLowerCase()); renderPick(); flash('📥 Вставлено ' + CLIP); };
+    $('cl-aa').onclick = function () { var f = fix(shown, oc, 4.5); if (f === shown) { say('Уже читается'); return; } setNew(f); renderPick(); };
     if (more) {
       var sc = $('cl-sc');
       cands.forEach(function (c, i) {
@@ -481,24 +551,32 @@
         sc.appendChild(b);
       });
       var cc = cands[scope]; $('cl-scd').textContent = (cc.k === 'role' ? 'Меняет переменную ' + cc.sel + '. ' : 'Селектор: ' + cc.sel + '. ') + 'Совпадений на странице: ' + cc.n + '.';
-      $('cl-aa').onclick = function () { var f = fix(shown, oc, 4.5); if (f === shown) { say('Уже читается'); return; } setNew(f); renderPick(); };
-      $('cl-hex').onchange = function (e) { var v = e.target.value.trim(); if (/^#?[0-9a-f]{6}$/i.test(v)) { setNew(v[0] === '#' ? v : '#' + v); renderPick(); } };
-      [['cl-h', 0], ['cl-s', 1]].forEach(function (x) { var inp = $(x[0]); inp.value = Math.round(hslv[x[1]]); inp.oninput = function () { hslv[x[1]] = parseFloat(inp.value); setNew(hex.apply(null, fromHsl(hslv[0], hslv[1], hslv[2]))); hslv[x[1]] = parseFloat(inp.value); liveUpd(); }; });
     }
-    var li = $('cl-l'); li.value = Math.round(hslv[2]); li.oninput = function () { hslv[2] = parseFloat(li.value); setNew(hex.apply(null, fromHsl(hslv[0], hslv[1], hslv[2]))); hslv[2] = parseFloat(li.value); liveUpd(); };
+    [['cl-h', 0], ['cl-s', 1], ['cl-l', 2]].forEach(function (x) {
+      var inp = $(x[0]); inp.value = Math.round(hslv[x[1]]);
+      inp.oninput = function () { var v = parseFloat(inp.value), keep = hslv.slice(); keep[x[1]] = v; setNew(hex.apply(null, fromHsl(keep[0], keep[1], keep[2]))); hslv = keep; liveUpd(true); };
+    });
+    if ($('cl-a')) { var ia = $('cl-a'); ia.value = Math.round(a1 * 100); ia.oninput = function () { var base = newHex || cur || '#000000'; setNew(base, parseFloat(ia.value) / 100); liveUpd(true); }; }
     paintZone(oc); if (!newHex && !PREV) { $('cl-apply').disabled = true; $('cl-cancel').disabled = true; }
   }
   function paintZone(oc) {
-    var z = '', i; for (i = 0; i < 40; i++) { var q = hex.apply(null, fromHsl(hslv[0], hslv[1], i * 100 / 39)), cr = ratio(q, oc); z += '<i style="background:' + (cr >= 4.5 ? '#2ea043' : cr >= 3 ? '#d29922' : '#8b2b2b') + '"></i>'; }
+    var z = '', i, isBg = prop === 'background-color';
+    for (i = 0; i < 40; i++) { var q = hex.apply(null, fromHsl(hslv[0], hslv[1], i * 100 / 39)), cr = ratio(isBg ? effHex(q) : q, oc); z += '<i style="background:' + (cr >= 4.5 ? '#2ea043' : cr >= 3 ? '#d29922' : '#8b2b2b') + '"></i>'; }
     var zn = $('cl-zone'); if (zn) zn.innerHTML = z;
-    var lr = $('cl-l'); if (lr) { var st = []; for (i = 0; i <= 10; i++) st.push(hex.apply(null, fromHsl(hslv[0], hslv[1], i * 10))); lr.style.background = 'linear-gradient(90deg,' + st.join(',') + ')'; }
+    var H = hslv[0], S = hslv[1], L = hslv[2], now = hex.apply(null, fromHsl(H, S, L)), st = [], k;
+    function grad(id, f, n) { var e = $(id); if (!e) return; var a = []; for (k = 0; k <= n; k++) a.push(f(k / n)); e.style.background = 'linear-gradient(90deg,' + a.join(',') + ')'; e.style.setProperty('--cur', now); }
+    grad('cl-l', function (t) { return hex.apply(null, fromHsl(H, S, t * 100)); }, 10);
+    grad('cl-s', function (t) { return hex.apply(null, fromHsl(H, t * 100, L)); }, 6);
+    grad('cl-h', function (t) { return hex.apply(null, fromHsl(t * 360, Math.max(S, 55), Math.min(Math.max(L, 30), 70))); }, 12);
+    var ea = $('cl-a'); if (ea) { var c = rgb(now); ea.style.background = 'linear-gradient(90deg,rgba(' + c.join(',') + ',.05),rgba(' + c.join(',') + ',1)),repeating-conic-gradient(#888 0 25%,#ccc 0 50%) 0 0/12px 12px'; ea.style.setProperty('--cur', now); }
   }
-  function liveUpd() {   // лёгкое обновление без перерисовки (чтобы не терять фокус бегунка)
-    var oc = otherOf(sel, prop), r = ratio(newHex, oc);
-    $('cl-hx').textContent = newHex; $('cl-rt').textContent = r.toFixed(1) + ' : 1';
-    $('cl-vd').innerHTML = r >= 4.5 ? '<span class="p" style="padding:3px 8px;border-radius:7px;border:1px solid">✓ читается хорошо</span>' : r >= 3 ? '<span class="m" style="padding:3px 8px;border-radius:7px;border:1px solid">⚠ слабовато</span>' : '<span class="f" style="padding:3px 8px;border-radius:7px;border:1px solid">✗ плохо видно</span>';
-    var nb = body.querySelector('.box.nw'); if (nb) { if (prop === 'background-color') nb.style.background = newHex; else nb.style.color = newHex; }
-    var hx = $('cl-hex'); if (hx) hx.value = newHex; paintZone(oc);
+  function liveUpd(fromSlider) {   // лёгкое обновление без перерисовки (чтобы не терять фокус бегунка)
+    var oc = otherOf(sel, prop), hx = newHex || propVal(sel, prop) || '#000000', r = ratio(effHex(hx), oc), isBg = prop === 'background-color';
+    $('cl-vd').innerHTML = vdHtml(r); $('cl-aa').style.display = r >= 4.5 ? 'none' : '';
+    var nb = $('cl-aan'); if (nb) { if (isBg) nb.style.background = rgbaCss(hx, curA()); else nb.style.color = hx; }
+    var hi = $('cl-hex'); if (hi && document.activeElement !== hi) hi.value = hx;
+    if (fromSlider) { var sync = { 'cl-h': 0, 'cl-s': 1, 'cl-l': 2 }; Object.keys(sync).forEach(function (id) { var e = $(id); if (e && document.activeElement !== e) e.value = Math.round(hslv[sync[id]]); }); }
+    paintZone(oc);
   }
 
   /* ---------- вкладка «Схема» ---------- */
@@ -648,7 +726,7 @@
     clearInline(); try { localStorage.setItem('theme', nx); } catch (e) {}
     if (window.Rozklad && Rozklad.applyTheme) Rozklad.applyTheme(nx); else document.documentElement.setAttribute('data-theme', nx);
     if (!ORIG[nx]) ORIG[nx] = readVars();
-    apply(); applyRules(); if (sel) { newHex = null; buildCands(); } render();
+    apply(); applyRules(); if (sel) { newHex = null; newA = null; buildCands(); } render();
   };
   document.addEventListener('click', function (e) {
     if (!active || tab !== 'pick' || !pickOn || isUi(e.target)) return;
