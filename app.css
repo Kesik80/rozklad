@@ -26,32 +26,30 @@
   --ok: #248a3d;       /* systemGreen (accessible) */
   --th-bg: #e5e5ea;    /* systemGray5 */
   --key: #8f1d2c;      /* ключова зупинка: бордовий */
-  --key-bg: color-mix(in srgb, #8f1d2c 8%, #ffffff);
   --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
-/* ---------- ТЕМНА ТЕМА — iOS dark, підвищений контраст ---------- */
+/* ---------- ТЕМНА ТЕМА ---------- */
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg-0: #000000;            /* systemGroupedBackground */
-  --bg-1: #1c1c1e;            /* secondarySystemGroupedBackground */
+  /* палітра в стилі iOS (dark system colors) */
+  --bg-0: #000000;     /* systemGroupedBackground */
+  --bg-1: #1c1c1e;    /* secondarySystemGroupedBackground */
   --bg-2: #1c1c1e;
-  --label: #ffffff;           /* label */
-  --label-2: #ebebf5;         /* secondaryLabel (яскравіше — краще видно) */
-  --label-3: #ebebf5;         /* маркери */
-  --separator: #38383a;       /* opaqueSeparator */
-  --hair: rgba(84, 84, 88, .55);
-  --accent: #0a84ff;          /* systemBlue */
-  --accent-text: #ffffff;
-  --next: #64d2ff;            /* яскравіший блакитний для «найближчий» */
-  --th: #ff9f0a;              /* systemOrange */
-  --hint: #98989f;            /* tertiaryLabel */
-  --red: #ff6961;             /* systemRed — краще на чорному */
-  --wd: #64d2ff;              /* systemTeal */
-  --ok: #30d158;              /* systemGreen */
-  --th-bg: #2c2c2e;           /* tertiarySystemBackground */
-  --key: #ff9f0a;             /* ключова зупинка: помаранчевий (не зливається з червоним «Нд») */
-  --key-bg: color-mix(in srgb, #ff9f0a 16%, #1c1c1e);
+  --label: #ffffff;
+  --label-2: #ababb0;  /* secondaryLabel */
+  --label-3: #e5e5ea;
+  --separator: #38383a; /* opaqueSeparator */
+  --hair: rgba(84, 84, 88, .45);
+  --accent: #0a84ff;   /* systemBlue */
+  --next: #0a84ff;
+  --th: #ff9f0a;       /* systemOrange */
+  --hint: #ababb0;
+  --red: #ff453a;      /* systemRed */
+  --wd: #40c8e0;       /* systemTeal */
+  --ok: #30d158;       /* systemGreen */
+  --th-bg: #2c2c2e;    /* tertiarySystemBackground */
+  --key: #ff453a;
 }
 
 /* Якщо JS ще не встиг (або вимкнений) — слухаємось системної теми */
@@ -59,12 +57,10 @@
   :root:not([data-theme]) {
     color-scheme: dark;
     --bg-0: #000000; --bg-1: #1c1c1e; --bg-2: #1c1c1e;
-    --label: #ffffff; --label-2: #ebebf5; --label-3: #ebebf5;
-    --separator: #38383a; --hair: rgba(84, 84, 88, .55);
-    --accent: #0a84ff; --accent-text: #ffffff; --next: #64d2ff; --th: #ff9f0a;
-    --hint: #98989f; --red: #ff6961; --wd: #64d2ff; --ok: #30d158;
-    --th-bg: #2c2c2e; --key: #ff9f0a;
-    --key-bg: color-mix(in srgb, #ff9f0a 16%, #1c1c1e);
+    --label: #ffffff; --label-2: #ababb0; --label-3: #e5e5ea;
+    --separator: #38383a; --hair: rgba(84, 84, 88, .45);
+    --accent: #0a84ff; --next: #0a84ff; --th: #ff9f0a;
+    --hint: #ababb0; --red: #ff453a; --wd: #40c8e0; --ok: #30d158; --th-bg: #2c2c2e; --key: #ff453a;
   }
 }
 
@@ -93,12 +89,12 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 }
 .hdr.scrolled { box-shadow: 0 1px 0 var(--separator); }
 .hdr-mid { text-align: center; min-width: 0; }
-.hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--title, var(--key)); }   /* заголовок: бордовий (світла) / помаранчевий (темна) — колір --key */
+.hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--title, var(--key)); }   /* заголовок: бордовий (світла) / коралловий (темна) — колір --key */
 body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
 body[data-page="index"] { padding-top: calc(var(--gy) + 5vh); }   /* головна: усе трохи нижче від верху екрана */
 body[data-page="index"] .hdr { position: relative; top: -2.4vh; }   /* назва з кнопкою — трохи вище, меню лишається */
-/* Електрички в темній темі — заголовок як ключовий колір */
-[data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: var(--key); }
+/* Електрички в темній темі — заголовок блакитний (лише слово в шапці) */
+[data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: #ff9f0a; }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
 .btn-icon {
   width: 44px; height: 44px; border-radius: 50%;
@@ -131,10 +127,7 @@ th.red { color: var(--red); }
 th.tbl-title { padding: 10px 6px; font-size: 17px; white-space: nowrap; overflow: hidden; }
 .tbl-title .from { color: var(--stop, var(--key)); }
 a[href^='tel:'] { white-space: nowrap; }   /* номер телефону не рвати між рядками */
-/* ключова зупинка (Терешки / Копили / 3-й км): часи + легка підкладка рядка */
-tr.key-row td { background: var(--key-bg); }
-tr.key-row td:not(.loc) { color: var(--ktime, var(--key)); font-weight: 700; }
-tr.key-row td.loc.key { color: var(--key); font-weight: 700; }
+tr.key-row td:not(.loc) { color: var(--ktime, var(--key)); font-weight: 700; }   /* виділений рядок: лише часи, назва зупинки — звичайна */
 
 td {
   background: var(--bg-2); color: var(--label-2);
