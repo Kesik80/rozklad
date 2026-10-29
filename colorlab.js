@@ -257,6 +257,7 @@
     '#cl-panel .zone{height:7px;border-radius:4px;margin:-2px 0 4px 84px;display:flex;overflow:hidden}#cl-panel .zone i{flex:1}' +
     '#cl-panel .rl{display:flex;align-items:center;gap:6px;margin:5px 0;font-size:12px}#cl-panel .rl .tx{flex:1;min-width:0;word-break:break-all}' +
     '#cl-panel .rl i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #666;vertical-align:-2px}' +
+    '#cl-panel .xb{flex:1;font-size:12px;padding:7px 6px;display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.15}#cl-panel .ic svg{display:block;margin:auto;color:#d0d3da}' +
     '#cl-panel .en{flex:1;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
     '#cl-panel .ic{padding:0!important;width:36px;height:36px;flex:none;font-size:16px;position:relative}' +
     '#cl-panel .ic i{position:absolute;right:3px;bottom:3px;width:11px;height:11px;border-radius:50%;border:1px solid #fff}' +
@@ -500,9 +501,10 @@
       '<div class="r" style="margin:4px 0"><button id="cl-p-c" type="button">Текст</button><button id="cl-p-b" type="button">Фон</button>' + (more ? '<button id="cl-p-d" type="button">Рамка</button>' : '') + '<span style="flex:1"></span><span id="cl-vd">' + vdHtml(r) + '</span><button id="cl-aa" type="button" class="ic" title="Подогнать к читаемости" style="' + (r >= 4.5 ? 'display:none' : '') + '">✨</button></div>' +
       layHtml +
       '<div class="cmp">' +
-        '<div class="cb">' + aa(cur || '#888888', a0, '') + '<div class="hx"><small>Было</small><b>' + (cur || 'нет') + '</b></div><button id="cl-c1" type="button" class="ic" title="Копировать цвет">📋</button></div>' +
-        '<div class="cb nw">' + aa(shown, a1, 'cl-aan', '<input type="color" id="cl-pk" value="' + shown + '">') + '<div class="hx"><small>Стало</small><input id="cl-hex" type="text" maxlength="7" value="' + shown + '"></div><button id="cl-c2" type="button" class="ic" title="Копировать цвет">📋</button><button id="cl-pst" type="button" class="ic" title="Вставить скопированный цвет">📥<i id="cl-pdot" style="background:' + (CLIP || 'transparent') + '"></i></button></div>' +
+        '<div class="cb">' + aa(cur || '#888888', a0, '') + '<div class="hx"><small>Было</small><b>' + (cur || 'нет') + '</b></div><button id="cl-c1" type="button" class="ic" title="Копировать цвет">' + IC_COPY + '</button></div>' +
+        '<div class="cb nw">' + aa(shown, a1, 'cl-aan', '<input type="color" id="cl-pk" value="' + shown + '">') + '<div class="hx"><small>Стало</small><input id="cl-hex" type="text" maxlength="7" value="' + shown + '"></div><button id="cl-c2" type="button" class="ic" title="Копировать цвет">' + IC_COPY + '</button><button id="cl-pst" type="button" class="ic" title="Вставить скопированный цвет">' + IC_PASTE + '<i id="cl-pdot" style="background:' + (CLIP || 'transparent') + '"></i></button></div>' +
       '</div>' +
+      '<div class="r" style="margin:6px 0 0"><button id="cl-xt" type="button" class="xb">' + IC_THEME + ' Этот → ' + (theme() === 'dark' ? 'в светлую' : 'в тёмную') + '</button><button id="cl-xa" type="button" class="xb">' + IC_THEME + ' Все правила → ' + (theme() === 'dark' ? 'в светлую' : 'в тёмную') + '</button></div>' +
       '<div class="r sl" style="margin-top:8px"><label class="lb">Тон</label><input id="cl-h" type="range" min="0" max="360"></div>' +
       '<div class="r sl"><label class="lb">Насыщ.</label><input id="cl-s" type="range" min="0" max="100"></div>' +
       '<div class="r sl"><label class="lb">Светлота</label><input id="cl-l" type="range" min="0" max="100"></div><div class="zone" id="cl-zone"></div>' +
@@ -541,6 +543,14 @@
     $('cl-c1').onclick = function () { if (!cur) { flash('У элемента нет цвета'); return; } setClip(cur); flash('📋 Скопировано ' + cur); };
     $('cl-c2').onclick = function () { setClip(shown); flash('📋 Скопировано ' + shown); };
     $('cl-pst').onclick = function () { if (!/^#[0-9a-f]{6}$/i.test(CLIP)) { flash('Буфер пуст — сначала нажми 📋'); return; } setNew(CLIP.toLowerCase()); renderPick(); flash('📥 Вставлено ' + CLIP); };
+    function xfer(all) {
+      if (newHex) applyNew(); var to = otherTheme(), from = theme(); ensureOrig(to);
+      var list = all ? P.rules.filter(function (r) { return r.theme === from && !r.off; }) : findRules();
+      if (!list.length) { flash(all ? 'Правил пока нет' : 'Для этого элемента ещё нет правила — выбери цвет и нажми «Готово»'); return; }
+      var n = xferRules(list, to, compute_for(to).card || (to === 'dark' ? '#1c1c1e' : '#ffffff')); commit();
+      flash('⇄ Перенесено в ' + (to === 'dark' ? 'тёмную' : 'светлую') + ': ' + n + '. Переключи 🌓 и проверь');
+    }
+    $('cl-xt').onclick = function () { xfer(false); }; $('cl-xa').onclick = function () { xfer(true); };
     $('cl-aa').onclick = function () { var f = fix(shown, oc, 4.5); if (f === shown) { say('Уже читается'); return; } setNew(f); renderPick(); };
     if (more) {
       var sc = $('cl-sc');
@@ -632,6 +642,30 @@
     if (kind === 'line') return lab2hex(toDark ? 26 : 88, Math.min(C, 8), h);
     return lab2hex(toDark ? Math.max(62, Math.min(94, 100 - L + 4)) : Math.max(12, Math.min(48, 100 - L - 6)), C * .95, h);
   }
+  var SV = '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;pointer-events:none">';
+  var IC_COPY = SV + '<rect x="9" y="8" width="11" height="13" rx="2.2"/><path d="M5.5 16V6.2A2.2 2.2 0 0 1 7.7 4H15"/></svg>';
+  var IC_PASTE = SV + '<rect x="5" y="4.5" width="14" height="16.5" rx="2.5"/><rect x="9" y="2.2" width="6" height="4.2" rx="1.6" fill="#15171c"/></svg>';
+  var IC_THEME = SV + '<circle cx="12" cy="12" r="8.2"/><path d="M12 3.8a8.2 8.2 0 0 1 0 16.4z" fill="currentColor"/></svg>';
+  function cv(val, prop, toDark, card) {         // перевод цвета (hex или rgba) в другую тему
+    var m = /^rgba?\(([^)]+)\)/.exec(val), a = 1, hx = val;
+    if (m) { var q = m[1].split(',').map(parseFloat); hx = hex(q[0], q[1], q[2]); a = q.length > 3 ? q[3] : 1; }
+    if (a < .999 && prop === 'background-color') return rgbaCss(hx, Math.round(Math.min(1, toDark ? a * .75 : a * 1.4) * 100) / 100);   // полупрозрачная подсветка: тот же оттенок, меняется только плотность
+    var kind = prop === 'background-color' ? (a < .999 ? 'fg' : 'surface') : prop === 'border-color' ? 'line' : 'fg', nv = conv(hx, kind, toDark);
+    if (kind === 'fg' && a >= .999 && prop === 'color') nv = fix(nv, card, 4.5);
+    return a < .999 ? rgbaCss(nv, a) : nv;
+  }
+  function xferRules(list, to, card) {
+    var toDark = to === 'dark', n = 0;
+    list.forEach(function (r) {
+      var ex = P.rules.filter(function (q) { return q.theme === to && q.sel === r.sel && q.prop === r.prop; })[0];
+      if (ex && ex.lock) return;
+      var nv = cv(r.val, r.prop, toDark, card);
+      if (ex) { ex.val = nv; ex.label = r.label; } else P.rules.push({ id: Date.now() + Math.random(), theme: to, sel: r.sel, prop: r.prop, val: nv, from: cv(r.from || r.val, r.prop, toDark, card), label: r.label, lock: false, off: false });
+      n++;
+    });
+    return n;
+  }
+  function otherTheme() { return theme() === 'dark' ? 'light' : 'dark'; }
   function mirror() {
     if (PREV) cancel(true);
     var from = theme(), to = from === 'dark' ? 'light' : 'dark', toDark = to === 'dark';
@@ -652,14 +686,7 @@
     Object.keys(res).forEach(function (id) { if (id === 'bg' || id === 'accent' || !S.lock[id]) { S.over[id] = res[id]; nr++; } });
     S.bg = res.bg; S.accent = res.accent; S.fam = null; S.accentFam = null; S.auto = true;
     var n = 0;
-    P.rules.filter(function (r) { return r.theme === from && !r.off; }).forEach(function (r) {
-      var ex = P.rules.filter(function (q) { return q.theme === to && q.sel === r.sel && q.prop === r.prop; })[0];
-      if (ex && ex.lock) return;
-      var kind = r.prop === 'background-color' ? 'surface' : r.prop === 'border-color' ? 'line' : 'fg', nv = conv(r.val, kind, toDark);
-      if (kind === 'fg') nv = fix(nv, res.card, 4.5);
-      if (ex) { ex.val = nv; ex.label = r.label; } else P.rules.push({ id: Date.now() + Math.random(), theme: to, sel: r.sel, prop: r.prop, val: nv, from: conv(r.from || r.val, kind, toDark), label: r.label, lock: false, off: false });
-      n++;
-    });
+    n = xferRules(P.rules.filter(function (r) { return r.theme === from && !r.off; }), to, res.card);
     commit(); say('✓ Из ' + (from === 'dark' ? 'тёмной' : 'светлой') + ' получена ' + (toDark ? 'тёмная' : 'светлая') + ' тема: ролей ' + nr + ', правил ' + n + '. Переключи 🌓 и поправь, что не нравится (🔒 защитит от пересчёта).');
   }
   function mirrorBtn() { return '<div class="r"><button id="cl-mir" type="button" style="flex:1">' + (theme() === 'dark' ? '☀ Получить светлую тему из этой' : '🌙 Получить тёмную тему из этой') + '</button></div>'; }
@@ -727,6 +754,7 @@
     if (window.Rozklad && Rozklad.applyTheme) Rozklad.applyTheme(nx); else document.documentElement.setAttribute('data-theme', nx);
     if (!ORIG[nx]) ORIG[nx] = readVars();
     apply(); applyRules(); if (sel) { newHex = null; newA = null; buildCands(); } render();
+    setTimeout(function () { if (active && !PREV) { if (sel) buildCands(); render(); } }, 500);   // после анимации смены темы цвета на странице уже настоящие
   };
   document.addEventListener('click', function (e) {
     if (!active || tab !== 'pick' || !pickOn || isUi(e.target)) return;
