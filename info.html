@@ -83,11 +83,12 @@ document.addEventListener('DOMContentLoaded', function () {   // після то
   });
 
   // «Поділитися»: кнопка в шапці і натискання на QR-код роблять те саме
+  var SHARE_URL = 'https://www.tereshky.pp.ua';   // адреса, якою діляться (і яку кодує QR-код icons/qr-app.png)
   var shareBtn = document.getElementById('share-btn');
   function shareApp() {
-    if (navigator.share) { navigator.share({ title: 'Розклад маршруток', url: location.origin }).catch(function () {}); }
+    if (navigator.share) { navigator.share({ title: 'Розклад маршруток', url: SHARE_URL }).catch(function () {}); }
     else if (navigator.clipboard) {
-      navigator.clipboard.writeText(location.origin);
+      navigator.clipboard.writeText(SHARE_URL);
       var old = shareBtn.innerHTML; shareBtn.textContent = '✓'; setTimeout(function () { shareBtn.innerHTML = old; }, 1500);
     }
   }
