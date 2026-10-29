@@ -1,14 +1,7 @@
 /* ============================================================
    app.css — ЄДИНИЙ СТИЛЬ усіх сторінок «Розкладу».
-   Кольори — тільки через змінні нижче, палітра — системні кольори iOS.
-   • Світла тема: systemGroupedBackground (#f2f2f7) + білі картки;
-     текстові кольори — accessible-варіанти (контраст ≥ 4.5:1).
-   • Темна тема: чистий чорний + картки #1c1c1e (як в iOS «Темно»),
-     а текст і акценти — ЯСКРАВІ accessible-варіанти system-кольорів
-     iOS для темного режиму (#ff6961, #ffb340, #409cff, #30db5b),
-     щоб усе було добре видно на чорному.
-   • --tint-* — відсотки домішки кольору до фону ячейки: «живі» плашки,
-     рядок ключової зупинки (Електрички), шапка колонок вихідних.
+   Кольори — тільки через змінні нижче. Для світлої теми кольори
+   темніші (контраст ≥ 4.5:1 на фоні ячейок), для темної — яскравіші.
    ============================================================ */
 
 /* ---------- СВІТЛА ТЕМА (за замовчуванням) ---------- */
@@ -33,44 +26,32 @@
   --ok: #248a3d;       /* systemGreen (accessible) */
   --th-bg: #e5e5ea;    /* systemGray5 */
   --key: #8f1d2c;      /* ключова зупинка: бордовий */
-  /* домішки кольору до фону ячейки (підсвітки) */
-  --tint-next: 12%;    /* плашка найближчого рейсу */
-  --tint-soon: 15%;    /* ≤ 5 хв до відправлення */
-  --tint-now: 14%;     /* ≤ 2 хв */
-  --tint-now-pulse: 24%; /* пік пульсації */
-  --tint-key: 8%;      /* рядок ключової зупинки (Терешки, Копили, 3-й км) */
-  --tint-wd-head: 9%;  /* шапка колонки вихідних (Сб/Нд) */
+  --key-bg: color-mix(in srgb, #8f1d2c 8%, #ffffff);
   --font: -apple-system, Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
-/* ---------- ТЕМНА ТЕМА ---------- */
+/* ---------- ТЕМНА ТЕМА — iOS dark, підвищений контраст ---------- */
 [data-theme="dark"] {
   color-scheme: dark;
-  /* палітра в стилі iOS (dark system colors) */
-  --bg-0: #000000;     /* systemGroupedBackground */
-  --bg-1: #1c1c1e;    /* secondarySystemGroupedBackground */
+  --bg-0: #000000;            /* systemGroupedBackground */
+  --bg-1: #1c1c1e;            /* secondarySystemGroupedBackground */
   --bg-2: #1c1c1e;
-  --label: #ffffff;
-  --label-2: #c7c7cc;  /* яскравіший за secondaryLabel (#98989f), щоб часи читались */
-  --label-3: #e5e5ea;
-  --separator: #38383a; /* opaqueSeparator */
-  --hair: rgba(84, 84, 88, .45);
-  --accent: #0a84ff;   /* systemBlue (заливки кнопок) */
-  --next: #409cff;     /* accessible systemBlue — найближчий рейс */
-  --th: #ffb340;       /* accessible systemOrange */
-  --hint: #98989f;     /* secondaryLabel: дрібні підказки */
-  --red: #ff6961;      /* accessible systemRed */
-  --wd: #40c8e0;       /* systemTeal */
-  --ok: #30db5b;       /* accessible systemGreen */
-  --th-bg: #2c2c2e;    /* tertiarySystemBackground */
-  --key: #ff6961;      /* ключова зупинка: кораловий */
-  /* на чорному домішки — удвічі більші, інакше підсвітки не видно */
-  --tint-next: 26%;
-  --tint-soon: 30%;
-  --tint-now: 30%;
-  --tint-now-pulse: 44%;
-  --tint-key: 15%;
-  --tint-wd-head: 14%;
+  --label: #ffffff;           /* label */
+  --label-2: #ebebf5;         /* secondaryLabel (яскравіше — краще видно) */
+  --label-3: #ebebf5;         /* маркери */
+  --separator: #38383a;       /* opaqueSeparator */
+  --hair: rgba(84, 84, 88, .55);
+  --accent: #0a84ff;          /* systemBlue */
+  --accent-text: #ffffff;
+  --next: #64d2ff;            /* яскравіший блакитний для «найближчий» */
+  --th: #ff9f0a;              /* systemOrange */
+  --hint: #98989f;            /* tertiaryLabel */
+  --red: #ff6961;             /* systemRed — краще на чорному */
+  --wd: #64d2ff;              /* systemTeal */
+  --ok: #30d158;              /* systemGreen */
+  --th-bg: #2c2c2e;           /* tertiarySystemBackground */
+  --key: #ff9f0a;             /* ключова зупинка: помаранчевий (не зливається з червоним «Нд») */
+  --key-bg: color-mix(in srgb, #ff9f0a 16%, #1c1c1e);
 }
 
 /* Якщо JS ще не встиг (або вимкнений) — слухаємось системної теми */
@@ -78,12 +59,12 @@
   :root:not([data-theme]) {
     color-scheme: dark;
     --bg-0: #000000; --bg-1: #1c1c1e; --bg-2: #1c1c1e;
-    --label: #ffffff; --label-2: #c7c7cc; --label-3: #e5e5ea;
-    --separator: #38383a; --hair: rgba(84, 84, 88, .45);
-    --accent: #0a84ff; --next: #409cff; --th: #ffb340;
-    --hint: #98989f; --red: #ff6961; --wd: #40c8e0; --ok: #30db5b; --th-bg: #2c2c2e; --key: #ff6961;
-    --tint-next: 26%; --tint-soon: 30%; --tint-now: 30%; --tint-now-pulse: 44%;
-    --tint-key: 15%; --tint-wd-head: 14%;
+    --label: #ffffff; --label-2: #ebebf5; --label-3: #ebebf5;
+    --separator: #38383a; --hair: rgba(84, 84, 88, .55);
+    --accent: #0a84ff; --accent-text: #ffffff; --next: #64d2ff; --th: #ff9f0a;
+    --hint: #98989f; --red: #ff6961; --wd: #64d2ff; --ok: #30d158;
+    --th-bg: #2c2c2e; --key: #ff9f0a;
+    --key-bg: color-mix(in srgb, #ff9f0a 16%, #1c1c1e);
   }
 }
 
@@ -112,12 +93,12 @@ body, .hdr, table, td, th, .btn-icon, .menu { transition: background-color .25s 
 }
 .hdr.scrolled { box-shadow: 0 1px 0 var(--separator); }
 .hdr-mid { text-align: center; min-width: 0; }
-.hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--title, var(--key)); }   /* заголовок: бордовий (світла) / коралловий (темна) — колір --key */
+.hdr-title { font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--title, var(--key)); }   /* заголовок: бордовий (світла) / помаранчевий (темна) — колір --key */
 body[data-page="index"] .hdr-title { font-size: 26px; letter-spacing: .5px; }
 body[data-page="index"] { padding-top: calc(var(--gy) + 5vh); }   /* головна: усе трохи нижче від верху екрана */
 body[data-page="index"] .hdr { position: relative; top: -2.4vh; }   /* назва з кнопкою — трохи вище, меню лишається */
-/* Електрички в темній темі — заголовок помаранчевий (лише слово в шапці) */
-[data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: #ffb340; }
+/* Електрички в темній темі — заголовок як ключовий колір */
+[data-theme="dark"] body[data-page="elektrychky"] .hdr-title { color: var(--key); }
 .hdr-sub { font-size: 14px; font-weight: 600; color: var(--label-2); margin-top: 3px; }
 .btn-icon {
   width: 44px; height: 44px; border-radius: 50%;
@@ -146,18 +127,14 @@ th {
   font-size: 18px; font-weight: 800; letter-spacing: .2px; line-height: 1.15;
   border-bottom: 1px solid var(--separator); white-space: normal;
 }
-/* колонка вихідних (Сб/Нд): червоний заголовок + легка тонована підкладка —
-   виділено лишити ШАПКУ, як і було, але помітно в обох темах */
-th.red { color: var(--red); background: color-mix(in srgb, var(--red) var(--tint-wd-head), var(--th-bg)); }
+th.red { color: var(--red); }
 th.tbl-title { padding: 10px 6px; font-size: 17px; white-space: nowrap; overflow: hidden; }
 .tbl-title .from { color: var(--stop, var(--key)); }
 a[href^='tel:'] { white-space: nowrap; }   /* номер телефону не рвати між рядками */
-/* виділений рядок: часи — кольором ключової зупинки, назва станції — теж,
-   а вся строка має легку тоновану підкладку (Терешки, Копили, 3-й км на «Електричках»).
-   У обох темах підкладка змінної --tint-key, тож підсвітка ніколи не зникає. */
-tr.key-row td { background: color-mix(in srgb, var(--key) var(--tint-key), var(--bg-2)); }
-tr.key-row td.loc { color: var(--key); }
-tr.key-row td:not(.loc) { color: var(--ktime, var(--key)); font-weight: 700; }   /* виділений рядок: лише часи, назва зупинки — звичайна */
+/* ключова зупинка (Терешки / Копили / 3-й км): часи + легка підкладка рядка */
+tr.key-row td { background: var(--key-bg); }
+tr.key-row td:not(.loc) { color: var(--ktime, var(--key)); font-weight: 700; }
+tr.key-row td.loc.key { color: var(--key); font-weight: 700; }
 
 td {
   background: var(--bg-2); color: var(--label-2);
@@ -205,16 +182,16 @@ td .tm .marker { position: absolute; left: 100%; margin-left: 3px; }
   content: ''; position: absolute; z-index: -1;
   top: -1px; bottom: -1px; left: calc(-1 * var(--pl, 11px)); right: calc(-1 * var(--pr, 11px) - var(--mw, 0px));
   border-radius: 8px;
-  background: color-mix(in srgb, var(--c) var(--tint-next), var(--bg-2));
+  background: color-mix(in srgb, var(--c) 12%, var(--bg-2));
   box-shadow: inset 1.5px 0 0 var(--c);
   transition: background-color .25s ease;
 }
 [data-time].next-dep { --c: var(--next); font-weight: 800; color: var(--next); }
 [data-time].dep-soon { --c: var(--th);   color: var(--th); }
 [data-time].dep-now  { --c: var(--red);  color: var(--red); }
-[data-time].dep-soon .tm::before { background: color-mix(in srgb, var(--c) var(--tint-soon), var(--bg-2)); }
-[data-time].dep-now .tm::before  { background: color-mix(in srgb, var(--c) var(--tint-now), var(--bg-2)); animation: depPulse 1.6s ease-in-out infinite; }
-@keyframes depPulse { 50% { background: color-mix(in srgb, var(--c) var(--tint-now-pulse), var(--bg-2)); } }
+[data-time].dep-soon .tm::before { background: color-mix(in srgb, var(--c) 15%, var(--bg-2)); }
+[data-time].dep-now .tm::before  { background: color-mix(in srgb, var(--c) 14%, var(--bg-2)); animation: depPulse 1.6s ease-in-out infinite; }
+@keyframes depPulse { 50% { background: color-mix(in srgb, var(--c) 24%, var(--bg-2)); } }
 @media (prefers-reduced-motion: reduce) { [data-time].dep-now .tm::before { animation: none; } }
 
 /* ---------- ПРИМІТКИ ---------- */
@@ -280,7 +257,6 @@ body[data-page="info"] { padding-bottom: 120px; font-weight: 500; font-size: 16p
 }
 .btn-reload { width: 46%; max-width: 190px; margin: 0 auto; padding: 9px; border-radius: 12px; letter-spacing: .4px; font-size: 15px;
   border: 0; color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); }
-[data-theme="dark"] .btn-reload { background: color-mix(in srgb, var(--accent) 28%, transparent); }   /* на чорному 13% не видно */
 .btn-reload:active { background: var(--accent); color: var(--accent-text); }
 .bottom-meta { display: flex; justify-content: space-between; max-width: 616px; width: 100%; margin: 0 auto; font-size: 13px; font-weight: 600; color: var(--label-2); }
 .bottom-meta .author { color: var(--red); }
