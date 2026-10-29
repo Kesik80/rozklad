@@ -219,7 +219,7 @@
   css.textContent =
     '#cl-fab{position:fixed;right:12px;bottom:12px;z-index:2147483001;width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:#222;color:#fff;font-size:22px;line-height:1;box-shadow:0 2px 10px rgba(0,0,0,.5);padding:0}' +
     '#cl-fab.on{background:#d6249f}' +
-    '#cl-panel{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:#15171c;color:#eef0f4;font:13px/1.35 -apple-system,Roboto,sans-serif;padding:8px 12px 70px;border-top:2px solid #d6249f;max-height:66vh;overflow:auto;display:none}' +
+    '#cl-panel{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:#15171c;color:#eef0f4;font:13px/1.35 -apple-system,Roboto,sans-serif;padding:8px 12px 70px;border-top:2px solid #d6249f;max-height:calc(50vh - 78px);overflow:auto;display:none}' +
     '#cl-panel *{box-sizing:border-box;font-family:inherit}' +
     '#cl-panel .r{display:flex;align-items:center;gap:8px;margin:6px 0}' +
     '#cl-panel .sm{opacity:.7;font-size:12px;word-break:break-all}' +
@@ -258,6 +258,7 @@
     '#cl-panel .rl{display:flex;align-items:center;gap:6px;margin:5px 0;font-size:12px}#cl-panel .rl .tx{flex:1;min-width:0;word-break:break-all}' +
     '#cl-panel .rl i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #666;vertical-align:-2px}' +
     '#cl-panel .xb{flex:1;font-size:12px;padding:7px 6px;display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.15}#cl-panel .ic svg{display:block;margin:auto;color:#d0d3da}' +
+    '#cl-panel .ar{width:46px;height:38px;border:2px solid #d6249f!important;background:rgba(214,36,159,.28)!important;color:#fff;border-radius:11px}#cl-panel .ar svg{color:#fff!important}' +
     '#cl-panel .en{flex:1;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
     '#cl-panel .ic{padding:0!important;width:36px;height:36px;flex:none;font-size:16px;position:relative}' +
     '#cl-panel .ic i{position:absolute;right:3px;bottom:3px;width:11px;height:11px;border-radius:50%;border:1px solid #fff}' +
@@ -497,7 +498,7 @@
     var layHtml = '';
     if (isBg && lay.length) layHtml = '<div class="h" style="margin:6px 0 3px">Слои фона под пальцем (сверху вниз)</div><div class="lay" id="cl-lay"></div>';
     wrap.innerHTML =
-      '<div class="r" style="margin:2px 0"><b class="en">' + describe(sel).replace(/</g, '&lt;') + (pseudo ? ' ' + pseudo : '') + '</b><button id="cl-up" type="button" class="ic" title="Выбрать элемент выше (родителя)">⬆</button></div>' +
+      '<div class="r" style="margin:2px 0"><b class="en">' + describe(sel).replace(/</g, '&lt;') + (pseudo ? ' ' + pseudo : '') + '</b><button id="cl-dn" type="button" class="ic ar" title="Выбрать вложенный элемент (ниже)">' + IC_DOWN + '</button><button id="cl-up" type="button" class="ic ar" title="Выбрать элемент выше (родителя)">' + IC_UP + '</button></div>' +
       '<div class="r" style="margin:4px 0"><button id="cl-p-c" type="button">Текст</button><button id="cl-p-b" type="button">Фон</button>' + (more ? '<button id="cl-p-d" type="button">Рамка</button>' : '') + '<span style="flex:1"></span><span id="cl-vd">' + vdHtml(r) + '</span><button id="cl-aa" type="button" class="ic" title="Подогнать к читаемости" style="' + (r >= 4.5 ? 'display:none' : '') + '">✨</button></div>' +
       layHtml +
       '<div class="cmp">' +
@@ -518,6 +519,12 @@
     $('cl-p-c').className = prop === 'color' ? 'on' : ''; $('cl-p-b').className = isBg ? 'on' : '';
     $('cl-p-c').onclick = function () { setProp('color'); }; $('cl-p-b').onclick = function () { setProp('background-color'); };
     if ($('cl-p-d')) { $('cl-p-d').className = prop === 'border-color' ? 'on' : ''; $('cl-p-d').onclick = function () { setProp('border-color'); }; }
+    $('cl-dn').onclick = function () {
+      var ch = null;
+      if (leaf && leaf !== sel && sel.contains(leaf)) { ch = leaf; while (ch.parentElement && ch.parentElement !== sel) ch = ch.parentElement; }
+      else ch = Array.prototype.filter.call(sel.children, function (c) { return !isUi(c) && c.nodeType === 1; })[0] || null;
+      if (!ch) { flash('Ниже выбирать нечего'); return; } chooseLayer(ch, '', true, true);
+    };
     $('cl-up').onclick = function () { var p = sel.parentElement; if (!p || p === document.body || p === document.documentElement) { flash('Выше выбирать нечего'); return; } chooseLayer(p, '', true, true); };
     if (isBg && lay.length) {
       var lw = $('cl-lay');
@@ -646,6 +653,8 @@
   var IC_COPY = SV + '<rect x="9" y="8" width="11" height="13" rx="2.2"/><path d="M5.5 16V6.2A2.2 2.2 0 0 1 7.7 4H15"/></svg>';
   var IC_PASTE = SV + '<rect x="5" y="4.5" width="14" height="16.5" rx="2.5"/><rect x="9" y="2.2" width="6" height="4.2" rx="1.6" fill="#15171c"/></svg>';
   var IC_THEME = SV + '<circle cx="12" cy="12" r="8.2"/><path d="M12 3.8a8.2 8.2 0 0 1 0 16.4z" fill="currentColor"/></svg>';
+  var SA = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none">';
+  var IC_UP = SA + '<path d="M12 20V5M5 11.5L12 4.5l7 7"/></svg>', IC_DOWN = SA + '<path d="M12 4v15M5 12.5l7 7 7-7"/></svg>';
   function cv(val, prop, toDark, card) {         // перевод цвета (hex или rgba) в другую тему
     var m = /^rgba?\(([^)]+)\)/.exec(val), a = 1, hx = val;
     if (m) { var q = m[1].split(',').map(parseFloat); hx = hex(q[0], q[1], q[2]); a = q.length > 3 ? q[3] : 1; }
