@@ -478,7 +478,7 @@
     var d = new Date(), p2 = function (n) { return (n < 10 ? '0' : '') + n; };
     return '<div class="snap" data-theme="light" xmlns="http://www.w3.org/1999/xhtml" style="width:' + SNAP_W + 'px;max-width:none;margin:0;">' +
       '<div class="hdr">' + hdr.innerHTML + '</div>' + app.outerHTML +
-      '<div style="text-align:center;font:500 12px sans-serif;color:#66666b;padding:10px 0 2px;">Розклад Терешки · www.tereshky.pp.ua · ' +
+      '<div style="text-align:center;font:500 12px sans-serif;color:#66666b;padding:10px 0 2px;">Розклад Терешки · tereshky.pp.ua · ' +
       p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + '.' + d.getFullYear() + '</div></div>';
   }
 
